@@ -13,6 +13,10 @@
   }
 }
 
+.button{
+  margin-top: 30px;
+}
+
 .header {
   background-color: #282c34;
   min-height: 100vh;

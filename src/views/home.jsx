@@ -1,7 +1,8 @@
 import logo from '../assets/logo.svg';
 import classes from '../styles/home.module.css';
-
+import { Button } from '@material-ui/core';
 import Display from '../components/display';
+import { link } from 'react-router-dom';
 
 export default function Home() {
     return (
@@ -17,7 +18,18 @@ export default function Home() {
                 >
                     Learn React
                 </a>
+                <Button
+                    variant="contained" color="primary"
+                    size="large"
+                    className={classes.button}
+                >
+                    <Link to="/login">Cadastre-se</Link>
+            </Button>
             </header>
-        </div>
+            <body>
+
+            </body>
+
+        </div >
     );
 }
