@@ -1,35 +1,62 @@
-import logo from '../assets/logo.svg';
 import classes from '../styles/home.module.css';
 import { Button } from '@material-ui/core';
 import Display from '../components/display';
-import { link } from 'react-router-dom';
+import { connect } from 'react-redux'
+import { checkAuthenticated, load_user } from '../actions/auth'
+import { useEffect } from 'react';
+import { logout } from '../actions/auth'
+import LoginSignUp from '../components/loginSignUp'
 
-export default function Home() {
+
+function Home({ checkAuthenticated, load_user, logout, isAuthenticated }) {
+    useEffect(() => {
+        checkAuthenticated();
+        load_user();
+    });
+
+    function notAuthenticatedButtons() {
+        return (
+           <LoginSignUp />
+        );
+    };
+
+    function authenticatedButtons() {
+        return (
+            <Button
+                variant="contained"
+                size="large"
+                className={classes.button}
+                onClick={logout}
+            >
+                Logout
+            </Button>
+        );
+    }
+
+    const displayButtons = () => {
+        if (isAuthenticated) {
+            return authenticatedButtons();
+        } else {
+            return notAuthenticatedButtons();
+        }
+    }
+
     return (
         <div className={classes.app}>
             <header className={classes.header}>
-                <img src={logo} className={classes.logo} alt="logo" />
                 <Display />
-                <a
-                    className={classes.link}
-                    href="https://reactjs.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    Learn React
-                </a>
-                <Button
-                    variant="contained" color="primary"
-                    size="large"
-                    className={classes.button}
-                >
-                    <Link to="/login">Cadastre-se</Link>
-            </Button>
+                {displayButtons()}
             </header>
-            <body>
-
+            <body className={classes.header}>
+                
             </body>
 
         </div >
     );
-}
+};
+
+const mapStateToProps = state => ({
+    isAuthenticated: state.auth.isAuthenticated
+});
+
+export default connect(mapStateToProps, { checkAuthenticated, load_user, logout })(Home);
