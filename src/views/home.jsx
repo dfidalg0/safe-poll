@@ -2,9 +2,8 @@ import classes from '../styles/home.module.css';
 import { Button } from '@material-ui/core';
 import Display from '../components/display';
 import { connect } from 'react-redux'
-import { checkAuthenticated, load_user } from '../actions/auth'
+import { checkAuthenticated, load_user, logout } from '../store/actions/auth'
 import { useEffect } from 'react';
-import { logout } from '../actions/auth'
 import LoginSignUp from '../components/loginSignUp'
 
 
@@ -48,7 +47,7 @@ function Home({ checkAuthenticated, load_user, logout, isAuthenticated }) {
                 {displayButtons()}
             </header>
             <body className={classes.header}>
-                
+
             </body>
 
         </div >

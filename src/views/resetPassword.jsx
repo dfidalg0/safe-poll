@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Breadcrumbs, Button, CssBaseline, TextField, Link, Typography, Container } from '@material-ui/core'
 import { connect } from 'react-redux';
-import { reset_password } from '../actions/auth'
+import { reset_password } from '../store/actions/auth'
 import { Alert } from '@material-ui/lab'
 import { useStyles } from '../styles/form'
 
@@ -37,7 +37,7 @@ function ResetPassword({ reset_password }) {
                 <Typography color="textPrimary">Resetar Senha</Typography>
             </Breadcrumbs>
             <CssBaseline />
-            
+
             {displayMessage()}
             <div className={classes.paper}>
                 <Typography component="h1" variant="h5" className={classes.typography} >

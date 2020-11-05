@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Avatar, Button, TextField, Link, Grid, Typography, Container } from '@material-ui/core'
 import { connect } from 'react-redux';
-import { login } from '../actions/auth'
+import { login } from '../store/actions/auth'
 import DisplayAlert from './displayAlert'
 import { useStyles } from '../styles/form'
 

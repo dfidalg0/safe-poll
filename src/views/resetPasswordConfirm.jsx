@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Avatar, Breadcrumbs, Link, Button, CssBaseline, TextField, Typography, Container } from '@material-ui/core'
 import { connect } from 'react-redux';
-import { reset_password_confirm } from '../actions/auth'
+import { reset_password_confirm } from '../store/actions/auth'
 import DisplayAlert from '../components/displayAlert'
 import { Alert } from '@material-ui/lab'
 import { useStyles } from '../styles/form'
