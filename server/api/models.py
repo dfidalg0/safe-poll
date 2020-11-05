@@ -1,14 +1,10 @@
 from django.db import models
-<<<<<<< HEAD
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
-import secrets
-=======
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager
 )
+import secrets
 
->>>>>>> 115232d0bef2638a9e5510cc92ba090c2d85f4d4
 
 class UserAccountManager(BaseUserManager):
 
@@ -53,36 +49,7 @@ class UserAccount(AbstractBaseUser):
 
     def __str__(self):
         return self.email
-<<<<<<< HEAD
-# Token.
-class TokenManager(models.Manager):
-    #To create a new token, use: "new_token = Token.objects.create_token(email)"
-    def create_token(self, user, poll):
-        update_token_value = True
-        token_value = self.generate_token()
-        while len(self.get_queryset().filter(token=token_value)) != 0: #Loop condition: token_value already exists.
-            token_value = self.generate_token()
-        new_token = self.create(token=token_value, user=user, poll=poll)
-        return new_token
 
-    def generate_token(self):
-        return str(secrets.token_urlsafe(nbytes=375)) #nbytes==375 is enough to generate 500 chars.
-
-class Token(models.Model):
-    #Adicionar FK para polls;
-
-    def __str__(self):
-        return self.token
-        #return "Poll's ID (FK): {{insert poll's id here}}, e-mail: {0}".format(self.email)
-
-    token   = models.CharField(max_length=500, unique=True)
-    poll = models.ForeignKey('Poll', on_delete=models.CASCADE) 
-    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
-    objects = TokenManager()
-
-class Poll(models.Model):
-    pass
-=======
 
 
 class Group (models.Model):
@@ -149,4 +116,29 @@ class Option (models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
->>>>>>> 115232d0bef2638a9e5510cc92ba090c2d85f4d4
+
+
+class TokenManager(models.Manager):
+    #To create a new token, use: "new_token = Token.objects.create_token(email)"
+    def create_token(self, user, poll):
+        update_token_value = True
+        token_value = self.generate_token()
+        while len(self.get_queryset().filter(token=token_value)) != 0: #Loop condition: token_value already exists.
+            token_value = self.generate_token()
+        new_token = self.create(token=token_value, user=user, poll=poll)
+        return new_token
+
+    def generate_token(self):
+        return str(secrets.token_urlsafe(nbytes=375)) #nbytes==375 is enough to generate 500 chars.
+
+class Token(models.Model):
+    #Adicionar FK para polls;
+
+    def __str__(self):
+        return self.token
+        #return "Poll's ID (FK): {{insert poll's id here}}, e-mail: {0}".format(self.email)
+
+    token   = models.CharField(max_length=500, unique=True)
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE) 
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
+    objects = TokenManager()
