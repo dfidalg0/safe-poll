@@ -1,23 +1,61 @@
-import logo from '../assets/logo.svg';
 import classes from '../styles/home.module.css';
-
+import { Button } from '@material-ui/core';
 import Display from '../components/display';
+import { connect } from 'react-redux'
+import { checkAuthenticated, load_user, logout } from '../store/actions/auth'
+import { useEffect } from 'react';
+import LoginSignUp from '../components/loginSignUp'
 
-export default function Home() {
+
+function Home({ checkAuthenticated, load_user, logout, isAuthenticated }) {
+    useEffect(() => {
+        checkAuthenticated();
+        load_user();
+    });
+
+    function notAuthenticatedButtons() {
+        return (
+           <LoginSignUp />
+        );
+    };
+
+    function authenticatedButtons() {
+        return (
+            <Button
+                variant="contained"
+                size="large"
+                className={classes.button}
+                onClick={logout}
+            >
+                Logout
+            </Button>
+        );
+    }
+
+    const displayButtons = () => {
+        if (isAuthenticated) {
+            return authenticatedButtons();
+        } else {
+            return notAuthenticatedButtons();
+        }
+    }
+
     return (
         <div className={classes.app}>
             <header className={classes.header}>
-                <img src={logo} className={classes.logo} alt="logo" />
                 <Display />
-                <a
-                    className={classes.link}
-                    href="https://reactjs.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    Learn React
-                </a>
+                {displayButtons()}
             </header>
-        </div>
+            <body className={classes.header}>
+
+            </body>
+
+        </div >
     );
-}
+};
+
+const mapStateToProps = state => ({
+    isAuthenticated: state.auth.isAuthenticated
+});
+
+export default connect(mapStateToProps, { checkAuthenticated, load_user, logout })(Home);
