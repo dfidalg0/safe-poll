@@ -7,24 +7,29 @@ import secrets
 
 
 class UserAccountManager(BaseUserManager):
-
-    def base_create_user(self, email, name, password=None):
+    def __base_create_user(self, email, name, password=None):
         if not email:
             raise ValueError('Usuário deve inserir um e-mail')
 
         email = self.normalize_email(email)
-        user = self.model(email=email, name=name)
+        user = self.filter(ref=email, name__isnull=True)
+        if user:
+            user = user.get()
+            user.name = name
+            user.email = email
+        else:
+            user = self.model(email=email, ref=email, name=name)
 
         user.set_password(password)
         return user
 
     def create_user(self, email, name, password=None):
-        user = self.base_create_user(email, name, password)
+        user = self.__base_create_user(email, name, password)
         user.save()
         return user
 
     def create_superuser(self, email, name, password=None):
-        user = self.base_create_user(email, name, password)
+        user = self.__base_create_user(email, name, password)
         user.is_staff = True
         user.is_superuser = True
         user.save()
@@ -32,14 +37,22 @@ class UserAccountManager(BaseUserManager):
 
 
 class UserAccount(AbstractBaseUser):
-    email = models.EmailField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
+    ref = models.CharField(max_length=128, unique=True)
+
+    email = models.CharField(max_length=128, unique=True, null=True)
+    name = models.CharField(max_length=255, null=True)
+    password = models.CharField(max_length=128, null=True)
+    is_active = models.BooleanField(default=True, null=True)
+    is_staff = models.BooleanField(default=False, null=True)
 
     objects = UserAccountManager()
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name']
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['email'])
+        ]
 
     def get_full_name(self):
         return self.name
@@ -48,7 +61,7 @@ class UserAccount(AbstractBaseUser):
         return self.name
 
     def __str__(self):
-        return self.email
+        return self.ref
 
 
 class Group (models.Model):
@@ -88,8 +101,8 @@ class Poll (models.Model):
     # Soma máxima dos rankings (para os modelos Instant-runoff e Cumulative)
     rankings_sum = models.PositiveIntegerField(null=True)
 
-    # Relação dos usuários que votaram
-    users_voted = models.ManyToManyField(
+    # Relação dos emails que votaram
+    emails_voted = models.ManyToManyField(
         UserAccount,
         blank=True, related_name='polls_voted'
     )
@@ -98,7 +111,7 @@ class Poll (models.Model):
 class Vote (models.Model):
     poll = models.ForeignKey('Poll', on_delete=models.CASCADE)
     option = models.ForeignKey('Option', on_delete=models.CASCADE)
-    user = models.ForeignKey(
+    voter = models.ForeignKey(
         UserAccount,
         null=True, on_delete=models.SET_NULL,
         related_name='votes'
@@ -107,7 +120,7 @@ class Vote (models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['poll', 'user'])
+            models.Index(fields=['poll', 'voter'])
         ]
 
 
@@ -115,27 +128,39 @@ class Option (models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
+
+
 # Token.
 class TokenManager(models.Manager):
-    #To create a new token, use: "new_token = Token.objects.create_token(email)"
-    def create_token(self, user_id, poll_id):
-        token_value = self.generate_token()
-        while len(self.get_queryset().filter(token=token_value)) != 0: #Loop condition: token_value already exists.
-            token_value = self.generate_token()
-        new_token = self.create(token=token_value, user_id=user_id, poll_id = poll_id)
+    # To create a new token, use: "Token.objects.create_token(email)"
+    def create_token(self, poll_id: int, email: str):
+        token_value = self.__generate_token()
+
+        # Loop condition: token_value already exists.
+        while len(self.get_queryset().filter(token=token_value)) != 0:
+            token_value = self.__generate_token()
+
+        (user, ) = UserAccount.objects.get_or_create(ref=email)
+
+        new_token = self.create(
+            token=token_value,
+            poll__id=poll_id,
+            user=user
+        )
+
         return new_token
 
-    def generate_token(self):
-        return str(secrets.token_urlsafe(nbytes=375)) #nbytes==375 is enough to generate 500 chars.
+    def __generate_token(self):
+        # nbytes == 375 is enough to generate 500 chars.
+        return str(secrets.token_urlsafe(nbytes=375))
+
 
 class Token(models.Model):
-    #Adicionar FK para polls;
-
+    # Adicionar FK para polls;
     def __str__(self):
         return self.token
-        #return "Poll's ID (FK): {{insert poll's id here}}, e-mail: {0}".format(self.email)
 
-    token   = models.CharField(max_length=500, unique=True)
-    poll_id = models.CharField(max_length=100)#models.ForeignKey
-    user_id = models.CharField(max_length=100)#models.ForeignKey
+    token = models.CharField(max_length=500, unique=True)
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
     objects = TokenManager()
