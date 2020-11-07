@@ -119,10 +119,25 @@ class Option (models.Model):
 
 
 class TokenManager(models.Manager):
-    #To create a new token, use: "new_token = Token.objects.create_token(email)"
+    #To create a new token, use: "new_token = Token.objects.create_token(user, poll)"
     def create_token(self, user, poll):
+        type_error_status = []
+        if not isinstance(user, UserAccount):
+            type_error_status.append(('user', 'UserAccount'))
+        if not isinstance(poll, Poll):
+            type_error_status.append(('poll', 'Poll'))
+        if len(type_error_status) != 0:
+            msg = ''
+            for type_ in type_error_status:
+                msg = ''.join([msg, '{} must be {} instance, '.format(*type_)])
+            msg = msg[:len(msg) - 2] + '.'
+            print(msg)
+            raise TypeError(msg)
+
         update_token_value = True
         token_value = self.generate_token()
+        if len(self.get_queryset().filter(poll=poll, user=user)) != 0: #Returns None if the 'user' already has a token assigned to the 'poll'.
+            return None 
         while len(self.get_queryset().filter(token=token_value)) != 0: #Loop condition: token_value already exists.
             token_value = self.generate_token()
         new_token = self.create(token=token_value, user=user, poll=poll)
