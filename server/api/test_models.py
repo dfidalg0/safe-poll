@@ -1,14 +1,14 @@
-from django.test import TestCase, TransactionTestCase
+from django.test import (TestCase, TransactionTestCase, tag)
 from .models import (UserAccount, Poll, Token, TokenManager) 
 import traceback
 
 #Third-party app imports
 from model_bakery import baker
 
-
 '''Test --> models.py'''
 
 #Token and TokenManager:
+@tag('token')
 class TokenModelTests(TransactionTestCase):
 
     def setUp(self):
@@ -45,9 +45,10 @@ class TokenModelTests(TransactionTestCase):
         num_of_tokens = len(Token.objects.all())
         self.assertEqual(num_of_tokens, 1)
 
+    @tag('slow')
     def test__create_one_thousand_tokens_for_the_same_poll(self):
         """
-        This test tests whether is possible to create a token.
+        This test tests whether is possible to create a  thousand tokens.
         """
         for num in range(1, 1001):
             aux_user = baker.make('api.UserAccount')
@@ -72,7 +73,7 @@ class TokenModelTests(TransactionTestCase):
         
     def test__create_50_tokens__the_same_poll_and_user(self):
         """
-        Must be impossible to create two tokens for the same user in a poll.
+        Must be impossible to create more than one token for the same user in a poll.
         """
         Token.objects.create_token(user=self.aux_user, poll=self.aux_poll)
         num_of_tokens = len(Token.objects.all())
@@ -85,9 +86,6 @@ class TokenModelTests(TransactionTestCase):
 
 
     def test__create_tokens_with_wrong_type_arguments(self):
-        """
-        Must be impossible to create two tokens for the same user in a poll.
-        """
         with self.assertRaises(TypeError):
             Token.objects.create_token(user=123, poll=self.aux_poll)
         with self.assertRaises(TypeError):
@@ -96,3 +94,41 @@ class TokenModelTests(TransactionTestCase):
             Token.objects.create_token(user=self.aux_user, poll='Hello')
         with self.assertRaises(TypeError):
             Token.objects.create_token(None, None)
+
+
+
+    def test_get_information_from_token(self):
+        original_token = Token.objects.create_token(user=self.aux_user, poll=self.aux_poll).token
+        found_token    = Token.objects.get_token(user=self.aux_user, poll=self.aux_poll)
+        self.assertEqual(original_token, found_token)
+
+
+    def test_get_information_from_50_tokens(self):
+        for _ in range(50):
+            new_user = baker.make('api.UserAccount')
+            new_poll = baker.make('api.Poll')
+            original_token = Token.objects.create_token(user=new_user, poll=new_poll).token
+            found_token    = Token.objects.get_token(user=new_user, poll=new_poll)
+            self.assertEqual(original_token, found_token)
+
+    def test__get_information_from_nonexistent_poll_user(self):
+        found_token    = Token.objects.get_token(user=self.aux_user, poll=self.aux_poll)
+        self.assertIsNone(found_token)
+        new_user = baker.make('api.UserAccount')
+        new_poll = baker.make('api.Poll')
+        Token.objects.create_token(poll=self.aux_poll, user=self.aux_user)
+        found_token    = Token.objects.get_token(user=new_user, poll=self.aux_poll)
+        self.assertIsNone(found_token)
+        found_token    = Token.objects.get_token(user=self.aux_user, poll=new_poll)
+        self.assertIsNone(found_token)
+
+
+    def test___get_info_with_wrong_type_arguments(self):
+        with self.assertRaises(TypeError):
+            Token.objects.get_token(user=123, poll=self.aux_poll)
+        with self.assertRaises(TypeError):
+            Token.objects.get_token(user=123, poll='Hello')
+        with self.assertRaises(TypeError):
+            Token.objects.get_token(user=self.aux_user, poll='Hello')
+        with self.assertRaises(TypeError):
+            Token.objects.get_token(None, None)
