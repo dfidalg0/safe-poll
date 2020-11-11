@@ -25,7 +25,7 @@ class TokenModelTests(TransactionTestCase):
         token_manager = TokenManager()
         expected_length = 500
         for _ in range(20):
-            length = len(token_manager.generate_token())
+            length = len(token_manager._generate_token())
             self.assertEqual(length, expected_length)
 
     def test__create_one_token_(self):
@@ -33,7 +33,7 @@ class TokenModelTests(TransactionTestCase):
         This test tests whether is possible to create a token.
         """
         try:
-            new_token = Token.objects.create_token(user=self.aux_user, poll=self.aux_poll)
+            new_token = Token.objects.create_token(email=self.aux_user.ref, poll_id=self.aux_poll.id)
             token_created = True
             error_msg = ''
         except:
@@ -52,7 +52,7 @@ class TokenModelTests(TransactionTestCase):
         """
         for num in range(1, 1001):
             aux_user = baker.make('api.UserAccount')
-            new_token = Token.objects.create_token(user=aux_user, poll=self.aux_poll)
+            new_token = Token.objects.create_token(email=aux_user.ref, poll_id=self.aux_poll.id)
             num_of_tokens = len(Token.objects.all())
             self.assertEqual(num_of_tokens, num)
         num_of_tokens = len(Token.objects.get_queryset().filter(poll=self.aux_poll))
@@ -63,43 +63,43 @@ class TokenModelTests(TransactionTestCase):
         """
         Must be impossible to create two tokens for the same user in a poll.
         """
-        Token.objects.create_token(user=self.aux_user, poll=self.aux_poll)
+        old_token = Token.objects.create_token(email=self.aux_user.ref, poll_id=self.aux_poll.id)
         num_of_tokens = len(Token.objects.all())
         self.assertEqual(num_of_tokens, 1)
-        new_token = Token.objects.create_token(user=self.aux_user, poll=self.aux_poll)
+        new_token = Token.objects.create_token(email=self.aux_user.ref, poll_id=self.aux_poll.id)
         num_of_tokens = len(Token.objects.all())
         self.assertEqual(num_of_tokens, 1)
-        self.assertIsNone(new_token)
+        self.assertEqual(new_token, old_token)
         
     def test__create_50_tokens__the_same_poll_and_user(self):
         """
         Must be impossible to create more than one token for the same user in a poll.
         """
-        Token.objects.create_token(user=self.aux_user, poll=self.aux_poll)
+        old_token = Token.objects.create_token(email=self.aux_user.ref, poll_id=self.aux_poll.id)
         num_of_tokens = len(Token.objects.all())
         self.assertEqual(num_of_tokens, 1)
         for _ in range(49):
-            new_token = Token.objects.create_token(user=self.aux_user, poll=self.aux_poll)
+            new_token = Token.objects.create_token(email=self.aux_user.ref, poll_id=self.aux_poll.id)
             num_of_tokens = len(Token.objects.all())
             self.assertEqual(num_of_tokens, 1)
-            self.assertIsNone(new_token)
+            self.assertEqual(new_token, old_token)
 
 
     def test__create_tokens_with_wrong_type_arguments(self):
         with self.assertRaises(TypeError):
-            Token.objects.create_token(user=123, poll=self.aux_poll)
+            Token.objects.create_token(email=123, poll_id=self.aux_poll.id)
         with self.assertRaises(TypeError):
-            Token.objects.create_token(user=123, poll='Hello')
+            Token.objects.create_token(email=123, poll_id='Hello')
         with self.assertRaises(TypeError):
-            Token.objects.create_token(user=self.aux_user, poll='Hello')
+            Token.objects.create_token(email=self.aux_user.ref, poll_id='Hello')
         with self.assertRaises(TypeError):
             Token.objects.create_token(None, None)
 
 
 
     def test_get_information_from_token(self):
-        original_token = Token.objects.create_token(user=self.aux_user, poll=self.aux_poll).token
-        found_token    = Token.objects.get_token(user=self.aux_user, poll=self.aux_poll)
+        original_token = Token.objects.create_token(email=self.aux_user.ref, poll_id=self.aux_poll.id).token
+        found_token    = Token.objects.get_token(email=self.aux_user.ref, poll_id=self.aux_poll.id)
         self.assertEqual(original_token, found_token)
 
 
@@ -107,28 +107,28 @@ class TokenModelTests(TransactionTestCase):
         for _ in range(50):
             new_user = baker.make('api.UserAccount')
             new_poll = baker.make('api.Poll')
-            original_token = Token.objects.create_token(user=new_user, poll=new_poll).token
-            found_token    = Token.objects.get_token(user=new_user, poll=new_poll)
+            original_token = Token.objects.create_token(email=self.aux_user.ref, poll_id=self.aux_poll.id).token
+            found_token    = Token.objects.get_token(email=self.aux_user.ref, poll_id=self.aux_poll.id)
             self.assertEqual(original_token, found_token)
 
     def test__get_information_from_nonexistent_poll_user(self):
-        found_token    = Token.objects.get_token(user=self.aux_user, poll=self.aux_poll)
+        found_token    = Token.objects.get_token(email=self.aux_user.ref, poll_id=self.aux_poll.id)
         self.assertIsNone(found_token)
         new_user = baker.make('api.UserAccount')
         new_poll = baker.make('api.Poll')
-        Token.objects.create_token(poll=self.aux_poll, user=self.aux_user)
-        found_token    = Token.objects.get_token(user=new_user, poll=self.aux_poll)
+        Token.objects.create_token(email=self.aux_user.ref, poll_id=self.aux_poll.id)
+        found_token    = Token.objects.get_token(email=new_user.ref, poll_id=self.aux_poll.id)
         self.assertIsNone(found_token)
-        found_token    = Token.objects.get_token(user=self.aux_user, poll=new_poll)
+        found_token    = Token.objects.get_token(email=self.aux_user.ref, poll_id=new_poll.id)
         self.assertIsNone(found_token)
 
 
     def test___get_info_with_wrong_type_arguments(self):
         with self.assertRaises(TypeError):
-            Token.objects.get_token(user=123, poll=self.aux_poll)
+            Token.objects.get_token(email=123, poll_id=self.aux_poll.id)
         with self.assertRaises(TypeError):
-            Token.objects.get_token(user=123, poll='Hello')
+            Token.objects.get_token(email=123, poll_id='Hello')
         with self.assertRaises(TypeError):
-            Token.objects.get_token(user=self.aux_user, poll='Hello')
+            Token.objects.get_token(email=self.aux_user.ref, poll_id='Hello')
         with self.assertRaises(TypeError):
             Token.objects.get_token(None, None)
