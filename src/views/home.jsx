@@ -3,15 +3,17 @@ import { Button } from '@material-ui/core';
 import Display from '../components/display';
 import { connect } from 'react-redux'
 import { checkAuthenticated, load_user, logout } from '../store/actions/auth'
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import LoginSignUp from '../components/loginSignUp'
-
+import CreatePoll from '../components/create-poll';
 
 function Home({ checkAuthenticated, load_user, logout, isAuthenticated }) {
+    const [createOpen, setCreateOpen] = useState(false);
+
     useEffect(() => {
         checkAuthenticated();
         load_user();
-    });
+    }, [checkAuthenticated, load_user]);
 
     function notAuthenticatedButtons() {
         return (
@@ -21,14 +23,26 @@ function Home({ checkAuthenticated, load_user, logout, isAuthenticated }) {
 
     function authenticatedButtons() {
         return (
-            <Button
-                variant="contained"
-                size="large"
-                className={classes.button}
-                onClick={logout}
-            >
-                Logout
-            </Button>
+            <>
+                <CreatePoll show={createOpen} onClose={() => setCreateOpen(false)}/>
+                <Button
+                    variant="contained"
+                    size="large"
+                    className={classes.button}
+                    onClick={() => setCreateOpen(true)}
+                    style={{marginBottom: '40px'}}
+                >
+                    Criar
+                </Button>
+                <Button
+                    variant="contained"
+                    size="large"
+                    className={classes.button}
+                    onClick={logout}
+                >
+                    Logout
+                </Button>
+            </>
         );
     }
 
@@ -46,10 +60,6 @@ function Home({ checkAuthenticated, load_user, logout, isAuthenticated }) {
                 <Display />
                 {displayButtons()}
             </header>
-            <body className={classes.header}>
-
-            </body>
-
         </div >
     );
 };

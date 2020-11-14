@@ -13,9 +13,9 @@ export default function DisplayAlert(error) {
     if (error !== undefined) {
         return (
             Object.keys(error).map((key, i) => (
-                <p key={i}>
+                <div key={i}>
                     <Alert className={classes.alert} severity="error">{key}: {error[key]}</Alert>
-                </p>)
+                </div>)
             ));
     } else {
         return null;
