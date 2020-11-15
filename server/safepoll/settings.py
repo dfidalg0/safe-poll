@@ -125,7 +125,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'api.UserAccount'
-
+#EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend' # Use during testing.
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'contato.safepoll@gmail.com'
