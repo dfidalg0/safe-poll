@@ -7,9 +7,11 @@ from random import randint
 
 # Create your views here.
 
+# view em que o usuário precisa estar logado
 class HelloView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        content = {'message': f'Hello, {randint(0, 100)}!'}
+        user = request.user
+        content = {'message': f'Hello, {user.get_full_name()}! {randint(0, 100)}'}
         return Response(content)
