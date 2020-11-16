@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
-    BaseUserManager
+    BaseUserManager,
+    PermissionsMixin
 )
 import secrets
 
@@ -44,6 +45,7 @@ class UserAccount(AbstractBaseUser):
     password = models.CharField(max_length=128, null=True)
     is_active = models.BooleanField(default=True, null=True)
     is_staff = models.BooleanField(default=False, null=True)
+    is_superuser = models.BooleanField(default=False, null=True)
 
     objects = UserAccountManager()
     USERNAME_FIELD = 'email'
@@ -62,6 +64,12 @@ class UserAccount(AbstractBaseUser):
 
     def __str__(self):
         return self.ref
+
+    def has_perm(self, perm, obj=None):
+        return self.is_superuser
+
+    def has_module_perms(self, app_label):
+        return self.is_superuser
 
 
 class Group (models.Model):
