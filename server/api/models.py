@@ -148,7 +148,7 @@ class TokenManager(models.Manager):
         while len(self.get_queryset().filter(token=token_value)) != 0:
             token_value = self.__generate_token()
 
-        (user, ) = UserAccount.objects.get_or_create(ref=email)
+        (user, _) = UserAccount.objects.get_or_create(ref=email)
 
         new_token = self.create(
             token=token_value,
