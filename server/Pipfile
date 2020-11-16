@@ -10,6 +10,7 @@ django = "*"
 djoser = "*"
 djangorestframework = "*"
 djangorestframework-simplejwt = "*"
+jwt = "*"
 
 [requires]
 python_version = "3.6"
