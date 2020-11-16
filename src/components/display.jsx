@@ -7,12 +7,23 @@ export default function Display(){
 
     useEffect(() => {
         const fetchData = async () => {
-            const { data } = await axios.get('/api/hello');
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `JWT ${localStorage.getItem('access')}`,
+                    'Accept': 'application/json'
+                }
+            };
 
-            setMessage(data.message);
+            try {
+                const { data } = await axios.get('/api/hello', config);
+                setMessage(data.message);
+            } catch (err) {
+                setMessage('Carregando...')
+            }
         }
 
-        setInterval(fetchData, 1000);
+        setInterval(fetchData, 500);
     }, []);
 
     return <p>
