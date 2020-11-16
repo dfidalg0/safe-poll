@@ -34,6 +34,9 @@ export const useStyles = makeStyles(theme => ({
             color: 'white'
         }
     },
+    loadingButton: {
+        width: '100px'
+    },
     deleteIcon: {
         color: '#900a0a'
     }

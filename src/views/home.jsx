@@ -24,7 +24,7 @@ function Home({ checkAuthenticated, load_user, logout, isAuthenticated }) {
     function authenticatedButtons() {
         return (
             <>
-                <CreatePoll show={createOpen} onClose={() => setCreateOpen(false)}/>
+                <CreatePoll open={createOpen} onClose={() => setCreateOpen(false)}/>
                 <Button
                     variant="contained"
                     size="large"
