@@ -6,5 +6,3 @@ urlpatterns = [
     path('hello', HelloView.as_view()),
     path('poll/create', create_poll)
 ]
-
-

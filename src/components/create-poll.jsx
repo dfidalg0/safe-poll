@@ -27,10 +27,14 @@ import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useMediaQuery, useTheme } from '@material-ui/core';
 import { useStyles } from '../styles/create-poll';
 
+import { connect } from 'react-redux';
+
 // Lodash <3
 import reduce from 'lodash.reduce';
 
-export default function CreatePoll({ open, onClose }){
+import axios from 'axios';
+
+function CreatePoll({ open, onClose, token }){
     // Styles
     const theme = useTheme();
     const classes = useStyles();
@@ -45,7 +49,7 @@ export default function CreatePoll({ open, onClose }){
     const [loading, setLoading] = useState(false);
 
     // Dados de formulário a serem enviados para o backend
-    const [title, setTitle] = useState('');
+    const [name, setTitle] = useState('');
     const [description, setDesc] = useState('');
     const [type_id, setType] = useState(1);
     const [deadline, setDeadline] = useState(null);
@@ -114,29 +118,40 @@ export default function CreatePoll({ open, onClose }){
 
     const hasErrors = useMemo(() => (
         options.length < 2 ||
-        !title || !description || !deadline ||
+        !name || !description || !deadline ||
         !optionErrors.every(el => !el) || deadlineError
-    ), [options, title, description, optionErrors, deadline, deadlineError]);
+    ), [options, name, description, optionErrors, deadline, deadlineError]);
 
     const submit = useCallback(async () => {
         const data = {
-            title, description, type_id, deadline, options, secret_vote
+            name, description, type_id, deadline: deadline.toJSON().slice(0,10),
+            options, secret_vote
         }
 
         // Estado de carregamento do envio
         setLoading(true);
 
-        // TODO : Substituir console.log por um request para a API
-        // Simulação do tempo de envio (para visualização do loading)
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        console.log(data);
+        try {
+            console.log(token);
+
+            const { data: { id } } = await axios.post('/api/poll/create', data, {
+                headers: {
+                    Authorization: `JWT ${token}`
+                }
+            });
+
+            console.log(id);
+        }
+        catch ({ response }){
+            document.write(response.data);
+        }
 
         // Fim do estado de carregamento do envio
         setLoading(false);
 
         if(onClose) onClose();
         clear();
-    }, [title, description, type_id, deadline, options, secret_vote, onClose]);
+    }, [name, description, type_id, deadline, options, secret_vote, onClose, token]);
 
     // Criação de nova opção
     const createOption = useCallback(() => {
@@ -186,13 +201,13 @@ export default function CreatePoll({ open, onClose }){
                 <DialogContent>
                     <Grid container>
                         <Grid item xs={12}>
-                            <InputLabel htmlFor="title">
+                            <InputLabel htmlFor="name">
                                 Título
                             </InputLabel>
-                            <TextField id="title"
+                            <TextField id="name"
                                 autoComplete="off"
                                 className={classes.field}
-                                value={title}
+                                value={name}
                                 onChange={e => setTitle(e.target.value)}
                                 variant="outlined"
                                 margin="normal"
@@ -350,3 +365,9 @@ export default function CreatePoll({ open, onClose }){
         </Grid>
     </Dialog>
 }
+
+export default connect(
+    state => ({
+        token: state.auth.access
+    })
+)(CreatePoll);

@@ -4,7 +4,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from random import randint
 from .models import Poll, Option
-import jwt
 
 
 # Create your views here.
@@ -24,8 +23,7 @@ class HelloView(APIView):
 def create_poll(request):
     data = request.data
 
-    token = request.headers["Authorization"][4:]
-    data["admin_id"] = jwt.decode(token)["user_id"]
+    data["admin_id"] = request.user.id
 
     options = data["options"]
     del data["options"]

@@ -23,7 +23,7 @@ export default function Display(){
             }
         }
 
-        setInterval(fetchData, 500);
+        fetchData();
     }, []);
 
     return <p>
