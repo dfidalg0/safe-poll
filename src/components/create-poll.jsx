@@ -47,7 +47,7 @@ export default function CreatePoll({ open, onClose }){
     // Dados de formulário a serem enviados para o backend
     const [title, setTitle] = useState('');
     const [description, setDesc] = useState('');
-    const [type, setType] = useState(1);
+    const [type_id, setType] = useState(1);
     const [deadline, setDeadline] = useState(null);
     const [options, setOptions] = useState([]);
     const [secret_vote, setSecretVote] = useState(true);
@@ -120,7 +120,7 @@ export default function CreatePoll({ open, onClose }){
 
     const submit = useCallback(async () => {
         const data = {
-            title, description, type, deadline, options, secret_vote
+            title, description, type_id, deadline, options, secret_vote
         }
 
         // Estado de carregamento do envio
@@ -136,7 +136,7 @@ export default function CreatePoll({ open, onClose }){
 
         if(onClose) onClose();
         clear();
-    }, [title, description, type, deadline, options, secret_vote, onClose]);
+    }, [title, description, type_id, deadline, options, secret_vote, onClose]);
 
     // Criação de nova opção
     const createOption = useCallback(() => {
@@ -227,7 +227,7 @@ export default function CreatePoll({ open, onClose }){
                             <Select id="type"
                                 className={classes.field}
                                 required
-                                value={type}
+                                value={type_id}
                                 variant="outlined"
                                 onChange={e => setType(e.target.value)}
                             >

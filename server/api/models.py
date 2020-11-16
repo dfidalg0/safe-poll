@@ -152,7 +152,7 @@ class TokenManager(models.Manager):
 
         new_token = self.create(
             token=token_value,
-            poll__id=poll_id,
+            poll_id=poll_id,
             user=user
         )
 

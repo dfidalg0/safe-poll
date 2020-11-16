@@ -15,7 +15,7 @@ import {
 } from '../actions/types';
 
 const initialState = {
-    acess: localStorage.getItem('access'),
+    access: localStorage.getItem('access'),
     refresh: localStorage.getItem('refresh'),
     isAuthenticated: null,
     user: null
@@ -31,7 +31,7 @@ export default function rootReducer(state = initialState, action) {
                 ...state,
                 isAuthenticated: false
             }
-        
+
         case AUTHENTICATED_SUCCESS:
             return {
                 ...state,
@@ -49,7 +49,7 @@ export default function rootReducer(state = initialState, action) {
             return {
                 ...state,
                 isAuthenticated: true,
-                acess: payload.access,
+                access: payload.access,
                 refresh: payload.refresh
             }
 
@@ -72,13 +72,13 @@ export default function rootReducer(state = initialState, action) {
             localStorage.removeItem('refresh');
             return {
                 ...state,
-                acess: null,
+                access: null,
                 refresh: null,
                 isAuthenticated: false,
                 user: null,
                 error: payload,
             }
-        
+
         case PASSWORD_RESET_FAIL:
         case PASSWORD_RESET_SUCESS:
         case PASSWORD_RESET_CONFIRM_SUCESS:
