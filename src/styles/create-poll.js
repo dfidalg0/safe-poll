@@ -26,8 +26,8 @@ export const useStyles = makeStyles(theme => ({
         backgroundColor: theme.palette.primary.main,
         color: theme.palette.primary.contrastText,
         '&:hover': {
-            backgroundColor: theme.palette.info.main,
-            color: theme.palette.info.contrastText
+            backgroundColor: theme.palette.secondary.main,
+            color: theme.palette.secondary.contrastText
         },
         '&:disabled': {
             backgroundColor: 'gray',

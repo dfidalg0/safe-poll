@@ -17,6 +17,7 @@ import {
 import 'date-fns';
 import DateFnsUtils from '@date-io/date-fns'
 import { KeyboardDatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
+import { ptBR as pt_brLocale } from 'date-fns/locale';
 
 // Constantes
 import { POLL_TYPES } from '../utils/constants';
@@ -237,7 +238,9 @@ export default function CreatePoll({ open, onClose }){
                                 )}
                             </Select>
                         </Grid>
-                        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                        <MuiPickersUtilsProvider utils={DateFnsUtils}
+                            locale={pt_brLocale}
+                        >
                             <Grid item xs={12}>
                                 <InputLabel htmlFor="deadline">
                                     Prazo final da votação
@@ -316,7 +319,11 @@ export default function CreatePoll({ open, onClose }){
 
                 <DialogActions>
                     <Grid container alignItems="center">
-                        <Switch id="secret" checked={secret_vote} onChange={e => setSecretVote(e.target.checked)}/>
+                        <Switch id="secret"
+                            checked={secret_vote}
+                            onChange={e => setSecretVote(e.target.checked)}
+                            color="primary"
+                        />
                         <InputLabel htmlFor="secret">
                             Voto secreto
                         </InputLabel>
