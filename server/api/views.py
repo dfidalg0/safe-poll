@@ -75,6 +75,7 @@ def register_emails_from_group(request):
         return Response(data='Desired group does not exist', status=status.HTTP_404_NOT_FOUND)
 
     poll.group = user_group
+    poll.save()
 
     email_error_list = []
 
