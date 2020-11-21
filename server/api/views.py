@@ -44,6 +44,9 @@ def register_emails(request):
 
     data = request.data
 
+    if not Poll.objects.filter(id = data["poll_id"]):
+        return Response(data='Poll not found')
+
     email_error_list = []
 
     for email in data["email_list"]:
@@ -54,7 +57,7 @@ def register_emails(request):
 
     del data["email_list"]
 
-    conclusion = {'error_list': email_error_list}
+    conclusion = {'not_created_tokens_list': email_error_list}
     return Response(conclusion)
 
 
@@ -67,12 +70,12 @@ def register_emails_from_group(request):
     try:
         poll = Poll.objects.get( pk = data["poll_id"] )
     except Poll.DoesNotExist:
-        return Response(data='Desired poll does not exist', status=status.HTTP_404_NOT_FOUND)
+        return Response(data='Poll not found')
 
     try:
         user_group = Group.objects.get( pk = data["group_id"] )
     except Group.DoesNotExist:
-        return Response(data='Desired group does not exist', status=status.HTTP_404_NOT_FOUND)
+        return Response(data='Group not found')
 
     poll.group = user_group
     poll.save()
@@ -80,11 +83,17 @@ def register_emails_from_group(request):
     email_error_list = []
 
     for user in user_group.users.all():
-        try:
-            Token.objects.create_token(data["poll_id"], user.email)
-        except:
-            email_error_list.append(user.email)
+        if not user.email:
+            try:
+                Token.objects.create_token(data["poll_id"], user.ref)
+            except:
+                email_error_list.append(user.ref)
+        else:
+            try:
+                Token.objects.create_token(data["poll_id"], user.email)
+            except:
+                email_error_list.append(user.email)
 
-    conclusion = {'error_list': email_error_list}
+    conclusion = {'not_created_tokens_list': email_error_list}
 
     return Response(conclusion)
