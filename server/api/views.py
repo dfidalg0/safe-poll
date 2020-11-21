@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from random import randint
-from .models import Poll, Option , Token , Group , UserAccount
+from .models import Poll, Option , Token , Group , UserAccount , Vote
 
 
 # Create your views here.
@@ -96,4 +96,46 @@ def register_emails_from_group(request):
 
     conclusion = {'not_created_tokens_list': email_error_list}
 
+    return Response(conclusion)
+
+
+@api_view(['POST'])
+def compute_vote(request):
+
+    data = request.data
+
+    try:
+        token = Token.objects.get(pk=data["token_id"])
+    except Token.DoesNotExist:
+        return Response(data='Token does not exist')
+
+    poll = token.poll
+
+    try:
+        option = Option.objects.get(pk=data["option_id"])
+    except Option.DoesNotExist:
+        return Response(data='Poll option does not exist')
+
+    if option.poll.id != poll.id :
+        return Response(data='Error : Selected option is from another poll')
+
+    user = token.user
+
+    poll.emails_voted.add(user)
+    poll.save()
+
+    vote = Vote()
+    vote.poll = poll
+    vote.option = option
+    vote.voter = user
+
+    # first past the post
+    if poll.type.id == 1:
+        vote.ranking = 1
+
+    vote.save()
+
+    token.delete()
+
+    conclusion = {'vote_id': vote.id}
     return Response(conclusion)

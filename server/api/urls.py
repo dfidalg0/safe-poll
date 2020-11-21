@@ -6,5 +6,6 @@ urlpatterns = [
     path('hello', HelloView.as_view()),
     path('poll/create', create_poll),
     path('tokens/create', register_emails),
-    path('tokens/create_from_group', register_emails_from_group)
+    path('tokens/create_from_group', register_emails_from_group),
+    path('vote/compute', compute_vote)
 ]
