@@ -85,6 +85,8 @@ class PollType (models.Model):
     name = models.CharField(max_length=50)
 
 
+VALID_POLL_TYPES = set(map(lambda v : v.id, PollType.objects.all()))
+
 class Poll (models.Model):
     # Informações básicas
     name = models.CharField(max_length=100)
