@@ -132,15 +132,13 @@ function CreatePoll({ open, onClose, token }){
         setLoading(true);
 
         try {
-            console.log(token);
-
             const { data: { id } } = await axios.post('/api/poll/create', data, {
                 headers: {
                     Authorization: `JWT ${token}`
                 }
             });
 
-            console.log(id);
+            console.log(`Poll criada com id ${id}`);
         }
         catch ({ response }){
             document.write(response.data);
