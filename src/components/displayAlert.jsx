@@ -10,7 +10,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function DisplayAlert(error) {
     const classes = useStyles();
-    if (error !== undefined) {
+    if (error instanceof Object) {
         return (
             Object.keys(error).map((key, i) => (
                 <div key={i}>

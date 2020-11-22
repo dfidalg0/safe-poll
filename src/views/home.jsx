@@ -2,18 +2,13 @@ import classes from '../styles/home.module.css';
 import { Button } from '@material-ui/core';
 import Display from '../components/display';
 import { connect } from 'react-redux'
-import { checkAuthenticated, load_user, logout } from '../store/actions/auth'
-import { useState, useEffect } from 'react';
+import { logout } from '../store/actions/auth'
+import { useState } from 'react';
 import LoginSignUp from '../components/loginSignUp'
 import CreatePoll from '../components/create-poll';
 
-function Home({ checkAuthenticated, load_user, logout, isAuthenticated }) {
+function Home({ logout, isAuthenticated }) {
     const [createOpen, setCreateOpen] = useState(false);
-
-    useEffect(() => {
-        checkAuthenticated();
-        load_user();
-    }, [checkAuthenticated, load_user]);
 
     function notAuthenticatedButtons() {
         return (
@@ -65,7 +60,7 @@ function Home({ checkAuthenticated, load_user, logout, isAuthenticated }) {
 };
 
 const mapStateToProps = state => ({
-    isAuthenticated: state.auth.isAuthenticated
+    isAuthenticated: Boolean(state.auth.access)
 });
 
-export default connect(mapStateToProps, { checkAuthenticated, load_user, logout })(Home);
+export default connect(mapStateToProps, { logout })(Home);

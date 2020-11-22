@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
 
 import axios from 'axios';
 
-export default function Display(){
-    const [message, setMessage] = useState('Carregando...');
+function Display({ token }){
+    const [message, setMessage] = useState('Seja bem vindo!');
 
     useEffect(() => {
         const fetchData = async () => {
+            setMessage('Carregando...');
+
             const config = {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `JWT ${localStorage.getItem('access')}`,
+                    'Authorization': `JWT ${token}`,
                     'Accept': 'application/json'
                 }
             };
@@ -18,15 +21,25 @@ export default function Display(){
             try {
                 const { data } = await axios.get('/api/hello', config);
                 setMessage(data.message);
-            } catch (err) {
-                setMessage('Carregando...')
+            }
+            catch (err) {
+                setMessage('Seja bem vindo!');
             }
         }
 
-        fetchData();
-    }, []);
+        if (token && (message === 'Seja bem vindo!'))
+            fetchData();
+        else if (!token)
+            setMessage('Seja bem vindo!');
+    }, [token, message]);
 
     return <p>
         { message } <br/>
     </p>
 }
+
+export default connect(
+    state => ({
+        token: state.auth.access
+    })
+)(Display);

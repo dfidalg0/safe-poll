@@ -3,7 +3,7 @@ from datetime import datetime as dt
 
 from django.core.validators import validate_email, ValidationError
 
-from typing import Dict, List, Callable, Any
+from typing import Dict, List, Tuple, Callable, Any
 
 def is_unsigned_int(n : int) -> bool:
     return type(n) == int and n > 0
@@ -37,7 +37,7 @@ def is_unique_list(L: List[str]) -> bool:
 def validate_request_data(
     request: Request,
     rules: Dict[str, Callable[[Any], bool]]
-) -> List[str]:
+) -> Tuple[List[str], Dict[str, Any]]:
     data = { k: v for k, v in request.data.items() if k in rules }
 
     errors = []
