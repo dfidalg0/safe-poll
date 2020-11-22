@@ -5,7 +5,7 @@ def create_poll_type_1(apps, schema_editor):
 
     PollType.objects.all().delete()
 
-    PollType.objects.create(id=1, name='First Past the Voting')
+    PollType.objects.create(id=1, name='First Past the Post')
 
 class Migration(migrations.Migration):
     dependencies = [
