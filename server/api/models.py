@@ -44,6 +44,7 @@ class UserAccount(AbstractBaseUser):
     password = models.CharField(max_length=128, null=True)
     is_active = models.BooleanField(default=True, null=True)
     is_staff = models.BooleanField(default=False, null=True)
+    is_superuser = models.BooleanField(default=False, null=True)
 
     objects = UserAccountManager()
     USERNAME_FIELD = 'email'
@@ -63,6 +64,12 @@ class UserAccount(AbstractBaseUser):
     def __str__(self):
         return self.ref
 
+    def has_perm(self, perm, obj=None):
+        return self.is_superuser
+
+    def has_module_perms(self, app_label):
+        return self.is_superuser
+
 
 class Group (models.Model):
     name = models.CharField(max_length=100)
@@ -76,6 +83,8 @@ class Group (models.Model):
 class PollType (models.Model):
     name = models.CharField(max_length=50)
 
+
+VALID_POLL_TYPES = set(map(lambda v : v.id, PollType.objects.all()))
 
 class Poll (models.Model):
     # Informações básicas
@@ -140,11 +149,11 @@ class TokenManager(models.Manager):
         while len(self.get_queryset().filter(token=token_value)) != 0:
             token_value = self.__generate_token()
 
-        (user, ) = UserAccount.objects.get_or_create(ref=email)
+        (user, _) = UserAccount.objects.get_or_create(ref=email)
 
         new_token = self.create(
             token=token_value,
-            poll__id=poll_id,
+            poll_id=poll_id,
             user=user
         )
 

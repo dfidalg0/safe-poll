@@ -25,11 +25,10 @@ function Login({ login, error }) {
         <Container className={classes.app} maxWidth="xs">
             <div className={classes.paper}>
                 {DisplayAlert(error)}
-                <Avatar className={classes.avatar}>
-                </Avatar>
+                <Avatar className={classes.avatar} />
                 <Typography component="h1" variant="h5" className={classes.typography} >
                     Entrar
-        </Typography>
+                </Typography>
                 <form className={classes.form} noValidate onSubmit={e => onSubmit(e)}>
                     <TextField
                         variant="outlined"
@@ -65,14 +64,13 @@ function Login({ login, error }) {
                         className={classes.submit}
                     >
                         Entrar
-          </Button>
+                    </Button>
                     <Grid container>
                         <Grid item xs>
                             <Link href="/resetar-senha" variant="body2">
                                 Esqueceu sua senha?
-              </Link>
+                            </Link>
                         </Grid>
-
                     </Grid>
                 </form>
                 <p></p>

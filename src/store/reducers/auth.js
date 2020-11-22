@@ -3,10 +3,8 @@ import {
     LOGIN_FAIL,
     USER_LOADED_SUCESS,
     USER_LOADED_FAIL,
-    AUTHENTICATED_SUCCESS,
-    AUTHENTICATED_FAIL,
+    SET_ACCESS_TOKEN,
     LOGOUT,
-    SIGNUP_SUCESS,
     SIGNUP_FAIL,
     PASSWORD_RESET_FAIL,
     PASSWORD_RESET_SUCESS,
@@ -15,41 +13,26 @@ import {
 } from '../actions/types';
 
 const initialState = {
-    acess: localStorage.getItem('access'),
+    access: null,
     refresh: localStorage.getItem('refresh'),
-    isAuthenticated: null,
-    user: null
+    user: null,
+    error: null
 };
 
-export default function rootReducer(state = initialState, action) {
-    const { type, payload } = action;
-
+export default function rootReducer(state = initialState, { type, payload }) {
     switch (type) {
 
-        case SIGNUP_SUCESS:
+        case SET_ACCESS_TOKEN:
             return {
                 ...state,
-                isAuthenticated: false
-            }
-        
-        case AUTHENTICATED_SUCCESS:
-            return {
-                ...state,
-                isAuthenticated: true
-            }
-
-        case AUTHENTICATED_FAIL:
-            return {
-                ...state,
-                isAuthenticated: false
+                access: payload.access
             }
 
         case LOGIN_SUCESS:
-            localStorage.setItem('access', payload.access)
+            localStorage.setItem('refresh', payload.refresh);
             return {
                 ...state,
-                isAuthenticated: true,
-                acess: payload.access,
+                access: payload.access,
                 refresh: payload.refresh
             }
 
@@ -68,17 +51,15 @@ export default function rootReducer(state = initialState, action) {
         case SIGNUP_FAIL:
         case LOGIN_FAIL:
         case LOGOUT:
-            localStorage.removeItem('access');
             localStorage.removeItem('refresh');
             return {
                 ...state,
-                acess: null,
+                access: null,
                 refresh: null,
-                isAuthenticated: false,
                 user: null,
                 error: payload,
             }
-        
+
         case PASSWORD_RESET_FAIL:
         case PASSWORD_RESET_SUCESS:
         case PASSWORD_RESET_CONFIRM_SUCESS:

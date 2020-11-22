@@ -10,12 +10,12 @@ const useStyles = makeStyles((theme) => ({
 
 export default function DisplayAlert(error) {
     const classes = useStyles();
-    if (error !== undefined) {
+    if (error instanceof Object) {
         return (
             Object.keys(error).map((key, i) => (
-                <p key={i}>
+                <div key={i}>
                     <Alert className={classes.alert} severity="error">{key}: {error[key]}</Alert>
-                </p>)
+                </div>)
             ));
     } else {
         return null;
