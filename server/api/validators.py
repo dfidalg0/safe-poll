@@ -1,9 +1,14 @@
 from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.status import HTTP_422_UNPROCESSABLE_ENTITY
+
 from datetime import datetime as dt
 
 from django.core.validators import validate_email, ValidationError
 
 from typing import Dict, List, Tuple, Callable, Any
+
+View = Callable[[Request], Response]
 
 def is_unsigned_int(n : int) -> bool:
     return type(n) == int and n > 0
@@ -34,6 +39,8 @@ def is_unique_list(L: List[str]) -> bool:
         len(L) == len(set(L))
     )
 
+# Request validators
+
 def validate_request_data(
     request: Request,
     rules: Dict[str, Callable[[Any], bool]]
@@ -46,3 +53,25 @@ def validate_request_data(
             errors.append(field)
 
     return errors, data
+
+class CleanRequest (Request):
+    clean_data: Dict[str, Any]
+
+def with_rules(rules: Dict[str, Callable[[Any], bool]]) -> View:
+    def validate_view(view: View) -> Callable[[CleanRequest], Response]:
+        def clean_view(request: Request, *args, **kwargs) -> Response:
+            errors, data = validate_request_data(request, rules)
+
+            if errors:
+                return Response({
+                    'message': 'Formulário Inválido',
+                    'fields': errors
+                }, status=HTTP_422_UNPROCESSABLE_ENTITY)
+
+            request.clean_data = data
+
+            return view(request, *args, **kwargs)
+
+        return clean_view
+
+    return validate_view

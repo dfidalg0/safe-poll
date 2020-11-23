@@ -39,29 +39,22 @@ class HelloView(APIView):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def create_poll(request: Request) -> Response:
-    rules = {
-        'name': lambda v : v and type(v) == str,
-        'description': lambda v : v and type(v) == str,
-        'deadline': is_after_today,
-        'options': lambda v : (
-            len(v) > 1 and
-            is_unique_list(v) and
-            all(item and type(item) == str for item in v)
-        ),
-        'secret_vote': lambda v : type(v) == bool,
-        'type_id': lambda v : v in VALID_POLL_TYPES
-    }
+@with_rules({
+    'name': lambda v : v and type(v) == str,
+    'description': lambda v : v and type(v) == str,
+    'deadline': is_after_today,
+    'options': lambda v : (
+        len(v) > 1 and
+        is_unique_list(v) and
+        all(item and type(item) == str for item in v)
+    ),
+    'secret_vote': lambda v : type(v) == bool,
+    'type_id': lambda v : v in VALID_POLL_TYPES
+})
+def create_poll(request: CleanRequest) -> Response:
+    data = request.clean_data
 
-    # Validação dos dados
-    errors, data = validate_request_data(request, rules)
     data["admin"] = request.user
-
-    if errors:
-        return Response({
-            'message': 'Formulário Inválido',
-            'fields': errors
-        }, status=HTTP_422_UNPROCESSABLE_ENTITY)
 
     options = data["options"]
     del data["options"]
@@ -85,24 +78,17 @@ def create_poll(request: Request) -> Response:
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def register_emails(request: Request) -> Response:
-    rules = {
-        'poll_id': is_unsigned_int,
-        'email_list': lambda v : (
-            is_unique_list(v) and
-            all(map(is_valid_email, v))
-        )
-    }
-
-    errors, data = validate_request_data(request, rules)
+@with_rules({
+    'poll_id': is_unsigned_int,
+    'email_list': lambda v : (
+        is_unique_list(v) and
+        all(map(is_valid_email, v))
+    )
+})
+def register_emails(request: CleanRequest) -> Response:
+    data = request.clean_data
 
     admin = request.user
-
-    if errors:
-        return Response({
-            'message': 'Formulário Inválido',
-            'fields': errors
-        }, status=HTTP_422_UNPROCESSABLE_ENTITY)
 
     if not Poll.objects.filter(id=data["poll_id"], admin=admin):
         return Response({
@@ -124,19 +110,12 @@ def register_emails(request: Request) -> Response:
 # cria os tokens a partir do grupo e coloca o grupo como atributo da eleição ( Poll.group )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def register_emails_from_group(request: Request) -> Response:
-    rules = {
-        'poll_id': is_unsigned_int,
-        'group_id': is_unsigned_int
-    }
-
-    errors, data = validate_request_data(request, rules)
-
-    if errors:
-        return Response({
-            'message': 'Formulário Inválido',
-            'fields': errors
-        }, status=HTTP_422_UNPROCESSABLE_ENTITY)
+@with_rules({
+    'poll_id': is_unsigned_int,
+    'group_id': is_unsigned_int
+})
+def register_emails_from_group(request: CleanRequest) -> Response:
+    data = request.clean_data
 
     try:
         admin = request.user
@@ -170,20 +149,13 @@ def register_emails_from_group(request: Request) -> Response:
 
 
 @api_view(['POST'])
-def compute_vote(request: Request) -> Response:
-    rules = {
-        'token': lambda v: type(v) == str,
-        'option_id': is_unsigned_int,
-        'poll_id': is_unsigned_int
-    }
-
-    errors, data = validate_request_data(request, rules)
-
-    if errors:
-        return Response({
-            'message': 'Formulário Inválido',
-            'fields': errors
-        }, status=HTTP_422_UNPROCESSABLE_ENTITY)
+@with_rules({
+    'token': lambda v: type(v) == str,
+    'option_id': is_unsigned_int,
+    'poll_id': is_unsigned_int
+})
+def compute_vote(request: CleanRequest) -> Response:
+    data = request.clean_data
 
     try:
         token = Token.objects.get(token=data['token'], poll_id=data['poll_id'])
