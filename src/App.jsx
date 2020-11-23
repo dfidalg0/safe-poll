@@ -8,11 +8,20 @@ import Home from './views/home';
 import ResetPassword from './views/resetPassword';
 import ResetPasswordConfirm from './views/resetPasswordConfirm';
 
-import { Provider } from 'react-redux';
-import store from './store';
+import LoadingScreen from './components/loading-screen';
 
-const App = () =>
-    <Provider store={store}>
+import { connect } from 'react-redux';
+import { checkAuthenticated } from './store/actions/auth';
+
+import { useEffect } from 'react';
+
+function App({ loading, checkAuthenticated }){
+    useEffect(() => {
+        checkAuthenticated();
+    }, [checkAuthenticated]);
+
+    return loading ?
+        <LoadingScreen /> :
         <Router>
             <Switch>
                 <Route path="/" exact component={Home} />
@@ -20,6 +29,12 @@ const App = () =>
                 <Route exact path="/password/reset/confirm/:uid/:token" component={ResetPasswordConfirm} />
             </Switch>
         </Router>
-    </Provider>
+}
 
-export default App;
+
+export default connect(
+    state => ({
+        loading: state.ui.loading
+    }),
+    { checkAuthenticated }
+)(App);
