@@ -7,6 +7,7 @@ import {
 import Home from './views/home';
 import ResetPassword from './views/resetPassword';
 import ResetPasswordConfirm from './views/resetPasswordConfirm';
+import Poll from './views/poll';
 
 import LoadingScreen from './components/loading-screen';
 
@@ -25,6 +26,7 @@ function App({ loading, checkAuthenticated }){
         <Router>
             <Switch>
                 <Route path="/" exact component={Home} />
+                <Route path="/polls/mine/:uid" component={Poll} />
                 <Route exact path="/resetar-senha" component={ResetPassword} />
                 <Route exact path="/password/reset/confirm/:uid/:token" component={ResetPasswordConfirm} />
             </Switch>

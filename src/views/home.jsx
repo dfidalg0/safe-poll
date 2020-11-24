@@ -6,26 +6,28 @@ import { logout } from '../store/actions/auth'
 import { useState } from 'react';
 import LoginSignUp from '../components/loginSignUp'
 import CreatePoll from '../components/create-poll';
+import UserPolls from '../components/user-polls';
 
 function Home({ logout, isAuthenticated }) {
     const [createOpen, setCreateOpen] = useState(false);
-
+    
     function notAuthenticatedButtons() {
         return (
-           <LoginSignUp />
+            <LoginSignUp />
         );
     };
 
     function authenticatedButtons() {
         return (
             <>
-                <CreatePoll open={createOpen} onClose={() => setCreateOpen(false)}/>
+                <UserPolls />
+                <CreatePoll open={createOpen} onClose={() => setCreateOpen(false)} />
                 <Button
                     variant="contained"
                     size="large"
                     className={classes.button}
                     onClick={() => setCreateOpen(true)}
-                    style={{marginBottom: '40px'}}
+                    style={{ marginBottom: '40px' }}
                 >
                     Criar
                 </Button>
@@ -37,6 +39,7 @@ function Home({ logout, isAuthenticated }) {
                 >
                     Logout
                 </Button>
+
             </>
         );
     }
