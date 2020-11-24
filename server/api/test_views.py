@@ -8,18 +8,6 @@ from rest_framework.test import force_authenticate
 from model_bakery import baker
 # Create your tests here.
 
-'''
-from .views import HelloWorld
-class HelloWorldTest(TestCase):
-    def test_HelloWorld(self):
-        factory = APIRequestFactory()
-        client = APIClient()
-        request = factory.get('/api/hello/', format='jason')
-        response = client.get('/api/hello/')
-        response = HelloWorld(request)
-        self.assertEqual(response.status_code, 200)
-'''
-
 
 class EmailViewsTest(TestCase):
     @classmethod
@@ -71,38 +59,48 @@ class EmailViewsTest(TestCase):
 
 
 
-    #'send_group_emails' test
-    def test_send_group_emails__http_response(self):
+    #'send_poll_emails' test
+    def test_send_poll_emails__http_response(self):
         client = APIClient()
         poll = Poll.objects.get(id=self.poll_id)
         user = poll.admin
         client.force_authenticate(user=user) #Do not check authentication
-        response = client.get('/api/send-group-emails/{}/'.format(self.poll_id))
+        response = client.post('/api/poll/send-poll-emails', {'poll_id':poll.id}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(mail.outbox), 5)
         for i in range(5):
             self.assertEqual(mail.outbox[i].subject, 'Link para a eleicao {}'.format(poll.name))
 
-
     #'send_emails' test
-    def test_send_individual_email__http_response(self):
+    def test_send_list_emails__http_response(self):
         client = APIClient()
         poll = Poll.objects.get(id=self.poll_id)
         user = poll.admin
         client.force_authenticate(user=user) #Do not check authentication
-        new_user = baker.make('api.UserAccount')
-        new_user.ref = 'new_user@abc.de'
-        new_user.save()
-        #Add the user in the poll:
-        poll.group.users.add(new_user)
+        new_user1 = baker.make('api.UserAccount')
+        new_user1.ref = 'new_user1@abc.de'
+        new_user1.save()
+        new_user2 = baker.make('api.UserAccount')
+        new_user2.ref = 'new_user2@abc.de'
+        new_user2.save()
+        new_user3 = baker.make('api.UserAccount')
+        new_user3.ref = 'new_user3@abc.de'
+        new_user3.save()
         #Now, create the token:
-        Token.objects.create_token(poll_id=poll.id, email=new_user.ref)
+        Token.objects.create_token(poll_id=poll.id, email=new_user1.ref)
+        Token.objects.create_token(poll_id=poll.id, email=new_user2.ref)
+        Token.objects.create_token(poll_id=poll.id, email=new_user3.ref)
 
-        response = client.get('/api/send-individual-email/{}/{}'.format(self.poll_id, new_user.id))
+        response = client.post('/api/poll/send-list-emails', {'poll_id':poll.id, 'users_id_list':[new_user1.id, new_user2.id]}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 2)
         self.assertEqual(mail.outbox[0].subject, 'Link para a eleicao {}'.format(poll.name))
+        self.assertEqual(mail.outbox[1].subject, 'Link para a eleicao {}'.format(poll.name))
 
+        response = client.post('/api/poll/send-list-emails', {'poll_id':poll.id, 'users_id_list':[new_user3.id]}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(mail.outbox), 3)
+        self.assertEqual(mail.outbox[2].subject, 'Link para a eleicao {}'.format(poll.name))
 
 
 
