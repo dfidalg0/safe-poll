@@ -15,14 +15,15 @@ const useStyles = makeStyles((theme) => ({
         overflowX: 'hidden',
         marginBottom: '30px',
         fontSize: '12pt',
-        backgroundColor: '#D3D3D3'
+        backgroundColor: 'white',
+        borderRadius: 10,
     },
     paper: {
         padding: theme.spacing(1.5),
         textAlign: 'center',
         color: 'black',
         borderRadius: 0,
-        backgroundColor: '#D3D3D3',
+        backgroundColor: 'white',
     },
     tableHead: {
         padding: theme.spacing(2),
@@ -68,7 +69,7 @@ function UserPolls({ fetchUserPolls, polls }) {
 
     return (
         <div className={classes.root}>
-            <Grid container spacing={0.5}>
+            <Grid container spacing={0}>
                 <Grid container item xs={12} spacing={0}>
                     <React.Fragment>
                         <Grid item xs={5}>
@@ -83,9 +84,9 @@ function UserPolls({ fetchUserPolls, polls }) {
 
                     </React.Fragment>
                 </Grid>
-                {!polls ? null : polls.map((row) => (
-                    <Grid container item xs={12} spacing={0}>
-                        <FormRow poll={row} />
+                {!polls ? null : polls.map((row, index) => (
+                    <Grid container item xs={12} spacing={0}  key = {index}>
+                        <FormRow poll={row}/>
                     </Grid>
                 ))}
             </Grid>

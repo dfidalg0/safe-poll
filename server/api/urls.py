@@ -8,5 +8,6 @@ urlpatterns = [
     path('tokens/create', register_emails),
     path('tokens/create_from_group', register_emails_from_group),
     path('vote/compute', compute_vote),
-    path('polls/mine', user_polls)
+    path('polls/mine', user_polls),
+    path('polls/options/<int:pk>/', poll_options)
 ]

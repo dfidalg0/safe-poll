@@ -1,4 +1,4 @@
-import { SET_LOADING, SET_POLLS, PUSH_POLL } from './types';
+import { SET_LOADING, SET_POLLS, PUSH_POLL, SET_OPTIONS } from './types';
 import axios from 'axios';
 
 /**
@@ -14,6 +14,11 @@ export const setPolls = (polls) => ({
     polls
 });
 
+export const setOptions = (options) => ({
+    type: SET_OPTIONS,
+    options
+});
+
 export const pushPoll = (poll) => ({
     type: PUSH_POLL,
     poll
@@ -22,7 +27,6 @@ export const pushPoll = (poll) => ({
 export const fetchUserPolls = () => async (dispatch, getState) => {
     var state = getState();
     const token = state.auth.access;
-    console.log(token);
     try {
         const res = await axios.get('/api/polls/mine', {
             headers: {
@@ -31,6 +35,23 @@ export const fetchUserPolls = () => async (dispatch, getState) => {
         });
 
         dispatch(setPolls(res.data.polls));
+    }
+    catch ({ response: { data } }) {
+        alert('Erro: ' + data.message);
+    }
+};
+
+export const pollOptions = (id) => async (dispatch, getState) => {
+    var state = getState();
+    const token = state.auth.access;
+    try {
+        const res = await axios.get('/api/polls/options/' + id + '/', {
+            headers: {
+                Authorization: `JWT ${token}`
+            }
+        });
+
+        dispatch(setOptions(res.data.options));
     }
     catch ({ response: { data } }) {
         alert('Erro: ' + data.message);

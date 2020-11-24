@@ -1,4 +1,4 @@
-import { SET_LOADING, SET_POLLS, PUSH_POLL } from '../actions/types';
+import { SET_LOADING, SET_POLLS, PUSH_POLL, SET_OPTIONS } from '../actions/types';
 
 const baseState = {
     loading: true,
@@ -15,6 +15,8 @@ export default function reducer(state = baseState, action) {
             return state.polls ?
                 { ...state, polls: [action.poll, ...state.polls] } :
                 state;
+        case SET_OPTIONS:
+            return { ...state, options: action.options };
         default:
             return state;
     }

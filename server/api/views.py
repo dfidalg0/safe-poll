@@ -78,7 +78,8 @@ def create_poll(request: CleanRequest) -> Response:
             'message': 'Erro Interno do Servidor'
         }, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
-    res = serializers.serialize('json', [Poll.objects.filter(id=poll.id).first()])
+    res = serializers.serialize(
+        'json', [Poll.objects.filter(id=poll.id).first()])
     res = json.loads(res)
     conclusion = {'poll': res}
     return Response(conclusion)
@@ -215,6 +216,21 @@ def user_polls(request):
     user = request.user
     polls = serializers.serialize('json', Poll.objects.filter(admin=user))
     polls = json.loads(polls)
-    
+
     content = {'polls': polls}
     return Response(content)
+
+
+# retorna as opções para uma poll específica
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def poll_options(request, pk):
+    user = request.user
+    poll = Poll.objects.filter(admin=user, pk=pk)[0]
+    if poll:
+        options = serializers.serialize(
+            'json', Option.objects.filter(poll=poll))
+        options = json.loads(options)
+    else:
+        options = []
+    return Response({'options': options})
