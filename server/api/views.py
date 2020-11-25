@@ -56,7 +56,7 @@ def send_list_emails(request: CleanRequest) -> Response:
             }, status=HTTP_404_NOT_FOUND)
 
     #Check if poll is valid:
-    if poll.deadline > datetime.date.today():
+    if poll.deadline < datetime.date.today():
         return Response({
             'message':'Eleicao nao eh valida acabou em {}'.format(poll.deadline)
             })
@@ -132,7 +132,7 @@ def send_poll_emails(request: CleanRequest) -> Response:
             }, status=HTTP_404_NOT_FOUND)
 
     #Check if poll is valid:
-    if poll.deadline > datetime.date.today():
+    if poll.deadline < datetime.date.today():
         return Response({
             'message':'Eleicao nao eh valida acabou em {}'.format(poll.deadline)
             })
