@@ -138,36 +138,72 @@ class Option (models.Model):
     description = models.TextField()
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
 
-
 # Token.
 class TokenManager(models.Manager):
-    # To create a new token, use: "Token.objects.create_token(email)"
+    # To create a new token, use: "Token.objects.create_token(poll_id, email)"
     def create_token(self, poll_id: int, email: str):
-        token_value = self.__generate_token()
+        type_error_status = []
+        if not isinstance(email, str):
+            type_error_status.append(('email', 'str'))
+        if not isinstance(poll_id, int):
+            type_error_status.append(('poll_id', 'int'))
+        if len(type_error_status) != 0:
+            msg = ''
+            for type_ in type_error_status:
+                msg = ''.join([msg, '{} must be {} instance, '.format(*type_)])
+            msg = msg[:len(msg) - 2] + '.'
+            raise TypeError(msg)
 
-        # Loop condition: token_value already exists.
-        while len(self.get_queryset().filter(token=token_value)) != 0:
-            token_value = self.__generate_token()
+        update_token_value = True
+        result_list = self.get_queryset().filter(poll__id=poll_id, user__ref=email)
+        if len(result_list ) != 0:
+            return result_list[0]
+        token_value = self._generate_token()
+        while len(self.get_queryset().filter(token=token_value)) != 0: #Loop condition: token_value already exists.
+            token_value = self._generate_token()
 
         (user, _) = UserAccount.objects.get_or_create(ref=email)
+        poll     = Poll.objects.get(id=poll_id)
 
         new_token = self.create(
             token=token_value,
-            poll_id=poll_id,
+            poll=poll,
             user=user
         )
-
         return new_token
 
-    def __generate_token(self):
+    def _generate_token(self):
         # nbytes == 375 is enough to generate 500 chars.
         return str(secrets.token_urlsafe(nbytes=375))
 
+    def get_token(self, email, poll_id):
+        '''
+        Description: the function 'get_token' returns the token related to the 'poll_id' and the user 'email' passed
+        as argument. The token is returned as a string, otherwise, None is returned.
+        '''
+        type_error_status = []
+        if not isinstance(email, str):
+            type_error_status.append(('email', 'str'))
+        if not isinstance(poll_id, int):
+            type_error_status.append(('poll_id', 'int'))
+        if len(type_error_status) != 0:
+            msg = ''
+            for type_ in type_error_status:
+                msg = ''.join([msg, '{} must be {} instance, '.format(*type_)])
+            msg = msg[:len(msg) - 2] + '.'
+            raise TypeError(msg)
+
+        token_list = self.get_queryset().filter(poll__id=poll_id, user__ref=email)
+        result = None
+        if len(token_list) == 1:
+            token = token_list[0]
+            result = token.token
+        return result
+
 
 class Token(models.Model):
-    # Adicionar FK para polls;
     def __str__(self):
-        return self.token
+        return "Token for: UserID = {} , PollID = {}".format(self.user.id, self.poll.id)
 
     token = models.CharField(max_length=500, unique=True)
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
