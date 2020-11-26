@@ -244,19 +244,25 @@ def create_group(request: CleanRequest) -> Response:
     name = request.data["name"]
     emails = request.data["emails"]
 
+    if not Group.objects.filter(name=name, admin=admin):
+        group = Group.objects.create(name=name, admin=admin)
     
-    group = Group.objects.create(name=name, admin=admin)
-    
-    for email in emails:
-        (user, _) = UserAccount.objects.get_or_create(ref=email)
-        user.save()
-        group.users.add(user)
+        for email in emails:
+            (user, _) = UserAccount.objects.get_or_create(ref=email)
+            user.save()
+            group.users.add(user)
 
-    group = serializers.serialize('json', [group])
-    group = json.loads(group)
-    return Response({
-        'group': group
-    })
+        group = serializers.serialize('json', [group])
+        group = json.loads(group)
+        return Response({
+           'group': group,
+            'message': 'Grupo criado com sucesso!'
+         })
+    else:
+        return Response({
+            'message': 'Grupo com este nome já existe!'
+        }, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
     
 
 

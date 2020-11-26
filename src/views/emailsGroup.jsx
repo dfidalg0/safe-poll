@@ -66,7 +66,7 @@ function EmailsGroup({ token, sendGroup, userGroups, groups }) {
     const classes = useStyles();
 
     useEffect(() => {
-        if(!groups){
+        if (!groups) {
             userGroups();
         }
     }, [groups, userGroups]);
@@ -118,7 +118,7 @@ function EmailsGroup({ token, sendGroup, userGroups, groups }) {
             alert(res.data.message);
         }
         catch ({ response }) {
-            document.write(response.data);
+            alert(response.data.message);
         }
     }, [name, emails, token, sendGroup]);
 
@@ -170,7 +170,7 @@ function EmailsGroup({ token, sendGroup, userGroups, groups }) {
                         </Grid>
                     )}
 
-                    <Grid container xs={12} style={{ justifyContent: 'center' }}>
+                    <Grid container style={{ justifyContent: 'center' }}>
                         <Grid item xs={8}>
                             <TextField
                                 autoComplete="off"
@@ -223,7 +223,8 @@ function EmailsGroup({ token, sendGroup, userGroups, groups }) {
 
 function mapDispatchToProps(dispatch) {
     return ({
-        sendGroup: (group) => { dispatch(pushGrup(group)) }
+        sendGroup: (group) => { dispatch(pushGrup(group)) },
+        userGroups: () => {userGroups()}
     })
 }
 
@@ -231,5 +232,5 @@ export default connect(
     state => ({
         token: state.auth.access,
         groups: state.ui.groups
-    }), { mapDispatchToProps, userGroups}
+    }), mapDispatchToProps
 )(EmailsGroup);
