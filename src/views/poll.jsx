@@ -71,11 +71,7 @@ function Poll({ match, polls, token, pollOptions, options, userGroups, groups, d
     }, [poll_id, groups, token, group]);
 
     const delete_poll = useCallback(async () => {
-        const data = {
-            poll_id,
-        }
-
-        const res = await axios.post('/api/poll/delete', data, {
+        const res = await axios.delete('/api/poll/delete/' + poll_id + '/', {
             headers: {
                 Authorization: `JWT ${token}`
             }
@@ -119,10 +115,9 @@ function Poll({ match, polls, token, pollOptions, options, userGroups, groups, d
                     <Typography variant="overline" display="block" gutterBottom>
                         Voto Secreto:  {poll.fields.secret_vote ? 'Sim' : 'Não'}
                     </Typography>
-
                     <Typography variant="overline" display="block" gutterBottom>
                         Opções:
-                </Typography>
+                    </Typography>
 
                     {!options ? null : options.map((row, index) => (
                         <Typography variant="overline" display="block" gutterBottom key={index}>
@@ -135,7 +130,7 @@ function Poll({ match, polls, token, pollOptions, options, userGroups, groups, d
                     <Grid item xs={12}>
                         <InputLabel htmlFor="type" style={{ padding: 10 }}>
                             Grupo
-            </InputLabel>
+                        </InputLabel>
                         <Select id="type"
                             className={classes.field}
                             required
@@ -157,7 +152,7 @@ function Poll({ match, polls, token, pollOptions, options, userGroups, groups, d
                             disabled={group === ''}
                         >
                             Adicionar
-        </Button>
+                        </Button>
                     </Grid>
                     <Divider style={{ marginBottom: 20, marginTop: 20 }} />
 

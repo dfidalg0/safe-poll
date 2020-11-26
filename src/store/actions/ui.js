@@ -60,15 +60,9 @@ export const fetchUserPolls = () => async (dispatch, getState) => {
     }
 };
 
-export const pollOptions = (id) => async (dispatch, getState) => {
-    var state = getState();
-    const token = state.auth.access;
+export const pollOptions = (id) => async (dispatch) => {
     try {
-        const res = await axios.get('/api/polls/options/' + id + '/', {
-            headers: {
-                Authorization: `JWT ${token}`
-            }
-        });
+        const res = await axios.get('/api/polls/options/' + id + '/');
 
         dispatch(setOptions(res.data.options));
     }

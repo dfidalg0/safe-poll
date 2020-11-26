@@ -378,10 +378,8 @@ def user_polls(request):
 
 # retorna as opções para uma poll específica
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def poll_options(request, pk):
-    user = request.user
-    poll = Poll.objects.filter(admin=user, pk=pk)[0]
+    poll = Poll.objects.filter(pk=pk)[0]
     if poll:
         options = serializers.serialize(
             'json', Option.objects.filter(poll=poll))
@@ -432,13 +430,12 @@ def user_groups(request):
     return Response(content)
 
 
-@api_view(['POST'])
+@api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-def delete_poll(request: CleanRequest) -> Response:
-    data = request.data
+def delete_poll(request, pk):
     try:
         admin = request.user
-        poll = Poll.objects.get(pk=data["poll_id"], admin=admin)
+        poll = Poll.objects.get(pk=pk, admin=admin)
         poll.delete()
         return Response({
             'message': 'Eleição deletada com sucesso'
