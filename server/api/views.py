@@ -236,6 +236,7 @@ def poll_options(request, pk):
     return Response({'options': options})
 
 
+# criação de novo grupo de usuários
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_group(request: CleanRequest) -> Response:
@@ -274,3 +275,21 @@ def user_groups(request):
 
     content = {'groups': groups}
     return Response(content)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def delete_poll(request: CleanRequest) -> Response:
+    data = request.data
+    try:
+        admin = request.user
+        poll = Poll.objects.get(pk=data["poll_id"], admin=admin)
+        poll.delete()
+        return Response({
+            'message': 'Eleição deletada com sucesso'
+         })
+    except:
+        return Response({
+            'message': 'Poll não encontrada'
+        }, status=HTTP_500_INTERNAL_SERVER_ERROR)
+       

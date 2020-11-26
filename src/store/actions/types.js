@@ -20,3 +20,4 @@ export const PUSH_POLL = 'PUSH_POLL';
 export const SET_OPTIONS = 'SET_OPTIONS';
 export const SET_GROUPS= 'SET_GROUPS';
 export const PUSH_GROUP = 'PUSH_GROUP';
+export const DELETE_POLL = 'DELETE_POLL';

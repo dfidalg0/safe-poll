@@ -42,7 +42,7 @@ function UserPolls({ fetchUserPolls, polls }) {
 
     const classes = useStyles();
     const [page, setPage] = React.useState(0);
-    const rowsPerPage = 10;
+    const rowsPerPage = 9;
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -58,7 +58,7 @@ function UserPolls({ fetchUserPolls, polls }) {
         return (
             <React.Fragment>
                 <Grid item xs={5} >
-                    <Typography noWrap className={classes.paper}><Link to={'/polls/mine/'+ poll.poll.pk} className={classes.link}>{poll.poll.fields.name}</Link></Typography>
+                    <Typography noWrap className={classes.paper}><Link to={'/polls/mine/' + poll.poll.pk} className={classes.link}>{poll.poll.fields.name}</Link></Typography>
                 </Grid>
                 <Grid item xs={5}>
                     <Typography noWrap className={classes.paper}>{poll.poll.fields.description}</Typography>
@@ -89,7 +89,7 @@ function UserPolls({ fetchUserPolls, polls }) {
 
                     </React.Fragment>
                 </Grid>
-                {!polls ? null : polls.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
+                {!polls || polls.length === 0? <Grid container style={{width: '100%', padding: 20}}><Typography style={{textAlign: 'center', color: 'black', width: '100%'}}>Nenhuma eleição cadastrada!</Typography></Grid> : polls.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
                     <Grid container item xs={12} spacing={0} key={index}>
                         <FormRow poll={row} />
                     </Grid>

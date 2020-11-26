@@ -1,4 +1,8 @@
-import { SET_LOADING, SET_POLLS, PUSH_POLL, SET_OPTIONS, SET_GROUPS, PUSH_GROUP } from './types';
+import {
+    SET_LOADING, SET_POLLS, PUSH_POLL,
+    SET_OPTIONS, SET_GROUPS, PUSH_GROUP,
+    DELETE_POLL
+} from './types';
 import axios from 'axios';
 
 /**
@@ -32,6 +36,11 @@ export const pushPoll = (poll) => ({
 export const pushGrup = (group) => ({
     type: PUSH_GROUP,
     group
+})
+
+export const deletePoll = (poll_id) => ({
+    type: DELETE_POLL,
+    poll_id
 })
 
 export const fetchUserPolls = () => async (dispatch, getState) => {
