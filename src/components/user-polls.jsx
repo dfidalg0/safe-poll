@@ -1,17 +1,16 @@
 import React, { useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Grid from '@material-ui/core/Grid'; import { fetchUserPolls } from '../store/actions/ui';
+import { Paper, Grid, Typography } from '@material-ui/core';
+
+import TablePagination from '@material-ui/core/TablePagination';
+import { fetchUserPolls } from '../store/actions/ui';
 import { connect } from 'react-redux';
 
-import Typography from '@material-ui/core/Typography';
 import { Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
     root: {
-        width: '70%',
-        height: '50%',
-        overflowY: 'scroll',
+        width: '80%',
         overflowX: 'hidden',
         marginBottom: '30px',
         fontSize: '12pt',
@@ -23,13 +22,14 @@ const useStyles = makeStyles((theme) => ({
         textAlign: 'center',
         color: 'black',
         borderRadius: 0,
-        backgroundColor: 'white',
+        backgroundColor: 'lightgray',
     },
     tableHead: {
         padding: theme.spacing(2),
+        marginBottom: 2,
         textAlign: 'center',
         color: 'black',
-        backgroundColor: '#808080',
+        backgroundColor: 'lightslategray',
         borderRadius: 0
     },
     link: {
@@ -41,6 +41,12 @@ const useStyles = makeStyles((theme) => ({
 function UserPolls({ fetchUserPolls, polls }) {
 
     const classes = useStyles();
+    const [page, setPage] = React.useState(0);
+    const rowsPerPage = 10;
+
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
 
     useEffect(() => {
         if (!polls) {
@@ -54,7 +60,6 @@ function UserPolls({ fetchUserPolls, polls }) {
                 <Grid item xs={5} >
                     <Typography noWrap className={classes.paper}><Link to={'/polls/mine/'+ poll.poll.pk} className={classes.link}>{poll.poll.fields.name}</Link></Typography>
                 </Grid>
-
                 <Grid item xs={5}>
                     <Typography noWrap className={classes.paper}>{poll.poll.fields.description}</Typography>
 
@@ -69,7 +74,7 @@ function UserPolls({ fetchUserPolls, polls }) {
 
     return (
         <div className={classes.root}>
-            <Grid container spacing={0}>
+            <Grid container spacing={0} style={{ backgroundColor: 'lightslategray' }}>
                 <Grid container item xs={12} spacing={0}>
                     <React.Fragment>
                         <Grid item xs={5}>
@@ -84,16 +89,25 @@ function UserPolls({ fetchUserPolls, polls }) {
 
                     </React.Fragment>
                 </Grid>
-                {!polls ? null : polls.map((row, index) => (
-                    <Grid container item xs={12} spacing={0}  key = {index}>
-                        <FormRow poll={row}/>
+                {!polls ? null : polls.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
+                    <Grid container item xs={12} spacing={0} key={index}>
+                        <FormRow poll={row} />
                     </Grid>
                 ))}
+
+                <TablePagination style={{ textAlign: 'center', background: 'lightslategray' }}
+                    component="div"
+                    labelRowsPerPage=''
+                    count={polls ? polls.length : 0}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onChangePage={handleChangePage}
+                    rowsPerPageOptions={[]}
+                />
             </Grid>
         </div>
     );
 }
-
 
 export default connect(state => ({
     polls: state.ui.polls

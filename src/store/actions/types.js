@@ -18,3 +18,5 @@ export const PASSWORD_RESET_CONFIRM_SUCESS = 'PASSWORD_RESET_CONFIRM_SUCESS';
 export const SET_POLLS = 'SET_POLLS';
 export const PUSH_POLL = 'PUSH_POLL';
 export const SET_OPTIONS = 'SET_OPTIONS';
+export const SET_GROUPS= 'SET_GROUPS';
+export const PUSH_GROUP = 'PUSH_GROUP';

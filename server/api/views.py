@@ -234,3 +234,41 @@ def poll_options(request, pk):
     else:
         options = []
     return Response({'options': options})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_group(request: CleanRequest) -> Response:
+
+    admin = request.user
+    name = request.data["name"]
+    emails = request.data["emails"]
+
+    
+    group = Group.objects.create(name=name, admin=admin)
+    
+    for email in emails:
+        (user, _) = UserAccount.objects.get_or_create(ref=email)
+        user.save()
+        group.users.add(user)
+
+    group = serializers.serialize('json', [group])
+    group = json.loads(group)
+    return Response({
+        'group': group
+    })
+    
+
+
+# retorna os grupos do usuário
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_groups(request):
+    user = request.user
+    groups = serializers.serialize('json', Group.objects.filter(admin=user))
+    groups = json.loads(groups)
+
+    content = {'groups': groups}
+    return Response(content)
+
+    

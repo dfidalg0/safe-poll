@@ -1,20 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
+
 import { Link } from "react-router-dom";
 import { connect } from 'react-redux';
-import { pollOptions } from '../store/actions/ui';
+import { pollOptions, userGroups } from '../store/actions/ui';
+
+import {
+    Divider, CardActions,
+    CardContent, Card,
+    Button, Typography,
+} from '@material-ui/core';
+
 
 const useStyles = makeStyles({
     root: {
-        width: '50%',
+        width: '40%',
         justifyContent: 'center',
         textAlign: 'center',
-        marginLeft: '25%',
+        marginLeft: '30%',
         marginTop: '5%'
     },
     bullet: {
@@ -28,25 +31,37 @@ const useStyles = makeStyles({
     pos: {
         marginBottom: 12,
     },
+    paper: {
+        height: '100%',
+        verticalAlign: 'middle',
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center"
+    },
 });
 
-function Poll({ match, polls, pollOptions, options }) {
+function Poll({ match, polls, pollOptions, options, userGroups, groups }) {
+
     const uid = match.params.uid;
     const [poll, setPoll] = useState({ fields: [] });
 
+    const classes = useStyles();
+
     useEffect(() => {
         if (polls) {
-            const p = polls.filter(poll => poll.pk === Number(uid))[0];
+            const p = polls.filter(poll => Number(poll.pk) === Number(uid))[0];
             setPoll(p);
         }
 
-        if (!options || options[0].pk !== uid){
+        if (!options || Number(options[0].fields.poll) !== Number(uid)) {
             pollOptions(uid)
         }
 
-    }, [uid, polls, options, pollOptions]);
+        if(!groups){
+            userGroups();
+        }
 
-    const classes = useStyles();
+    }, [uid, polls, options, pollOptions, groups, userGroups]);
 
     return (
         <Card className={classes.root}>
@@ -57,24 +72,23 @@ function Poll({ match, polls, pollOptions, options }) {
                 <Typography noWrap className={classes.pos} color="textSecondary">
                     {poll.fields.description}
                 </Typography>
-
-                <Typography className={classes.title} color="textSecondary" gutterBottom>
-                    <b>Deadline:</b> <br /> {poll.fields.deadline}
+                <Divider style={{ marginBottom: 10, marginTop: 10 }} />
+                <Typography variant="overline" display="block" gutterBottom>
+                    Deadline: <br /> {poll.fields.deadline}
                 </Typography>
-                <Typography className={classes.title} color="textSecondary" gutterBottom>
-                    <b>Voto Secreto: </b> {poll.fields.secret_vote ? 'Sim' : 'Não'}
+                <Typography variant="overline" display="block" gutterBottom>
+                    Voto Secreto:  {poll.fields.secret_vote ? 'Sim' : 'Não'}
                 </Typography>
 
-                <Typography className={classes.title} color="textSecondary" gutterBottom>
-                    <b>Opções: </b>
+                <Typography variant="overline" display="block" gutterBottom>
+                    Opções:
                 </Typography>
 
                 {!options ? null : options.map((row, index) => (
-                    <Typography className={classes.title} color="textSecondary" gutterBottom key={index}>
+                    <Typography variant="overline" display="block" gutterBottom>
                         {row.fields.name}
                     </Typography>
                 ))}
-
             </CardContent>
             <CardActions>
                 <Button size="small"><Link to='/' className={classes.link}>Voltar</Link></Button>
@@ -85,5 +99,6 @@ function Poll({ match, polls, pollOptions, options }) {
 
 export default connect(state => ({
     polls: state.ui.polls,
-    options: state.ui.options
-}), { pollOptions })(Poll);
+    options: state.ui.options,
+    groups: state.ui.groups
+}), { pollOptions, userGroups })(Poll);

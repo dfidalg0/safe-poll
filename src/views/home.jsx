@@ -8,9 +8,12 @@ import LoginSignUp from '../components/loginSignUp'
 import CreatePoll from '../components/create-poll';
 import UserPolls from '../components/user-polls';
 
+
+import { Link } from "react-router-dom";
+
 function Home({ logout, isAuthenticated }) {
     const [createOpen, setCreateOpen] = useState(false);
-    
+
     function notAuthenticatedButtons() {
         return (
             <LoginSignUp />
@@ -30,6 +33,14 @@ function Home({ logout, isAuthenticated }) {
                     style={{ marginBottom: '40px' }}
                 >
                     Criar
+                </Button>
+                <Button
+                    component={Link} to="/group/new"
+                    variant="contained"
+                    size="large"
+                    style={{ marginBottom: '40px' }}
+                >
+                    Novo Grupo
                 </Button>
                 <Button
                     variant="contained"

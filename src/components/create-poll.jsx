@@ -139,7 +139,6 @@ function CreatePoll({ open, onClose, token, sendPoll }) {
                 }
             });
 
-            console.log(res.data.poll[0]);
             sendPoll(res.data.poll[0]);
         }
         catch ({ response }) {
