@@ -74,7 +74,7 @@ function UserPolls({ fetchUserPolls, polls }) {
 
     return (
         <div className={classes.root}>
-            <Grid container spacing={0} style={{ backgroundColor: 'lightslategray' }}>
+            <Grid container spacing={0} style={{ backgroundColor: 'lightgray' }}>
                 <Grid container item xs={12} spacing={0}>
                     <React.Fragment>
                         <Grid item xs={5}>
@@ -95,7 +95,7 @@ function UserPolls({ fetchUserPolls, polls }) {
                     </Grid>
                 ))}
 
-                <TablePagination style={{ textAlign: 'center', background: 'lightslategray' }}
+                <TablePagination style={{ textAlign: 'center', background: 'lightslategray', width: '100%' }}
                     component="div"
                     labelRowsPerPage=''
                     count={polls ? polls.length : 0}

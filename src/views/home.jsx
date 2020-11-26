@@ -3,7 +3,8 @@ import { Button } from '@material-ui/core';
 import Display from '../components/display';
 import { connect } from 'react-redux'
 import { logout } from '../store/actions/auth'
-import { useState } from 'react';
+import { userGroups } from '../store/actions/ui'
+import { useState, useEffect } from 'react';
 import LoginSignUp from '../components/loginSignUp'
 import CreatePoll from '../components/create-poll';
 import UserPolls from '../components/user-polls';
@@ -11,16 +12,24 @@ import UserPolls from '../components/user-polls';
 
 import { Link } from "react-router-dom";
 
-function Home({ logout, isAuthenticated }) {
+function Home({ logout, isAuthenticated, userGroups, groups }) {
     const [createOpen, setCreateOpen] = useState(false);
+
+    useEffect(() => {
+        if (isAuthenticated && !groups) {
+            userGroups();
+        }
+
+    }, [groups, userGroups, isAuthenticated]);
 
     function notAuthenticatedButtons() {
         return (
             <LoginSignUp />
         );
     };
-
+    
     function authenticatedButtons() {
+    
         return (
             <>
                 <UserPolls />
@@ -77,4 +86,4 @@ const mapStateToProps = state => ({
     isAuthenticated: Boolean(state.auth.access)
 });
 
-export default connect(mapStateToProps, { logout })(Home);
+export default connect(mapStateToProps, { logout, userGroups })(Home);

@@ -130,7 +130,7 @@ def register_emails_from_group(request: CleanRequest) -> Response:
         admin = request.user
 
         poll = Poll.objects.get(pk=data["poll_id"], admin=admin)
-
+        
         user_group = Group.objects.get(pk=data["group_id"], admin=admin)
 
         poll.group = user_group
@@ -246,7 +246,7 @@ def create_group(request: CleanRequest) -> Response:
 
     if not Group.objects.filter(name=name, admin=admin):
         group = Group.objects.create(name=name, admin=admin)
-    
+       
         for email in emails:
             (user, _) = UserAccount.objects.get_or_create(ref=email)
             user.save()
@@ -264,8 +264,6 @@ def create_group(request: CleanRequest) -> Response:
         }, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
     
-
-
 # retorna os grupos do usuário
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -276,5 +274,3 @@ def user_groups(request):
 
     content = {'groups': groups}
     return Response(content)
-
-    

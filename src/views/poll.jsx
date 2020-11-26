@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 import { connect } from 'react-redux';
 import { pollOptions, userGroups } from '../store/actions/ui';
 
+import axios from 'axios';
+
 import {
     Divider, CardActions,
     CardContent, Card,
@@ -40,34 +42,49 @@ const useStyles = makeStyles({
     },
 });
 
-function Poll({ match, polls, pollOptions, options, userGroups, groups }) {
+function Poll({ match, polls, token, pollOptions, options, userGroups, groups }) {
 
-    const uid = match.params.uid;
+    const poll_id = Number(match.params.uid);
     const [poll, setPoll] = useState({ fields: [] });
-    const [group, setGroup] = useState([]);
+    const [group, setGroup] = useState('');
 
     const classes = useStyles();
 
     const submit = useCallback(async () => {
-       
-    }, []);
+        const group_id = groups[group-1].pk
+        const data = {
+            poll_id, 
+            group_id,
+        }
+        try {
+            const res = await axios.post('/api/tokens/create_from_group', data, {
+                headers: {
+                    Authorization: `JWT ${token}`
+                }
+            });
+        }
+        catch ({ response }) {
+            alert(response.data.message);
+        }
+    }, [poll_id, group, token]);
 
     useEffect(() => {
         if (polls) {
-            const p = polls.filter(poll => Number(poll.pk) === Number(uid))[0];
+            const p = polls.filter(poll => Number(poll.pk) === poll_id)[0];
             setPoll(p);
         }
 
-        if (!options || Number(options[0].fields.poll) !== Number(uid)) {
-            pollOptions(uid)
+        if (!options || Number(options[0].fields.poll) !== poll_id) {
+            pollOptions(poll_id)
         }
 
         if (!groups) {
             userGroups();
         }
 
-    }, [uid, polls, options, pollOptions, groups, userGroups]);
+    }, [poll_id, polls, options, pollOptions, groups, userGroups]);
 
+    
     return (
         <Card className={classes.root}>
             <CardContent>
@@ -119,7 +136,7 @@ function Poll({ match, polls, pollOptions, options, userGroups, groups }) {
                 <Grid item style={{ marginTop: 20 }}>
                     <Button variant="contained" className={classes.button}
                         onClick={submit}
-                        disabled={group.length === 0}
+                        disabled={group === ''}
                     >
                         Adicionar
         </Button>
@@ -137,5 +154,6 @@ function Poll({ match, polls, pollOptions, options, userGroups, groups }) {
 export default connect(state => ({
     polls: state.ui.polls,
     options: state.ui.options,
-    groups: state.ui.groups
+    groups: state.ui.groups,
+    token: state.auth.access
 }), { pollOptions, userGroups })(Poll);

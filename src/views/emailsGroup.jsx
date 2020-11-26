@@ -20,7 +20,7 @@ import { connect } from 'react-redux';
 import axios from 'axios';
 
 import isEmail from 'validator/lib/isEmail';
-import { pushGrup, userGroups } from '../store/actions/ui';
+import { pushGrup } from '../store/actions/ui';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -61,15 +61,10 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-function EmailsGroup({ token, sendGroup, userGroups, groups }) {
+function EmailsGroup({ token, sendGroup }) {
 
     const classes = useStyles();
 
-    useEffect(() => {
-        if (!groups) {
-            userGroups();
-        }
-    }, [groups, userGroups]);
 
     const [emails, setEmails] = useState([]);
     const [name, setName] = useState('');
@@ -82,6 +77,13 @@ function EmailsGroup({ token, sendGroup, userGroups, groups }) {
 
     // Ref para a caixa de texto de novo email (usada para autofocus)
     const newEmailRef = useRef();
+
+    const clear = () => {
+        // Limpando dados do formulário
+        setName('');
+        setEmails([]);
+        setNewEmailError(false);
+    };
 
     const createEmail = useCallback(() => {
         if (newEmail && !newEmailError) {
@@ -120,6 +122,7 @@ function EmailsGroup({ token, sendGroup, userGroups, groups }) {
         catch ({ response }) {
             alert(response.data.message);
         }
+        clear();
     }, [name, emails, token, sendGroup]);
 
     return (
@@ -224,13 +227,13 @@ function EmailsGroup({ token, sendGroup, userGroups, groups }) {
 function mapDispatchToProps(dispatch) {
     return ({
         sendGroup: (group) => { dispatch(pushGrup(group)) },
-        userGroups: () => {userGroups()}
     })
 }
+
 
 export default connect(
     state => ({
         token: state.auth.access,
         groups: state.ui.groups
-    }), mapDispatchToProps
+    }), mapDispatchToProps,
 )(EmailsGroup);
