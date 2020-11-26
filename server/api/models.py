@@ -115,6 +115,25 @@ class Poll (models.Model):
         UserAccount,
         blank=True, related_name='polls_voted'
     )
+    
+    #Computar os resultados da eleicao:
+    def compute_result(self):
+        if self.type.id == 1:
+            self._compute_result_first_past_the_post_voting()
+
+    def _compute_result_first_past_the_post_voting(self):
+        options = Option.objects.filter(pk=poll.id)
+        votes   = Vote.objects.filter(pk=poll.id)
+        counting_votes = {}
+        for option in options:
+            counting_votes[option.id] = 0
+        for vote in votes:
+            counting_votes[vote.option.id] += 1
+        winner = max(counting_votes, key=lambda v:counting_votes[v])
+
+        
+
+        
 
 
 class Vote (models.Model):

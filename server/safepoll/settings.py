@@ -168,3 +168,12 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
 }
+
+
+#Celery configurations:
+CELERY_TIMEZONE          = "America/Sao_Paulo"
+CELERY_ENABLE_UTC        = True
+CELERY_ACCEPT_CONTENT    = ['json']
+CELERY_TASK_SERIALIZER   = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+#OBS: por default, o broker utilizado eh o rabbitMQ. Este deve ser instalado e ativado.
