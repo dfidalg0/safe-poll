@@ -35,7 +35,15 @@ import reduce from 'lodash.reduce';
 
 import axios from 'axios';
 
-function CreatePoll({ open, onClose, token, sendPoll }) {
+/**
+ * @param {{
+ *   open: boolean;
+ *   onClose: () => void;
+ *   token: string;
+ *   sendPoll: (poll: any) => ReturnType<typeof pushPoll>
+ * }}
+ */
+function CreatePoll({ open, onClose, token, sendPoll }){
     // Styles
     const theme = useTheme();
     const classes = useStyles();
@@ -367,7 +375,7 @@ function CreatePoll({ open, onClose, token, sendPoll }) {
 
 function mapDispatchToProps(dispatch) {
     return ({
-        sendPoll: (poll) => { dispatch(pushPoll(poll)) }
+        sendPoll: (poll) => dispatch(pushPoll(poll))
     })
 }
 
