@@ -23,8 +23,6 @@ from .models import (
 # Django
 from django.db import transaction
 
-#Tasks
-from .tasks import schedule_poll_death
 
 # Auxiliares
 from .validators import *
@@ -232,18 +230,6 @@ def create_poll(request: CleanRequest) -> Response:
         }, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
     conclusion = {'id': poll.id}
-
-    #Agendar o termino da poll:
-    deys_remaining = (poll.deadline - datetime.date.today()).days
-    current_time = datetime.datetime.now().time()
-    hour = current_time.hour
-    minute = current_time.minute
-    second = current_time.second
-    ONE_DAY = 24*3600
-    remaining_seconds = ONE_DAY - (hour*3600 + minute*60 + second) 
-    #delay = days_remaining*ONE_DAY + remaining_seconds
-    delay = 30 #teste
-    schedule_poll_death.apply_async((poll.id,), countdown=delay)
     return Response(conclusion)
 
 @api_view(['POST'])
@@ -367,3 +353,20 @@ def compute_vote(request: CleanRequest) -> Response:
 
     conclusion = { 'vote_id': vote.id }
     return Response(conclusion)
+
+
+@api_view(['GET'])
+@with_rules({
+    'poll_id': is_unsigned_int
+})
+def return_result(request: CleanRequest) -> Response:
+    data = request.clean_data
+    poll = Poll.objects.get(pk=data['poll_id'])
+    if poll.deadline < datetime.date.today():
+        return Response(poll.compute_result())
+    else:
+        return Response({
+            'message':'A eleicao ainda nao finalizou'
+            })
+
+

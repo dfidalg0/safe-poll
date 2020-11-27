@@ -7,6 +7,7 @@ urlpatterns = [
     path('poll/send-list-emails', send_list_emails),
     path('poll/send-poll-emails', send_poll_emails),
     path('poll/create', create_poll),
+    path('poll/return-result', return_result),
     path('tokens/create', register_emails),
     path('tokens/create_from_group', register_emails_from_group),
     path('vote/compute', compute_vote)

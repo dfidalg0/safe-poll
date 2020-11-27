@@ -5,6 +5,8 @@ from django.contrib.auth.models import (
 )
 import secrets
 
+#Tasks
+from celery import shared_task
 
 class UserAccountManager(BaseUserManager):
     def __base_create_user(self, email, name, password=None):
@@ -86,6 +88,23 @@ class PollType (models.Model):
 
 VALID_POLL_TYPES = set(map(lambda v : v.id, PollType.objects.all()))
 
+
+class PollManager(models.Manager):
+    def create(self, **data):
+        poll = super().create(**data)
+
+        #Agendar o termino da poll:
+        days_remaining = (poll.deadline - datetime.date.today()).days
+        current_time = datetime.datetime.now().time()
+        hour = current_time.hour
+        minute = current_time.minute
+        second = current_time.second
+        ONE_DAY = 24*3600
+        remaining_seconds = ONE_DAY - (hour*3600 + minute*60 + second) 
+        delay = days_remaining*ONE_DAY + remaining_seconds
+        kill_poll_tokens.apply_async((poll.id,), countdown=delay)
+        return poll
+
 class Poll (models.Model):
     # Informações básicas
     name = models.CharField(max_length=100)
@@ -115,7 +134,11 @@ class Poll (models.Model):
         UserAccount,
         blank=True, related_name='polls_voted'
     )
+
+    #Define the new manager:
+    objects = PollManager()
     
+
     #Computar os resultados da eleicao:
     def compute_result(self):
         if self.type.id == 1:
@@ -130,6 +153,8 @@ class Poll (models.Model):
         for vote in votes:
             counting_votes[vote.option.id] += 1
         winner = max(counting_votes, key=lambda v:counting_votes[v])
+        final_result = {'winner':winner, 'counting_votes':counting_votes}
+        return final_result
 
         
 
@@ -228,3 +253,15 @@ class Token(models.Model):
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
     user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
     objects = TokenManager()
+
+#Task que sera utilizada para finalizar a poll.
+@shared_task
+def kill_poll_tokens(poll_id):
+    poll = Poll.objects.get(pk=poll_id)
+    token_list = Token.objects.filter(poll_id=poll.id).delete()
+    print('Tokens from poll {} were deleted.'.format(poll.id))
+
+@shared_task
+def kill_test(test_id):
+    Test.objects.get(pk=test_id).delete()
+    print('Test deleted!')
