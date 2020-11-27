@@ -34,6 +34,13 @@ import reduce from 'lodash.reduce';
 
 import axios from 'axios';
 
+/**
+ * @param {{
+ *   open: boolean;
+ *   onClose: () => void;
+ *   token: string;
+ * }}
+ */
 function CreatePoll({ open, onClose, token }){
     // Styles
     const theme = useTheme();
