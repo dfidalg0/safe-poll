@@ -22,12 +22,15 @@ from .models import (
 
 # Django
 from django.db import transaction
+from django.core import serializers
 
 
 # Auxiliares
 from .validators import *
 from django.core import mail
 import datetime
+
+import json
 
 # Create your views here.
 
@@ -108,7 +111,7 @@ def send_list_emails(request: CleanRequest) -> Response:
             }, status=HTTP_200_OK)
     else:
         return Response(data=failed_emails, status=HTTP_200_OK)
-    
+
 
 
 
@@ -184,6 +187,8 @@ def send_poll_emails(request: CleanRequest) -> Response:
 
 
 # view em que o usuário precisa estar logado
+
+
 class HelloView(APIView):
     permission_classes = (IsAuthenticated,)
 
@@ -196,16 +201,16 @@ class HelloView(APIView):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @with_rules({
-    'name': lambda v : v and type(v) == str,
-    'description': lambda v : v and type(v) == str,
+    'name': lambda v: v and type(v) == str,
+    'description': lambda v: v and type(v) == str,
     'deadline': is_after_today,
-    'options': lambda v : (
+    'options': lambda v: (
         len(v) > 1 and
         is_unique_list(v) and
         all(item and type(item) == str for item in v)
     ),
-    'secret_vote': lambda v : type(v) == bool,
-    'type_id': lambda v : v in VALID_POLL_TYPES
+    'secret_vote': lambda v: type(v) == bool,
+    'type_id': lambda v: v in VALID_POLL_TYPES
 })
 def create_poll(request: CleanRequest) -> Response:
     data = request.clean_data
@@ -229,14 +234,18 @@ def create_poll(request: CleanRequest) -> Response:
             'message': 'Erro Interno do Servidor'
         }, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
-    conclusion = {'id': poll.id}
+    res = serializers.serialize(
+        'json', [Poll.objects.filter(id=poll.id).first()])
+    res = json.loads(res)
+    conclusion = {'poll': res}
     return Response(conclusion)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @with_rules({
     'poll_id': is_unsigned_int,
-    'email_list': lambda v : (
+    'email_list': lambda v: (
         is_unique_list(v) and
         all(map(is_valid_email, v))
     )
@@ -299,7 +308,7 @@ def register_emails_from_group(request: CleanRequest) -> Response:
         except:
             email_error_list.append(user.ref)
 
-    conclusion = { 'failed_emails': email_error_list }
+    conclusion = {'failed_emails': email_error_list}
 
     return Response(conclusion)
 
@@ -316,7 +325,8 @@ def compute_vote(request: CleanRequest) -> Response:
     try:
         token = Token.objects.get(token=data['token'], poll_id=data['poll_id'])
 
-        option = Option.objects.get(pk=data['option_id'], poll_id=data['poll_id'])
+        option = Option.objects.get(
+            pk=data['option_id'], poll_id=data['poll_id'])
 
     except Option.DoesNotExist:
         return Response({
@@ -351,7 +361,7 @@ def compute_vote(request: CleanRequest) -> Response:
             'message': 'Erro Interno do Servidor'
         }, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
-    conclusion = { 'vote_id': vote.id }
+    conclusion = {'vote_id': vote.id}
     return Response(conclusion)
 
 
@@ -370,3 +380,87 @@ def return_result(request: CleanRequest) -> Response:
             })
 
 
+# retorna as polls do usuário
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_polls(request):
+    user = request.user
+    polls = serializers.serialize('json', Poll.objects.filter(admin=user))
+    polls = json.loads(polls)
+
+    content = {'polls': polls}
+    return Response(content)
+
+
+# retorna as opções para uma poll específica
+@api_view(['GET'])
+def poll_options(request, pk):
+    poll = Poll.objects.filter(pk=pk)[0]
+    if poll:
+        options = serializers.serialize(
+            'json', Option.objects.filter(poll=poll))
+        options = json.loads(options)
+    else:
+        options = []
+    return Response({'options': options})
+
+
+# criação de novo grupo de usuários
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_group(request: CleanRequest) -> Response:
+
+    admin = request.user
+    name = request.data["name"]
+    emails = request.data["emails"]
+
+    if not Group.objects.filter(name=name, admin=admin):
+        group = Group.objects.create(name=name, admin=admin)
+
+        for email in emails:
+            (user, _) = UserAccount.objects.get_or_create(ref=email)
+            user.save()
+            group.users.add(user)
+
+        group = serializers.serialize('json', [group])
+        group = json.loads(group)
+        return Response({
+           'group': group,
+            'message': 'Grupo criado com sucesso!'
+         })
+    else:
+        return Response({
+            'message': 'Grupo com este nome já existe!'
+        }, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# retorna os grupos do usuário
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_groups(request):
+    user = request.user
+    groups = serializers.serialize('json', Group.objects.filter(admin=user))
+    groups = json.loads(groups)
+
+    content = {'groups': groups}
+    return Response(content)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_poll(request, pk):
+    try:
+        admin = request.user
+        poll = Poll.objects.get(pk=pk, admin=admin)
+        poll.delete()
+        return Response({
+            'message': 'Eleição deletada com sucesso'
+         })
+    except Poll.DoesNotExist:
+        return Response({
+            'message': 'Poll não encontrada'
+        }, status=HTTP_404_INTERNAL_SERVER_ERROR)
+    except:
+        return Response({
+            'message': 'Erro interno do servidor'
+        }, status=HTTP_500_INTERNAL_SERVER_ERROR)

@@ -1,12 +1,16 @@
 import {
     BrowserRouter as Router,
-    Route,
     Switch
 } from 'react-router-dom';
+
+import ConditionRoute from './components/condition-route';
 
 import Home from './views/home';
 import ResetPassword from './views/resetPassword';
 import ResetPasswordConfirm from './views/resetPasswordConfirm';
+import EmailsGroup from './views/emailsGroup';
+import Poll from './views/poll';
+import Dashboard from './views/dashboard';
 
 import LoadingScreen from './components/loading-screen';
 
@@ -15,7 +19,14 @@ import { checkAuthenticated } from './store/actions/auth';
 
 import { useEffect } from 'react';
 
-function App({ loading, checkAuthenticated }){
+/**
+ * @param {{
+ *   loading: boolean;
+ *   isAuthenticated: boolean;
+ *   checkAuthenticated: () => ReturnType<ReturnType<typeof checkAuthenticated>>
+ * }}
+ */
+function App({ loading, checkAuthenticated, isAuthenticated }){
     useEffect(() => {
         checkAuthenticated();
     }, [checkAuthenticated]);
@@ -24,9 +35,36 @@ function App({ loading, checkAuthenticated }){
         <LoadingScreen /> :
         <Router>
             <Switch>
-                <Route path="/" exact component={Home} />
-                <Route exact path="/resetar-senha" component={ResetPassword} />
-                <Route exact path="/password/reset/confirm/:uid/:token" component={ResetPasswordConfirm} />
+                <ConditionRoute exact path="/dashboard"
+                    component={Dashboard}
+                    condition={isAuthenticated}
+                    redirect="/"
+                />
+                <ConditionRoute exact path="/group/new"
+                    component={EmailsGroup}
+                    condition={isAuthenticated}
+                    redirect="/"
+                />
+                <ConditionRoute exact path="/polls/mine/:uid"
+                    component={Poll}
+                    condition={isAuthenticated}
+                    redirect="/"
+                />
+                <ConditionRoute exact path="/"
+                    component={Home}
+                    condition={!isAuthenticated}
+                    redirect="/dashboard"
+                />
+                <ConditionRoute exact path="/resetar-senha"
+                    component={ResetPassword}
+                    condition={!isAuthenticated}
+                    redirect="/dashboard"
+                />
+                <ConditionRoute exact path="/password/reset/confirm/:uid/:token"
+                    component={ResetPasswordConfirm}
+                    condition={!isAuthenticated}
+                    redirect="/dashboard"
+                />
             </Switch>
         </Router>
 }
@@ -34,7 +72,8 @@ function App({ loading, checkAuthenticated }){
 
 export default connect(
     state => ({
-        loading: state.ui.loading
+        loading: state.ui.loading,
+        isAuthenticated: Boolean(state.auth.access)
     }),
     { checkAuthenticated }
 )(App);
