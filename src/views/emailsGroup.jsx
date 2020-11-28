@@ -111,7 +111,7 @@ function EmailsGroup({ token, sendGroup }) {
             emails, name
         }
         try {
-            const res = await axios.post('/api/group/create', data, {
+            const res = await axios.post('/api/groups/create', data, {
                 headers: {
                     Authorization: `JWT ${token}`
                 }

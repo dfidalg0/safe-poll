@@ -24,7 +24,7 @@ export default function reducer(state = baseState, action) {
                 { ...state, groups: [action.group, ...state.groups] } :
                 { ...state, groups: [action.group]}
         case DELETE_POLL:
-            const newPolls = state.polls.filter( poll => poll.pk !== action.poll_id);
+            const newPolls = state.polls.filter( poll => poll.id !== action.poll_id);
             return  { ...state, polls: newPolls}
         default:
             return state;

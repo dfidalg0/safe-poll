@@ -1,13 +1,3 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-
-import { Redirect } from 'react-router'
-import { Link } from "react-router-dom";
-import { connect } from 'react-redux';
-import { pollOptions, userGroups, deletePoll } from '../store/actions/ui';
-
-import axios from 'axios';
-
 import {
     Divider, CardActions,
     CardContent, Card,
@@ -15,38 +5,41 @@ import {
     InputLabel, Select, MenuItem, Grid,
 } from '@material-ui/core';
 
-const useStyles = makeStyles({
-    root: {
-        width: '40%',
-        justifyContent: 'center',
-        textAlign: 'center',
-        marginLeft: '30%',
-        marginTop: '5%'
-    },
-    bullet: {
-        display: 'inline-block',
-        margin: '0 2px',
-        transform: 'scale(0.8)',
-    },
-    title: {
-        fontSize: 14,
-    },
-    pos: {
-        marginBottom: 12,
-    },
-    paper: {
-        height: '100%',
-        verticalAlign: 'middle',
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center"
-    },
-});
+import { Link, Redirect } from "react-router-dom";
+import { connect } from 'react-redux';
+import { fetchUserGroups, deletePoll } from '../store/actions/ui';
 
-function Poll({ match, polls, token, pollOptions, options, userGroups, groups, deletePoll }) {
+import LoadingScreen from '../components/loading-screen';
 
-    const poll_id = Number(match.params.uid);
-    const [poll, setPoll] = useState({ fields: [] });
+import axios from 'axios';
+
+import { useEffect, useState, useCallback } from 'react';
+import { useStyles } from '../styles/poll-view';
+
+function Poll({ match, token, fetchUserGroups, groups, deletePoll }) {
+    const [loading, setLoading] = useState(true);
+    const [poll, setPoll] = useState(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const { uid } = match.params;
+
+            try {
+                const { data: poll } = await axios.get(`/api/polls/get/${uid}/`);
+                setPoll(poll);
+            }
+            catch({ response: { data } }){
+                alert(data.message);
+                setDeleted(true);
+            }
+            finally {
+                setLoading(false);
+            }
+        }
+
+        fetchData();
+    }, [match]);
+
     const [group, setGroup] = useState('');
     const [deleted, setDeleted] = useState(false);
 
@@ -55,11 +48,11 @@ function Poll({ match, polls, token, pollOptions, options, userGroups, groups, d
     const submit = useCallback(async () => {
         const group_id = groups[group - 1].pk
         const data = {
-            poll_id,
+            poll_id: poll.id,
             group_id,
         }
         try {
-            await axios.post('/api/tokens/create_from_group', data, {
+            await axios.post('/api/tokens/create-from-group', data, {
                 headers: {
                     Authorization: `JWT ${token}`
                 }
@@ -68,60 +61,53 @@ function Poll({ match, polls, token, pollOptions, options, userGroups, groups, d
         catch ({ response }) {
             alert(response.data.message);
         }
-    }, [poll_id, groups, token, group]);
+    }, [poll, groups, token, group]);
 
     const delete_poll = useCallback(async () => {
-        const res = await axios.delete('/api/poll/delete/' + poll_id + '/', {
+        const res = await axios.delete(`/api/polls/delete/${poll.id}/`, {
             headers: {
                 Authorization: `JWT ${token}`
             }
         });
         alert(res.data.message);
-        await deletePoll(poll_id);
+        deletePoll(poll.id);
         setDeleted(true);
-    }, [poll_id, token, deletePoll]);
+    }, [poll, token, deletePoll]);
 
     useEffect(() => {
-        if (polls) {
-            const p = polls.filter(poll => Number(poll.pk) === poll_id)[0];
-            setPoll(p);
-        }
-
-        if (!options || Number(options[0].fields.poll) !== poll_id) {
-            pollOptions(poll_id)
-        }
-
         if (!groups) {
-            userGroups();
+            fetchUserGroups();
         }
 
-    }, [poll_id, polls, options, pollOptions, groups, userGroups]);
+    }, [groups, fetchUserGroups]);
 
+    if (loading) return <LoadingScreen />
 
     return (
-        deleted ? <Redirect to='/' /> :
+        deleted ?
+            <Redirect to='/dashboard' /> :
             <Card className={classes.root}>
                 <CardContent>
                     <Typography noWrap variant="h5" component="h2">
-                        {poll.fields.name}
+                        {poll.title}
                     </Typography>
                     <Typography noWrap className={classes.pos} color="textSecondary">
-                        {poll.fields.description}
+                        {poll.description}
                     </Typography>
                     <Divider style={{ marginBottom: 10, marginTop: 10 }} />
                     <Typography variant="overline" display="block" gutterBottom>
-                        Deadline: <br /> {poll.fields.deadline}
+                        Deadline: <br /> {poll.deadline}
                     </Typography>
                     <Typography variant="overline" display="block" gutterBottom>
-                        Voto Secreto:  {poll.fields.secret_vote ? 'Sim' : 'Não'}
+                        Voto Secreto:  {poll.secret_vote ? 'Sim' : 'Não'}
                     </Typography>
                     <Typography variant="overline" display="block" gutterBottom>
                         Opções:
                     </Typography>
 
-                    {!options ? null : options.map((row, index) => (
+                    {poll.options.map((option, index) => (
                         <Typography variant="overline" display="block" gutterBottom key={index}>
-                            {row.fields.name}
+                            {option.name}
                         </Typography>
                     ))}
 
@@ -158,7 +144,11 @@ function Poll({ match, polls, token, pollOptions, options, userGroups, groups, d
 
                 </CardContent>
                 <CardActions>
-                    <Button size="small"><Link to='/' className={classes.link}>Voltar</Link></Button>
+                    <Button size="small">
+                        <Link to='/dashboard' className={classes.link}>
+                            Voltar
+                        </Link>
+                    </Button>
                     <Grid container justify="flex-end">
                         <Button
                             className={classes.button}
@@ -173,8 +163,6 @@ function Poll({ match, polls, token, pollOptions, options, userGroups, groups, d
 };
 
 export default connect(state => ({
-    polls: state.ui.polls,
-    options: state.ui.options,
     groups: state.ui.groups,
     token: state.auth.access
-}), { pollOptions, userGroups, deletePoll })(Poll);
+}), { fetchUserGroups, deletePoll })(Poll);

@@ -7,7 +7,7 @@ import classes from '../styles/home.module.css';
 
 import { connect } from 'react-redux';
 import { logout } from '../store/actions/auth';
-import { userGroups } from '../store/actions/ui'
+import { fetchUserGroups } from '../store/actions/ui'
 
 import { Link } from "react-router-dom";
 
@@ -16,18 +16,18 @@ import { useState, useEffect } from 'react';
 /**
  * @param {{
  *   logout: () => ReturnType<typeof logout>
- *   userGroups: () => ReturnType<ReturnType<typeof userGroups>>
+ *   fetchUserGroups: () => ReturnType<ReturnType<typeof fetchUserGroups>>
  * }}
  */
-function Dashboard({ logout, userGroups, groups }){
+function Dashboard({ logout, fetchUserGroups, groups }){
     const [createOpen, setCreateOpen] = useState(false);
 
     useEffect(() => {
         if (!groups) {
-            userGroups();
+            fetchUserGroups();
         }
 
-    }, [groups, userGroups]);
+    }, [groups, fetchUserGroups]);
 
     return (
         <div className={classes.app}>
@@ -67,5 +67,5 @@ function Dashboard({ logout, userGroups, groups }){
 
 export default connect(
     null,
-    { logout, userGroups }
+    { logout, fetchUserGroups }
 )(Dashboard);

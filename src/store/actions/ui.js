@@ -47,13 +47,15 @@ export const fetchUserPolls = () => async (dispatch, getState) => {
     var state = getState();
     const token = state.auth.access;
     try {
-        const res = await axios.get('/api/polls/mine', {
+        const { data: polls } = await axios.get('/api/polls/mine', {
             headers: {
                 Authorization: `JWT ${token}`
             }
         });
 
-        dispatch(setPolls(res.data.polls));
+        polls.sort();
+
+        dispatch(setPolls(polls));
     }
     catch ({ response: { data } }) {
         alert('Erro: ' + data.message);
@@ -62,7 +64,7 @@ export const fetchUserPolls = () => async (dispatch, getState) => {
 
 export const pollOptions = (id) => async (dispatch) => {
     try {
-        const res = await axios.get('/api/polls/options/' + id + '/');
+        const res = await axios.get('/api/polls/get/' + id + '/');
 
         dispatch(setOptions(res.data.options));
     }
@@ -71,7 +73,7 @@ export const pollOptions = (id) => async (dispatch) => {
     }
 };
 
-export const userGroups = () => async (dispatch, getState) => {
+export const fetchUserGroups = () => async (dispatch, getState) => {
     var state = getState();
     const token = state.auth.access;
     try {
@@ -87,4 +89,3 @@ export const userGroups = () => async (dispatch, getState) => {
         alert('Erro: ' + data.message);
     }
 };
-

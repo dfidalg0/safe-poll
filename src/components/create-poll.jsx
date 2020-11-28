@@ -58,7 +58,7 @@ function CreatePoll({ open, onClose, token, sendPoll }){
     const [loading, setLoading] = useState(false);
 
     // Dados de formulário a serem enviados para o backend
-    const [name, setTitle] = useState('');
+    const [title, setTitle] = useState('');
     const [description, setDesc] = useState('');
     const [type_id, setType] = useState(1);
     const [deadline, setDeadline] = useState(null);
@@ -127,13 +127,13 @@ function CreatePoll({ open, onClose, token, sendPoll }){
 
     const hasErrors = useMemo(() => (
         options.length < 2 ||
-        !name || !description || !deadline ||
+        !title || !description || !deadline ||
         !optionErrors.every(el => !el) || deadlineError
-    ), [options, name, description, optionErrors, deadline, deadlineError]);
+    ), [options, title, description, optionErrors, deadline, deadlineError]);
 
     const submit = useCallback(async () => {
         const data = {
-            name, description, type_id, deadline: deadline.toJSON().slice(0, 10),
+            title, description, type_id, deadline: deadline.toJSON().slice(0, 10),
             options, secret_vote
         }
 
@@ -141,16 +141,16 @@ function CreatePoll({ open, onClose, token, sendPoll }){
         setLoading(true);
 
         try {
-            const res = await axios.post('/api/poll/create', data, {
+            const res = await axios.post('/api/polls/create', data, {
                 headers: {
                     Authorization: `JWT ${token}`
                 }
             });
 
-            sendPoll(res.data.poll[0]);
+            sendPoll(res.data);
         }
-        catch ({ response }) {
-            document.write(response.data);
+        catch ({ response: { data } }) {
+            alert(data.message);
         }
 
         // Fim do estado de carregamento do envio
@@ -158,7 +158,7 @@ function CreatePoll({ open, onClose, token, sendPoll }){
 
         if (onClose) onClose();
         clear();
-    }, [name, description, type_id, deadline, options, secret_vote, onClose, token, sendPoll]);
+    }, [title, description, type_id, deadline, options, secret_vote, onClose, token, sendPoll]);
 
     // Criação de nova opção
     const createOption = useCallback(() => {
@@ -208,13 +208,13 @@ function CreatePoll({ open, onClose, token, sendPoll }){
                 <DialogContent>
                     <Grid container>
                         <Grid item xs={12}>
-                            <InputLabel htmlFor="name">
+                            <InputLabel htmlFor="title">
                                 Título
                             </InputLabel>
-                            <TextField id="name"
+                            <TextField id="title"
                                 autoComplete="off"
                                 className={classes.field}
-                                value={name}
+                                value={title}
                                 onChange={e => setTitle(e.target.value)}
                                 variant="outlined"
                                 margin="normal"

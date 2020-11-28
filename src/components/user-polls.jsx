@@ -39,9 +39,10 @@ const useStyles = makeStyles((theme) => ({
 
 
 function UserPolls({ fetchUserPolls, polls }) {
-
     const classes = useStyles();
+
     const [page, setPage] = useState(0);
+
     const rowsPerPage = 9;
 
     const handleChangePage = useCallback((_, newPage) => {
@@ -54,24 +55,28 @@ function UserPolls({ fetchUserPolls, polls }) {
         }
     }, [polls, fetchUserPolls]);
 
-    const FormRow = useCallback(poll => {
+    const FormRow = useCallback(({ poll }) => {
         return (
             <>
                 <Grid item xs={5} >
                     <Typography noWrap className={classes.paper}>
-                        <Link to={'/polls/mine/' + poll.poll.pk}
+                        <Link to={'/polls/mine/' + poll.id}
                             className={classes.link}
                         >
-                            {poll.poll.fields.name}
+                            {poll.title}
                         </Link>
                     </Typography>
                 </Grid>
                 <Grid item xs={5}>
-                    <Typography noWrap className={classes.paper}>{poll.poll.fields.description}</Typography>
+                    <Typography noWrap className={classes.paper}>
+                        {poll.description}
+                    </Typography>
 
                 </Grid>
                 <Grid item xs={2} >
-                    <Typography className={classes.paper}>{poll.poll.fields.deadline}</Typography>
+                    <Typography className={classes.paper}>
+                        {new Date(poll.deadline).toLocaleDateString()}
+                    </Typography>
 
                 </Grid>
             </>
@@ -104,11 +109,12 @@ function UserPolls({ fetchUserPolls, polls }) {
                         }}>
                             Nenhuma eleição cadastrada!
                         </Typography>
-                    </Grid> : polls.slice(
+                    </Grid> :
+                    polls.slice(
                         page * rowsPerPage, page * rowsPerPage + rowsPerPage
-                    ).map((row, index) => (
+                    ).map((poll, index) => (
                         <Grid container item xs={12} spacing={0} key={index}>
-                            <FormRow poll={row} />
+                            <FormRow poll={poll} />
                         </Grid>
                     ))
                 }
