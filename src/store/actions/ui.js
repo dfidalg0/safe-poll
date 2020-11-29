@@ -1,7 +1,7 @@
 import {
     SET_LOADING, SET_POLLS, PUSH_POLL,
     SET_OPTIONS, SET_GROUPS, PUSH_GROUP,
-    DELETE_POLL
+    DELETE_POLL, CLEAR_POLLS
 } from './types';
 import axios from 'axios';
 
@@ -42,6 +42,10 @@ export const deletePoll = (poll_id) => ({
     type: DELETE_POLL,
     poll_id
 })
+
+export const clearPolls = () => ({
+    type: CLEAR_POLLS
+});
 
 export const fetchUserPolls = () => async (dispatch, getState) => {
     var state = getState();

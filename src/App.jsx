@@ -3,20 +3,18 @@ import {
     Switch
 } from 'react-router-dom';
 
-import ConditionRoute from './components/condition-route';
+import ConditionRoute from '@/components/condition-route';
 
-import Home from './views/home';
-import ResetPassword from './views/resetPassword';
-import ResetPasswordConfirm from './views/resetPasswordConfirm';
-import EmailsGroup from './views/emailsGroup';
-import Poll from './views/poll';
-import Dashboard from './views/dashboard';
+import Home from '@/views/home';
+import ResetPassword from '@/views/resetPassword';
+import ResetPasswordConfirm from '@/views/resetPasswordConfirm';
+import Dashboard from '@/views/manage';
 
-import LoadingScreen from './components/loading-screen';
+import LoadingScreen from '@/components/loading-screen';
 
 import { connect } from 'react-redux';
-import { checkAuthenticated } from './store/actions/auth';
-import { fetchUserGroups } from './store/actions/ui';
+import { checkAuthenticated } from '@/store/actions/auth';
+import { fetchUserGroups } from '@/store/actions/ui';
 
 import { useEffect } from 'react';
 
@@ -43,35 +41,29 @@ function App({ loading, checkAuthenticated, isAuthenticated, fetchUserGroups }){
         <LoadingScreen /> :
         <Router>
             <Switch>
-                <ConditionRoute exact path="/dashboard"
+                {/* Nesse caso, não usamos o exact, pois essa rota servirá
+                    para dar match em /manage/polls/*, /manage/groups/*, etc..
+                    Como especificado em views/manage/index.jsx
+                */}
+                <ConditionRoute path="/manage"
                     component={Dashboard}
-                    condition={isAuthenticated}
-                    redirect="/"
-                />
-                <ConditionRoute exact path="/group/new"
-                    component={EmailsGroup}
-                    condition={isAuthenticated}
-                    redirect="/"
-                />
-                <ConditionRoute exact path="/polls/mine/:uid"
-                    component={Poll}
                     condition={isAuthenticated}
                     redirect="/"
                 />
                 <ConditionRoute exact path="/"
                     component={Home}
                     condition={!isAuthenticated}
-                    redirect="/dashboard"
+                    redirect="/manage"
                 />
                 <ConditionRoute exact path="/resetar-senha"
                     component={ResetPassword}
                     condition={!isAuthenticated}
-                    redirect="/dashboard"
+                    redirect="/manage"
                 />
                 <ConditionRoute exact path="/password/reset/confirm/:uid/:token"
                     component={ResetPasswordConfirm}
                     condition={!isAuthenticated}
-                    redirect="/dashboard"
+                    redirect="/manage"
                 />
             </Switch>
         </Router>

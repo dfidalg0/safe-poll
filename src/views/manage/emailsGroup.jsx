@@ -10,7 +10,7 @@ import {
     Paper
 } from '@material-ui/core';
 
-import LoadingScreen from '../components/loading-screen';
+import LoadingScreen from '@/components/loading-screen';
 
 // Ícones
 import {
@@ -22,7 +22,7 @@ import { connect } from 'react-redux';
 import axios from 'axios';
 
 import isEmail from 'validator/lib/isEmail';
-import { pushGrup } from '../store/actions/ui';
+import { pushGrup } from '@/store/actions/ui';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -221,7 +221,9 @@ function EmailsGroup({ token, groups, sendGroup }) {
                         alignItems="center"
                     >
                         <Grid item>
-                            <Button><Link to='/' className={classes.link}>Voltar</Link></Button>
+                            <Button><Link to='/manage' className={classes.link}>
+                                Voltar</Link>
+                            </Button>
                         </Grid>
                         <Grid item>
                             <Button variant="contained" className={classes.button}

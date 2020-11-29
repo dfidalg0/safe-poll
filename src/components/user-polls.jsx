@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Paper, Grid, Typography } from '@material-ui/core';
 
 import TablePagination from '@material-ui/core/TablePagination';
-import { fetchUserPolls } from '../store/actions/ui';
+import { fetchUserPolls } from '@/store/actions/ui';
 import { connect } from 'react-redux';
 
 import { Link } from "react-router-dom";
@@ -60,7 +60,7 @@ function UserPolls({ fetchUserPolls, polls }) {
             <>
                 <Grid item xs={5} >
                     <Typography noWrap className={classes.paper}>
-                        <Link to={'/polls/mine/' + poll.id}
+                        <Link to={'/manage/polls/' + poll.id}
                             className={classes.link}
                         >
                             {poll.title}

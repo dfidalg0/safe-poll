@@ -1,5 +1,5 @@
-import classes from '../styles/home.module.css';
-import LoginSignUp from '../components/loginSignUp'
+import classes from '@/styles/home.module.css';
+import LoginSignUp from '@/components/loginSignUp'
 
 export default function Home() {
     return (

@@ -7,16 +7,16 @@ import {
 
 import { Link, Redirect } from "react-router-dom";
 import { connect } from 'react-redux';
-import { fetchUserGroups, deletePoll } from '../store/actions/ui';
+import { fetchUserGroups, deletePoll } from '@/store/actions/ui';
 
-import LoadingScreen from '../components/loading-screen';
+import LoadingScreen from '@/components/loading-screen';
 
 import axios from 'axios';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useStyles } from '../styles/poll-view';
+import { useStyles } from '@/styles/poll-view';
 
-function Poll({ match, token, fetchUserGroups, groups, deletePoll }) {
+function Poll({ match, token, fetchUserGroups, groups, deletePoll, user }) {
     const [loading, setLoading] = useState(true);
     const [poll, setPoll] = useState(null);
 
@@ -26,7 +26,9 @@ function Poll({ match, token, fetchUserGroups, groups, deletePoll }) {
 
             try {
                 const { data: poll } = await axios.get(`/api/polls/get/${uid}/`);
-                setPoll(poll);
+                if (user.id !== poll.admin)
+                    setDeleted(true);
+                else setPoll(poll);
             }
             catch({ response: { data } }){
                 alert(data.message);
@@ -38,7 +40,7 @@ function Poll({ match, token, fetchUserGroups, groups, deletePoll }) {
         }
 
         fetchData();
-    }, [match]);
+    }, [match, user]);
 
     const [group, setGroup] = useState('');
     const [deleted, setDeleted] = useState(false);
@@ -46,7 +48,7 @@ function Poll({ match, token, fetchUserGroups, groups, deletePoll }) {
     const classes = useStyles();
 
     const submit = useCallback(async () => {
-        const group_id = groups[group - 1].pk
+        const group_id = groups[group - 1].id
         const data = {
             poll_id: poll.id,
             group_id,
@@ -85,7 +87,7 @@ function Poll({ match, token, fetchUserGroups, groups, deletePoll }) {
 
     return (
         deleted ?
-            <Redirect to='/dashboard' /> :
+            <Redirect to='/manage' /> :
             <Card className={classes.root}>
                 <CardContent>
                     <Typography noWrap variant="h5" component="h2">
@@ -145,7 +147,7 @@ function Poll({ match, token, fetchUserGroups, groups, deletePoll }) {
                 </CardContent>
                 <CardActions>
                     <Button size="small">
-                        <Link to='/dashboard' className={classes.link}>
+                        <Link to='/manage' className={classes.link}>
                             Voltar
                         </Link>
                     </Button>
@@ -164,5 +166,6 @@ function Poll({ match, token, fetchUserGroups, groups, deletePoll }) {
 
 export default connect(state => ({
     groups: state.ui.groups,
-    token: state.auth.access
+    token: state.auth.access,
+    user: state.auth.user
 }), { fetchUserGroups, deletePoll })(Poll);

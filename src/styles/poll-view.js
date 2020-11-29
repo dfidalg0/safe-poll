@@ -4,9 +4,7 @@ export const useStyles = makeStyles({
     root: {
         width: '40%',
         justifyContent: 'center',
-        textAlign: 'center',
-        marginLeft: '30%',
-        marginTop: '5%'
+        textAlign: 'center'
     },
     bullet: {
         display: 'inline-block',

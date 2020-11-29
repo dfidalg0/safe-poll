@@ -24,7 +24,6 @@ from ..models import (
 
 # Django
 from django.db import transaction
-from django.core import serializers
 from django.forms.models import model_to_dict
 
 # Auxiliares

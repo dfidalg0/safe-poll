@@ -1,4 +1,8 @@
-import { SET_LOADING, SET_POLLS, PUSH_POLL, SET_OPTIONS, SET_GROUPS, PUSH_GROUP, DELETE_POLL } from '../actions/types';
+import {
+    SET_LOADING, SET_POLLS, PUSH_POLL,
+    SET_OPTIONS, SET_GROUPS, PUSH_GROUP,
+    DELETE_POLL, CLEAR_POLLS
+} from '../actions/types';
 
 const baseState = {
     loading: true,
@@ -25,7 +29,9 @@ export default function reducer(state = baseState, action) {
                 { ...state, groups: [action.group]}
         case DELETE_POLL:
             const newPolls = state.polls.filter( poll => poll.id !== action.poll_id);
-            return  { ...state, polls: newPolls}
+            return  { ...state, polls: newPolls};
+        case CLEAR_POLLS:
+            return { ...state, polls: null };
         default:
             return state;
     }

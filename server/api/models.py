@@ -122,6 +122,9 @@ class PollManager(models.Manager):
         ONE_DAY = 24*3600
         remaining_seconds = ONE_DAY - (hour*3600 + minute*60 + second)
         delay = days_remaining*ONE_DAY + remaining_seconds
+
+        # Linha comentada por razões de "não consigo fazer isso funcionar"
+
         # kill_poll_tokens.apply_async((poll.id,), countdown=delay)
         return poll
 

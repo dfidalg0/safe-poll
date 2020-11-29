@@ -20,14 +20,14 @@ import { KeyboardDatePicker, MuiPickersUtilsProvider } from '@material-ui/picker
 import { ptBR as pt_brLocale } from 'date-fns/locale';
 
 // Constantes
-import { POLL_TYPES } from '../utils/constants';
+import { POLL_TYPES } from '@/utils/constants';
 
 // Hooks
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useMediaQuery, useTheme } from '@material-ui/core';
-import { useStyles } from '../styles/create-poll';
+import { useStyles } from '@/styles/create-poll';
 
-import { pushPoll } from '../store/actions/ui';
+import { pushPoll } from '@/store/actions/ui';
 import { connect } from 'react-redux';
 
 // Lodash <3
