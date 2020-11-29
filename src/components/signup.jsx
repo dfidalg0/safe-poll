@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Avatar, Button, TextField, Grid, Typography, Container } from '@material-ui/core'
 import { connect } from 'react-redux';
-import { signup } from '../store/actions/auth'
+import { signup } from '@/store/actions/auth'
 import DisplayAlert from './displayAlert'
-import { useStyles } from '../styles/form'
+import { useStyles } from '@/styles/form'
 
 
 function SignUp({ signup, error }) {

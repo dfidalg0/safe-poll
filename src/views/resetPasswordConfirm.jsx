@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Avatar, Breadcrumbs, Link, Button, CssBaseline, TextField, Typography, Container } from '@material-ui/core'
 import { connect } from 'react-redux';
-import { reset_password_confirm } from '../store/actions/auth'
-import DisplayAlert from '../components/displayAlert'
+import { reset_password_confirm } from '@/store/actions/auth'
+import DisplayAlert from '@/components/displayAlert'
 import { Alert } from '@material-ui/lab'
-import { useStyles } from '../styles/form'
+import { useStyles } from '@/styles/form'
 
 
 function ResetPasswordConfirm({ match, reset_password_confirm, error }) {
@@ -48,8 +48,9 @@ function ResetPasswordConfirm({ match, reset_password_confirm, error }) {
         <Container className={classes.app} maxWidth="xs">
             <CssBaseline />
             <Breadcrumbs className={classes.breadcrumb} >
-                <Link color="inherit" href="/">
-                    Página Inicial </Link>
+                <Link color="inherit" to="/">
+                    Página Inicial
+                </Link>
                 <Typography color="textPrimary">Alterar Senha</Typography>
             </Breadcrumbs>
             <div className={classes.paper}>

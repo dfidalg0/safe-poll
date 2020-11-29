@@ -1,16 +1,28 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { ptBR } from '@material-ui/core/locale';
+import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+import { Provider } from 'react-redux';
+import store from './store';
+
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
-import { Provider } from 'react-redux';
-import store from './store';
+const theme = createMuiTheme({
+    palette: {
+        primary: { main: '#1976d2' },
+    },
+}, ptBR);
+
+
 
 ReactDOM.render(
-    <Provider store={store}>
-        <App />
-    </Provider>,
+    <ThemeProvider theme={theme}>
+        <Provider store={store}>
+            <App />
+        </Provider>
+    </ThemeProvider>,
     document.getElementById('root')
 );
 

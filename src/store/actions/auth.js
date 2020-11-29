@@ -16,7 +16,7 @@ import axios from 'axios';
 
 import { decode } from 'jsonwebtoken';
 
-import { setLoading } from '../actions/ui';
+import { setLoading, clearPolls } from '../actions/ui';
 
 let refreshTimeout;
 
@@ -187,10 +187,12 @@ export const reset_password_confirm = (uid, token, new_password, re_new_password
     }
 }
 
-export const logout = () => {
+export const logout = () => dispatch => {
     clearTimeout(refreshTimeout);
 
-    return {
+    dispatch(clearPolls());
+
+    dispatch({
         type: LOGOUT
-    }
+    });
 };

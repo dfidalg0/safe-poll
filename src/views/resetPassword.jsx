@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { Breadcrumbs, Button, CssBaseline, TextField, Link, Typography, Container } from '@material-ui/core'
+import {
+    Breadcrumbs, Button, CssBaseline,
+    TextField, Link, Typography,
+    Container
+} from '@material-ui/core'
 import { connect } from 'react-redux';
-import { reset_password } from '../store/actions/auth'
+import { reset_password } from '@/store/actions/auth'
 import { Alert } from '@material-ui/lab'
-import { useStyles } from '../styles/form'
+import { useStyles } from '@/styles/form'
 
 function ResetPassword({ reset_password }) {
     const classes = useStyles();

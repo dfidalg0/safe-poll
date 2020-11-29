@@ -11,6 +11,7 @@ djoser = "*"
 djangorestframework = "*"
 djangorestframework-simplejwt = "*"
 jwt = "*"
+celery = "*"
 
 [requires]
 python_version = "3.6"

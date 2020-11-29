@@ -5,6 +5,10 @@ from django.contrib.auth.models import (
 )
 import secrets
 
+import datetime
+
+#Tasks
+from celery import shared_task
 
 class UserAccountManager(BaseUserManager):
     def __base_create_user(self, email, name, password=None):
@@ -86,9 +90,47 @@ class PollType (models.Model):
 
 VALID_POLL_TYPES = set(map(lambda v : v.id, PollType.objects.all()))
 
+
+#Task que sera utilizada para finalizar a poll.
+@shared_task
+def kill_poll_tokens(poll_id):
+    poll = Poll.objects.get(pk=poll_id)
+    token_list = Token.objects.filter(poll_id=poll.id).delete()
+    print('Tokens from poll {} were deleted.'.format(poll.id))
+
+
+@shared_task
+def kill_test(test_id):
+    Test.objects.get(pk=test_id).delete()
+    print('Test deleted!')
+
+
+class PollManager(models.Manager):
+    def create(self, *args, **kwargs):
+        poll = super().create(*args, **kwargs)
+
+        #Agendar o termino da poll:
+        if type(poll.deadline) == str:
+            (year, month, day) = (int(i) for i in poll.deadline.split('-'))
+            poll.deadline = datetime.date(year, month, day)
+
+        days_remaining = (poll.deadline - datetime.date.today()).days
+        current_time = datetime.datetime.now().time()
+        hour = current_time.hour
+        minute = current_time.minute
+        second = current_time.second
+        ONE_DAY = 24*3600
+        remaining_seconds = ONE_DAY - (hour*3600 + minute*60 + second)
+        delay = days_remaining*ONE_DAY + remaining_seconds
+
+        # Linha comentada por razões de "não consigo fazer isso funcionar"
+
+        # kill_poll_tokens.apply_async((poll.id,), countdown=delay)
+        return poll
+
 class Poll (models.Model):
     # Informações básicas
-    name = models.CharField(max_length=100)
+    title = models.CharField(max_length=100)
     type = models.ForeignKey(PollType, on_delete=models.CASCADE)
     description = models.TextField(null=True)
 
@@ -104,9 +146,6 @@ class Poll (models.Model):
     # Número de ganhadores da eleição
     winners_number = models.PositiveIntegerField(default=1)
 
-    # Grupo de usuários associados
-    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
-
     # Soma máxima dos rankings (para os modelos Instant-runoff e Cumulative)
     rankings_sum = models.PositiveIntegerField(null=True)
 
@@ -116,6 +155,26 @@ class Poll (models.Model):
         blank=True, related_name='polls_voted'
     )
 
+    #Define the new manager:
+    objects = PollManager()
+
+
+    #Computar os resultados da eleicao:
+    def compute_result(self):
+        if self.type.id == 1:
+            self._compute_result_first_past_the_post_voting()
+
+    def _compute_result_first_past_the_post_voting(self):
+        options = Option.objects.filter(pk=poll.id)
+        votes   = Vote.objects.filter(pk=poll.id)
+        counting_votes = {}
+        for option in options:
+            counting_votes[option.id] = 0
+        for vote in votes:
+            counting_votes[vote.option.id] += 1
+        winner = max(counting_votes, key=lambda v:counting_votes[v])
+        final_result = {'winner':winner, 'counting_votes':counting_votes}
+        return final_result
 
 class Vote (models.Model):
     poll = models.ForeignKey('Poll', on_delete=models.CASCADE)
@@ -136,7 +195,7 @@ class Vote (models.Model):
 class Option (models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name='options')
 
 # Token.
 class TokenManager(models.Manager):

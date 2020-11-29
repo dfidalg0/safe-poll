@@ -20,13 +20,14 @@ import { KeyboardDatePicker, MuiPickersUtilsProvider } from '@material-ui/picker
 import { ptBR as pt_brLocale } from 'date-fns/locale';
 
 // Constantes
-import { POLL_TYPES } from '../utils/constants';
+import { POLL_TYPES } from '@/utils/constants';
 
 // Hooks
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useMediaQuery, useTheme } from '@material-ui/core';
-import { useStyles } from '../styles/create-poll';
+import { useStyles } from '@/styles/create-poll';
 
+import { pushPoll } from '@/store/actions/ui';
 import { connect } from 'react-redux';
 
 // Lodash <3
@@ -34,7 +35,15 @@ import reduce from 'lodash.reduce';
 
 import axios from 'axios';
 
-function CreatePoll({ open, onClose, token }){
+/**
+ * @param {{
+ *   open: boolean;
+ *   onClose: () => void;
+ *   token: string;
+ *   sendPoll: (poll: any) => ReturnType<typeof pushPoll>
+ * }}
+ */
+function CreatePoll({ open, onClose, token, sendPoll }){
     // Styles
     const theme = useTheme();
     const classes = useStyles();
@@ -49,7 +58,7 @@ function CreatePoll({ open, onClose, token }){
     const [loading, setLoading] = useState(false);
 
     // Dados de formulário a serem enviados para o backend
-    const [name, setTitle] = useState('');
+    const [title, setTitle] = useState('');
     const [description, setDesc] = useState('');
     const [type_id, setType] = useState(1);
     const [deadline, setDeadline] = useState(null);
@@ -101,8 +110,8 @@ function CreatePoll({ open, onClose, token }){
         const errors = [];
 
         // Estado de erro para as opções que se repetem
-        for (const key in counters){
-            if (counters[key].length > 1){
+        for (const key in counters) {
+            if (counters[key].length > 1) {
                 counters[key].forEach(index => errors[index] = true);
             }
         }
@@ -118,13 +127,13 @@ function CreatePoll({ open, onClose, token }){
 
     const hasErrors = useMemo(() => (
         options.length < 2 ||
-        !name || !description || !deadline ||
+        !title || !description || !deadline ||
         !optionErrors.every(el => !el) || deadlineError
-    ), [options, name, description, optionErrors, deadline, deadlineError]);
+    ), [options, title, description, optionErrors, deadline, deadlineError]);
 
     const submit = useCallback(async () => {
         const data = {
-            name, description, type_id, deadline: deadline.toJSON().slice(0,10),
+            title, description, type_id, deadline: deadline.toJSON().slice(0, 10),
             options, secret_vote
         }
 
@@ -132,29 +141,29 @@ function CreatePoll({ open, onClose, token }){
         setLoading(true);
 
         try {
-            const { data: { id } } = await axios.post('/api/poll/create', data, {
+            const res = await axios.post('/api/polls/create', data, {
                 headers: {
                     Authorization: `JWT ${token}`
                 }
             });
 
-            console.log(`Poll criada com id ${id}`);
+            sendPoll(res.data);
         }
-        catch ({ response }){
-            document.write(response.data);
+        catch ({ response: { data } }) {
+            alert(data.message);
         }
 
         // Fim do estado de carregamento do envio
         setLoading(false);
 
-        if(onClose) onClose();
+        if (onClose) onClose();
         clear();
-    }, [name, description, type_id, deadline, options, secret_vote, onClose, token]);
+    }, [title, description, type_id, deadline, options, secret_vote, onClose, token, sendPoll]);
 
     // Criação de nova opção
     const createOption = useCallback(() => {
         // Inserção da nova opção na lista de opções (caso não esteja repetida)
-        if (newOption && !newOptionError){
+        if (newOption && !newOptionError) {
             setOptions(options => [...options, newOption]);
             setNewOption('');
         }
@@ -170,7 +179,7 @@ function CreatePoll({ open, onClose, token }){
     // Atualização de uma opção
     const updateOption = useCallback((index, value) => {
         // Se não há nada escrito na opção, ela será deletada
-        if (!value){
+        if (!value) {
             deleteOption(index);
             // Foco do teclado no campo de digitação de opção nova
             newOptionRef.current.focus();
@@ -186,7 +195,7 @@ function CreatePoll({ open, onClose, token }){
     }, [deleteOption]);
 
     return <Dialog open={open} onClose={() => {
-        if(onClose) onClose();
+        if (onClose) onClose();
     }}>
         <Grid container className={classes.root} justify="center">
             <Grid item xs={12}>
@@ -199,13 +208,13 @@ function CreatePoll({ open, onClose, token }){
                 <DialogContent>
                     <Grid container>
                         <Grid item xs={12}>
-                            <InputLabel htmlFor="name">
+                            <InputLabel htmlFor="title">
                                 Título
                             </InputLabel>
-                            <TextField id="name"
+                            <TextField id="title"
                                 autoComplete="off"
                                 className={classes.field}
-                                value={name}
+                                value={title}
                                 onChange={e => setTitle(e.target.value)}
                                 variant="outlined"
                                 margin="normal"
@@ -245,7 +254,7 @@ function CreatePoll({ open, onClose, token }){
                                 onChange={e => setType(e.target.value)}
                             >
                                 {POLL_TYPES.map((type, index) =>
-                                    <MenuItem value={index+1} key={index}>
+                                    <MenuItem value={index + 1} key={index}>
                                         {type}
                                     </MenuItem>
                                 )}
@@ -278,7 +287,7 @@ function CreatePoll({ open, onClose, token }){
                             <InputLabel>
                                 Candidatos
                             </InputLabel>
-                            { options.map((option, index) =>
+                            {options.map((option, index) =>
                                 <Grid container key={index}>
                                     <Grid item xs={10}>
                                         <TextField
@@ -297,7 +306,7 @@ function CreatePoll({ open, onClose, token }){
                                         <IconButton onClick={
                                             () => deleteOption(index)
                                         }>
-                                            <DeleteIcon className={classes.deleteIcon}/>
+                                            <DeleteIcon className={classes.deleteIcon} />
                                         </IconButton>
                                     </Grid>
                                 </Grid>
@@ -355,7 +364,7 @@ function CreatePoll({ open, onClose, token }){
                             onClick={submit}
                             disabled={hasErrors}
                         >
-                            Criar
+                                Criar
                         </Button>}
                     </Grid>
                 </DialogActions>
@@ -364,8 +373,14 @@ function CreatePoll({ open, onClose, token }){
     </Dialog>
 }
 
+function mapDispatchToProps(dispatch) {
+    return ({
+        sendPoll: (poll) => dispatch(pushPoll(poll))
+    })
+}
+
 export default connect(
     state => ({
         token: state.auth.access
-    })
+    }), mapDispatchToProps
 )(CreatePoll);

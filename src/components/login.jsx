@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Avatar, Button, TextField, Link, Grid, Typography, Container } from '@material-ui/core'
 import { connect } from 'react-redux';
-import { login } from '../store/actions/auth'
+import { login } from '@/store/actions/auth'
 import DisplayAlert from './displayAlert'
-import { useStyles } from '../styles/form'
+import { useStyles } from '@/styles/form'
 
 
 function Login({ login, error }) {
@@ -67,7 +67,7 @@ function Login({ login, error }) {
                     </Button>
                     <Grid container>
                         <Grid item xs>
-                            <Link href="/resetar-senha" variant="body2">
+                            <Link to="/resetar-senha" variant="body2">
                                 Esqueceu sua senha?
                             </Link>
                         </Grid>
