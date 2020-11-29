@@ -127,7 +127,7 @@ function Poll({ match, token, fetchUserGroups, groups, deletePoll }) {
                         >
                             {!groups ? null : groups.map((group, index) =>
                                 <MenuItem value={index + 1} key={index}>
-                                    {group.fields.name}
+                                    {group.name}
                                 </MenuItem>
                             )}
                         </Select>

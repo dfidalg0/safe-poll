@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { Link } from "react-router-dom";
@@ -9,6 +9,8 @@ import {
     Button, Typography, IconButton,
     Paper
 } from '@material-ui/core';
+
+import LoadingScreen from '../components/loading-screen';
 
 // Ícones
 import {
@@ -61,10 +63,8 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-function EmailsGroup({ token, sendGroup }) {
-
+function EmailsGroup({ token, groups, sendGroup }) {
     const classes = useStyles();
-
 
     const [emails, setEmails] = useState([]);
     const [name, setName] = useState('');
@@ -75,15 +75,24 @@ function EmailsGroup({ token, sendGroup }) {
     // Estado de erros de validação dos emails
     const [newEmailError, setNewEmailError] = useState(false);
 
+    // Estado de erros de validação do nome do grupo
+    const nameError = useMemo(() => {
+        return (groups || []).map(g => g.name).includes(name);
+    }, [groups, name]);
+
+    const disabled = useMemo(() => (
+        name === '' || emails.length === 0 || nameError
+    ), [name, emails, nameError]);
+
     // Ref para a caixa de texto de novo email (usada para autofocus)
     const newEmailRef = useRef();
 
-    const clear = () => {
+    const clear = useCallback(() => {
         // Limpando dados do formulário
         setName('');
         setEmails([]);
         setNewEmailError(false);
-    };
+    }, []);
 
     const createEmail = useCallback(() => {
         if (newEmail && !newEmailError) {
@@ -116,28 +125,33 @@ function EmailsGroup({ token, sendGroup }) {
                     Authorization: `JWT ${token}`
                 }
             });
-            sendGroup(res.data.group[0]);
+            sendGroup({
+                id: res.data.id,
+                ...data
+            });
             alert(res.data.message);
         }
         catch ({ response }) {
             alert(response.data.message);
         }
         clear();
-    }, [name, emails, token, sendGroup]);
+    }, [name, emails, token, sendGroup, clear]);
 
-    return (
+    return !groups ? <LoadingScreen /> : (
         <div align="center">
             <Card className={classes.root}>
                 <CardContent>
                     <Typography variant="button" display="block" gutterBottom style={{ marginTop: 10 }}>
                         Novo Grupo:
-                </Typography>
+                    </Typography>
                     <Grid container spacing={1} style={{ justifyContent: 'center' }}>
                         <Grid item xs={12} sm={2}>
                             <Typography className={classes.paper}>Nome:</Typography>
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <TextField id="name"
+                                error={nameError}
+                                helperText={nameError ? 'Já existe grupo com esse nome' : null}
                                 autoComplete="off"
                                 className={classes.field}
                                 value={name}
@@ -212,7 +226,7 @@ function EmailsGroup({ token, sendGroup }) {
                         <Grid item>
                             <Button variant="contained" className={classes.button}
                                 onClick={submit}
-                                disabled={name === '' || emails.length === 0}
+                                disabled={disabled}
                             >
                                 Criar
                         </Button>

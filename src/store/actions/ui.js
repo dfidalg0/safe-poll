@@ -53,7 +53,7 @@ export const fetchUserPolls = () => async (dispatch, getState) => {
             }
         });
 
-        polls.sort();
+        polls.sort((a,b) => a.deadline < b.deadline ? -1 : 1);
 
         dispatch(setPolls(polls));
     }
@@ -83,7 +83,7 @@ export const fetchUserGroups = () => async (dispatch, getState) => {
             }
         });
 
-        dispatch(setGroups(res.data.groups));
+        dispatch(setGroups(res.data));
     }
     catch ({ response: { data } }) {
         alert('Erro: ' + data.message);

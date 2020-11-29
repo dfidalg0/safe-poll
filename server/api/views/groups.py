@@ -19,19 +19,30 @@ def create_group(request: CleanRequest) -> Response:
     admin = request.user
 
     if not Group.objects.filter(name=name, admin=admin):
-        group = Group.objects.create(name=name, admin=admin)
+        try:
+            with transaction.atomic():
+                max_id = int(Group.objects.latest('pk').pk)
 
-        for email in emails:
-            (user, _) = UserAccount.objects.get_or_create(ref=email)
-            user.save()
-            group.users.add(user)
+                users = map(lambda email : UserAccount(ref=email), emails)
 
-        group = serializers.serialize('json', [group])
-        group = json.loads(group)
+                for i, user in enumerate(users):
+                    user.id = max_id + i + 1
+
+                group = Group.objects.create(name=name, admin=admin)
+                users = UserAccount.objects.bulk_create(
+                    users, ignore_conflicts=True
+                )
+                group.users.add(*users)
+        except Exception as exc:
+            print(exc)
+            return Response({
+                'message': 'Erro Interno do Servidor'
+            }, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
         return Response({
-           'group': group,
-            'message': 'Grupo criado com sucesso!'
-         })
+            'id': group.id,
+            'message': 'Grupo criado com sucesso'
+        })
     else:
         return Response({
             'message': 'Grupo com este nome já existe!'
@@ -43,8 +54,9 @@ def create_group(request: CleanRequest) -> Response:
 @permission_classes([IsAuthenticated])
 def user_groups(request):
     user = request.user
-    groups = serializers.serialize('json', Group.objects.filter(admin=user))
-    groups = json.loads(groups)
+    groups = list(map(model_to_dict, Group.objects.filter(admin=user)))
 
-    content = {'groups': groups}
-    return Response(content)
+    for group in groups:
+        del group['users']
+
+    return Response(groups)

@@ -16,6 +16,7 @@ import LoadingScreen from './components/loading-screen';
 
 import { connect } from 'react-redux';
 import { checkAuthenticated } from './store/actions/auth';
+import { fetchUserGroups } from './store/actions/ui';
 
 import { useEffect } from 'react';
 
@@ -23,13 +24,20 @@ import { useEffect } from 'react';
  * @param {{
  *   loading: boolean;
  *   isAuthenticated: boolean;
- *   checkAuthenticated: () => ReturnType<ReturnType<typeof checkAuthenticated>>
+ *   checkAuthenticated: () => ReturnType<ReturnType<typeof checkAuthenticated>>;
+ *   fetchUserGroups: () => ReturnType<ReturnType<typeof fetchUserGroups>>;
  * }}
  */
-function App({ loading, checkAuthenticated, isAuthenticated }){
+function App({ loading, checkAuthenticated, isAuthenticated, fetchUserGroups }){
     useEffect(() => {
         checkAuthenticated();
     }, [checkAuthenticated]);
+
+    useEffect(() => {
+        if (isAuthenticated){
+            fetchUserGroups();
+        }
+    }, [isAuthenticated, fetchUserGroups]);
 
     return loading ?
         <LoadingScreen /> :
@@ -75,5 +83,5 @@ export default connect(
         loading: state.ui.loading,
         isAuthenticated: Boolean(state.auth.access)
     }),
-    { checkAuthenticated }
+    { checkAuthenticated, fetchUserGroups }
 )(App);
