@@ -7,6 +7,8 @@ import secrets
 
 import datetime
 
+import sys
+
 #Tasks
 from celery import shared_task
 
@@ -88,7 +90,10 @@ class PollType (models.Model):
     name = models.CharField(max_length=50)
 
 
-VALID_POLL_TYPES = set(map(lambda v : v.id, PollType.objects.all()))
+if all(cmd not in sys.argv for cmd in ['makemigrations', 'migrate']):
+    VALID_POLL_TYPES = set(map(lambda v : v.id, PollType.objects.all()))
+else:
+    VALID_POLL_TYPES = set()
 
 
 #Task que sera utilizada para finalizar a poll.
