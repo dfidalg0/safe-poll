@@ -103,7 +103,7 @@ def delete_poll(request, pk):
     except Poll.DoesNotExist:
         return Response({
             'message': 'Poll não encontrada'
-        }, status=HTTP_404_INTERNAL_SERVER_ERROR)
+        }, status=HTTP_404_NOT_FOUND)
     except:
         return Response({
             'message': 'Erro interno do servidor'
