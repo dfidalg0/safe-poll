@@ -59,18 +59,20 @@ export default function Poll() {
 
     const submit = useCallback(async () => {
         const group_id = groups[group - 1].id
-        const data = {
-            poll_id: poll.id,
-            group_id,
-        }
         try {
-            await axios.post('/api/tokens/create-from-group', data, {
+            const { data } = await axios.post('/api/tokens/create-from-group', {
+                poll_id: poll.id,
+                group_id,
+            }, {
                 headers: {
                     Authorization: `JWT ${token}`
                 }
             });
 
-            dispatch(notify('Grupo adicionado com sucesso', 'success'));
+            if (data.failed_emails.length){
+                dispatch(notify('Alguns emails falharam no proceso', 'warning'));
+            }
+            else dispatch(notify('Grupo adicionado com sucesso', 'success'));
         }
         catch ({ response }) {
             dispatch(notify(response.data.message, 'error'));

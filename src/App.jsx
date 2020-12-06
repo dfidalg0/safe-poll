@@ -54,7 +54,8 @@ export default function App(){
                     vertical: 'bottom',
                     horizontal: 'center'
                 },
-                TransitionComponent: GrowTransition
+                TransitionComponent: GrowTransition,
+                autoHideDuration: 2500
             });
             dispatch(clearNotify());
         }

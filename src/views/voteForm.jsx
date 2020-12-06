@@ -1,26 +1,24 @@
-import classes from '../styles/home.module.css';
-import { logout } from '../store/actions/auth'
-import React, { useState, useEffect, useCallback } from 'react';
-import { Avatar, makeStyles, Button, Container, Radio, RadioGroup, FormLabel, FormControl, FormControlLabel, FormHelperText } from '@material-ui/core';
-import { connect } from 'react-redux';
+import {
+    Avatar, Button, Container,
+    Radio, RadioGroup, FormLabel,
+    FormControl, FormControlLabel,
+    FormHelperText, CircularProgress,
+    Typography
+} from '@material-ui/core';
+
 import LoadingScreen from '@/components/loading-screen';
-import { useStyles } from '@/styles/form'
+
 import queryString from 'query-string';
-import { useParams, useHistory } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { notify } from '@/store/actions/ui';
 import axios from 'axios';
 
-function Vote({ logout, isAuthenticated, match, location}) {
-	const newStyle = makeStyles((theme) => ({
-        root: {
-            backgroundColor: theme.palette.background.paper,
-            minWidth: '30vw',
-            maxWidth: '50vw',
-            color: 'black'
-        },
-    }));
+import { notify } from '@/store/actions/ui';
 
+import { useDispatch } from 'react-redux';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useHistory } from 'react-router-dom';
+import { useStyles } from '@/styles/form'
+
+export default function Vote({ location}) {
     const classes = useStyles(),
     	  [mark, setMark] = useState(''),
     	  [error, setError] = useState(true),
@@ -29,14 +27,13 @@ function Vote({ logout, isAuthenticated, match, location}) {
     	  [note, setNote] = useState('Deixe apenas um candidato marcado.'),
     	  [loading, setLoading] = useState(true),
     	  dispatch = useDispatch(),
-    	  router = useHistory(),
-    	  setup = newStyle();
+    	  router = useHistory();
 
-    const handleChange = (event) => {
+    const handleChange = useCallback(event => {
         setMark(event.target.value);
         setError(false);
         setNote('Um candidato foi marcado.')
-    };
+    }, []);
 
     const result = queryString.parse(location.search),
     	  id = useParams().id,
@@ -49,17 +46,21 @@ function Vote({ logout, isAuthenticated, match, location}) {
             token,
         }
         try {
+            setLoading(true);
             await axios.post('/api/votes/compute', data);
             dispatch(notify('Voto registrado com sucesso', 'success'));
+            router.replace('/');
         }
         catch ({ response }) {
             dispatch(notify(response.data.message, 'error'));
+            setLoading(false);
         }
-    }, [poll, mark, token, dispatch]);
+    }, [poll, mark, token, dispatch, router]);
 
    	useEffect(() => {
    		const fetchData = async () => {
             try {
+                setLoading(true);
                 const { data: poll } = await axios.get(`/api/polls/get/${id}/`);
                 setPoll(poll);
                 setCandidates(poll.options);
@@ -74,42 +75,48 @@ function Vote({ logout, isAuthenticated, match, location}) {
         }
 
         fetchData();
-   	});
+   	}, [dispatch, router, id]);
 
-   	const setOptions = () => {
-   		let options = [];
-   		for(var i=0; i<candidates.length; i++){
-   			options.push(
-   				<FormControlLabel
-                    value={"opt"+candidates[i].id}
-                    control={<Radio />}
-                    label={candidates[i].name}
-                />
-   			)
-   		}
-   		return options;
-   	};
+    if (!poll || !candidates) return <LoadingScreen />;
 
-   	if(loading) return <LoadingScreen />
     return (
-        <Container className={setup.root} maxWidth="xs">
+        <Container className={classes.root} maxWidth="xs">
             <div className={classes.paper}>
                 <Avatar className={classes.avatar} />
-                <form className={classes.form} noValidate onSubmit={submit}>
-                    <FormControl error={error} component="fieldset" className={classes.formControl}>
-                        <FormLabel component="legend">Escolha seu candidato na eleição {poll.title}: {poll.description}</FormLabel>
+                {loading && <CircularProgress style={{ marginTop: '-51px' }} size={45}/>}
+                <Typography variant="h6">
+                    {poll.title}
+                </Typography>
+                <Typography variant="body1">
+                    {poll.description}
+                </Typography>
+                <form className={classes.form} noValidate>
+                    <FormControl error={error}
+                        component="fieldset"
+                        className={classes.formControl}
+                        disabled={loading}
+                    >
+                        <FormLabel component="legend">
+                            Escolha seu candidato:
+                        </FormLabel>
                         <RadioGroup color="primary" value={mark} onChange={handleChange}>
-                          {setOptions()}
+                            {candidates.map((candidate, i) => <FormControlLabel
+                                key={i}
+                                value={"opt" + candidate.id}
+                                control={<Radio />}
+                                label={candidate.name}
+                            />)}
                         </RadioGroup>
                         <FormHelperText>{note}</FormHelperText>
                     </FormControl>
 
                     <Button
-                        type="submit"
                         fullWidth
                         variant="contained"
                         color="primary"
                         className={classes.submit}
+                        disabled={loading || !mark}
+                        onClick={submit}
                     >
                         Enviar voto
                     </Button>
@@ -119,10 +126,3 @@ function Vote({ logout, isAuthenticated, match, location}) {
         </Container>
     );
 };
-
-const mapStateToProps = state => ({
-    isAuthenticated: Boolean(state.auth.access),
-    error: state.auth.error
-});
-
-export default connect(mapStateToProps, { logout })(Vote);

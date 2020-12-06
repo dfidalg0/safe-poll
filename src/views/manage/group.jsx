@@ -146,7 +146,7 @@ export default function Group() {
     }, [dispatch, uid, router, token]);
 
     const disabled = useMemo(() => {
-        if (!group) return true;
+        if (!group || !emails.length) return true;
 
         const a = new Set(emails);
         const b = new Set(group.emails);
