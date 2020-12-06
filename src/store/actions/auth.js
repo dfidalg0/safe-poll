@@ -16,7 +16,8 @@ import axios from 'axios';
 
 import { decode } from 'jsonwebtoken';
 
-import { setLoading, clearPolls } from '../actions/ui';
+import { setLoading } from '../actions/ui';
+import { clearPolls } from '../actions/items';
 
 let refreshTimeout;
 

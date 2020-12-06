@@ -1,15 +1,23 @@
-import classes from '@/styles/home.module.css';
 import LoginSignUp from '@/components/loginSignUp'
 
+import { Grid } from '@material-ui/core';
+
+import { makeStyles } from '@material-ui/core/styles';
+
+const useStyles = makeStyles({
+    container: {
+        height: '100vh'
+    }
+});
+
 export default function Home() {
+    const classes = useStyles();
+
     return (
-        <div className={classes.app}>
-            <header className={classes.header}>
-                <p>
-                    Seja bem vindo! <br/>
-                </p>
-                <LoginSignUp />
-            </header>
-        </div >
+        <Grid container justify="center" alignContent="center"
+            className={classes.container}
+        >
+            <LoginSignUp  />
+        </Grid>
     );
 };

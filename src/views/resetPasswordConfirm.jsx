@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Avatar, Breadcrumbs, Link, Button, CssBaseline, TextField, Typography, Container } from '@material-ui/core'
 import { connect } from 'react-redux';
-import { reset_password_confirm } from '@/store/actions/auth'
-import DisplayAlert from '@/components/displayAlert'
-import { Alert } from '@material-ui/lab'
-import { useStyles } from '@/styles/form'
+import { reset_password_confirm } from '@/store/actions/auth';
+import { notify } from '@/store/actions/ui';
+import DisplayAlert from '@/components/displayAlert';
+import { Alert } from '@material-ui/lab';
+import { useStyles } from '@/styles/form';
 
 
-function ResetPasswordConfirm({ match, reset_password_confirm, error }) {
+function ResetPasswordConfirm({ match, reset_password_confirm, error, notify }) {
     const classes = useStyles();
     const [passwordReset, setPasswordReset] = useState(false);
     const [data, setData] = useState({
@@ -25,8 +26,9 @@ function ResetPasswordConfirm({ match, reset_password_confirm, error }) {
             const token = match.params.token;
             reset_password_confirm(uid, token, new_password, re_new_password);
             setPasswordReset(true);
+            notify('Senha reiniciada com sucesso', 'success');
         } else {
-            alert("As senhas não coincidem");
+            notify("As senhas não coincidem", 'error');
         }
 
     };
@@ -107,4 +109,4 @@ const mapStateToProps = state => ({
     error: state.auth.error
 });
 
-export default connect(mapStateToProps, { reset_password_confirm })(ResetPasswordConfirm);
+export default connect(mapStateToProps, { reset_password_confirm, notify })(ResetPasswordConfirm);

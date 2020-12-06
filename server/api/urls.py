@@ -15,7 +15,10 @@ urlpatterns = [
     path('emails/send', send_poll_emails),
     path('emails/send-list', send_list_emails),
 
+    path('groups/get/<int:pk>', get_group),
+    path('groups/update/<int:pk>', update_group),
     path('groups/create', create_group),
+    path('groups/delete/<int:pk>', delete_group),
     path('groups/mine', user_groups),
 
     path('tokens/create', register_emails),

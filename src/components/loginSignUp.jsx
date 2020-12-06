@@ -25,7 +25,8 @@ function TabPanel(props) {
 const useStyles = makeStyles((theme) => ({
     root: {
         backgroundColor: theme.palette.background.paper,
-        width: 500,
+        width: '500',
+        maxWidth: '90vw',
         color: 'black'
     },
 }));
@@ -39,31 +40,30 @@ export default function LoginSignUp() {
         setValue(newValue);
     };
 
-    return (
-        <div className={classes.root}>
-            <AppBar position="static" color="default">
-                <Tabs
-                    value={value}
-                    onChange={handleChange}
-                    indicatorColor="primary"
-                    textColor="primary"
-                    variant="fullWidth"
-                >
-                    <Tab label="Login" />
-                    <Tab label="Cadastro" />
-                </Tabs>
-            </AppBar>
-            <SwipeableViews
-                axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
-                index={value}
+    return <div className={classes.root}>
+        <AppBar position="static" color="default">
+            <Tabs
+                value={value}
+                onChange={handleChange}
+                indicatorColor="primary"
+                textColor="primary"
+                variant="fullWidth"
             >
-                <TabPanel value={value} index={0} dir={theme.direction}>
-                    <Login />
-                </TabPanel>
-                <TabPanel value={value} index={1} dir={theme.direction}>
-                    <SignUp />
-                </TabPanel>
-            </SwipeableViews>
-        </div>
-    );
+                <Tab label="Login" />
+                <Tab label="Cadastro" />
+            </Tabs>
+        </AppBar>
+        <SwipeableViews
+            onSwitching={v => Number.isInteger(v) ? setValue(v) : null}
+            axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
+            index={value}
+        >
+            <TabPanel value={value} index={0} dir={theme.direction}>
+                <Login />
+            </TabPanel>
+            <TabPanel value={value} index={1} dir={theme.direction}>
+                <SignUp />
+            </TabPanel>
+        </SwipeableViews>
+    </div>;
 }

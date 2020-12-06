@@ -1,7 +1,13 @@
 import {
+    Grow as GrowTransition
+} from '@material-ui/core';
+
+import {
     BrowserRouter as Router,
     Switch
 } from 'react-router-dom';
+
+import { useSnackbar } from 'notistack';
 
 import ConditionRoute from '@/components/condition-route';
 
@@ -12,30 +18,47 @@ import Dashboard from '@/views/manage';
 
 import LoadingScreen from '@/components/loading-screen';
 
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { checkAuthenticated } from '@/store/actions/auth';
-import { fetchUserGroups } from '@/store/actions/ui';
+import { fetchUserGroups } from '@/store/actions/items';
+import { clearNotify } from '@/store/actions/ui';
 
 import { useEffect } from 'react';
 
-/**
- * @param {{
- *   loading: boolean;
- *   isAuthenticated: boolean;
- *   checkAuthenticated: () => ReturnType<ReturnType<typeof checkAuthenticated>>;
- *   fetchUserGroups: () => ReturnType<ReturnType<typeof fetchUserGroups>>;
- * }}
- */
-function App({ loading, checkAuthenticated, isAuthenticated, fetchUserGroups }){
+export default function App(){
+    const dispatch = useDispatch();
+
     useEffect(() => {
-        checkAuthenticated();
-    }, [checkAuthenticated]);
+        dispatch(checkAuthenticated());
+    }, [dispatch]);
+
+    const isAuthenticated = useSelector(state => Boolean(state.auth.access));
 
     useEffect(() => {
         if (isAuthenticated){
-            fetchUserGroups();
+            dispatch(fetchUserGroups());
         }
-    }, [isAuthenticated, fetchUserGroups]);
+    }, [isAuthenticated, dispatch]);
+
+    const { enqueueSnackbar } = useSnackbar();
+
+    const notif = useSelector(state => state.ui.notification);
+
+    useEffect(() => {
+        if (notif){
+            enqueueSnackbar(notif.msg, {
+                variant: notif.variant,
+                anchorOrigin: {
+                    vertical: 'bottom',
+                    horizontal: 'center'
+                },
+                TransitionComponent: GrowTransition
+            });
+            dispatch(clearNotify());
+        }
+    }, [notif, enqueueSnackbar, dispatch]);
+
+    const loading = useSelector(state => state.ui.loading);
 
     return loading ?
         <LoadingScreen /> :
@@ -68,12 +91,3 @@ function App({ loading, checkAuthenticated, isAuthenticated, fetchUserGroups }){
             </Switch>
         </Router>
 }
-
-
-export default connect(
-    state => ({
-        loading: state.ui.loading,
-        isAuthenticated: Boolean(state.auth.access)
-    }),
-    { checkAuthenticated, fetchUserGroups }
-)(App);

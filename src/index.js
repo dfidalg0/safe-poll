@@ -2,6 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { ptBR } from '@material-ui/core/locale';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+
+import { SnackbarProvider } from 'notistack';
+
 import { Provider } from 'react-redux';
 import store from './store';
 
@@ -20,7 +23,9 @@ const theme = createMuiTheme({
 ReactDOM.render(
     <ThemeProvider theme={theme}>
         <Provider store={store}>
-            <App />
+            <SnackbarProvider>
+                <App />
+            </SnackbarProvider>
         </Provider>
     </ThemeProvider>,
     document.getElementById('root')
