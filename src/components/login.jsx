@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
-import { Avatar, Button, TextField, Link, Grid, Typography, Container } from '@material-ui/core'
-import { connect } from 'react-redux';
+import {
+    Avatar, Button, TextField,
+    Link as StyledLink, Grid, Typography,
+    Container
+} from '@material-ui/core'
 import { login } from '@/store/actions/auth'
 import DisplayAlert from './displayAlert'
+
+import { Link } from 'react-router-dom';
+
+import { useDispatch, useSelector } from 'react-redux';
+import { useState, useCallback } from 'react';
 import { useStyles } from '@/styles/form'
 
 
-function Login({ login, error }) {
+export default function Login() {
     const classes = useStyles();
     const [data, setData] = useState({
         email: '',
@@ -14,12 +21,18 @@ function Login({ login, error }) {
     });
 
     const { email, password } = data;
-    const onChange = e => setData({ ...data, [e.target.name]: e.target.value });
+    const onChange = useCallback(e => setData(data => ({
+        ...data, [e.target.name]: e.target.value
+    })), []);
 
-    const onSubmit = e => {
+    const dispatch = useDispatch();
+
+    const onSubmit = useCallback(e => {
         e.preventDefault();
-        login(email, password);
-    };
+        dispatch(login(email, password));
+    }, [email, password, dispatch]);
+
+    const error = useSelector(state => state.auth.error);
 
     return (
         <Container className={classes.app} maxWidth="xs">
@@ -67,9 +80,11 @@ function Login({ login, error }) {
                     </Button>
                     <Grid container>
                         <Grid item xs>
-                            <Link to="/resetar-senha" variant="body2">
+                            <StyledLink to="/resetar-senha" variant="body2"
+                                component={Link}
+                            >
                                 Esqueceu sua senha?
-                            </Link>
+                            </StyledLink>
                         </Grid>
                     </Grid>
                 </form>
@@ -78,9 +93,3 @@ function Login({ login, error }) {
         </Container>
     );
 }
-
-const mapStateToProps = state => ({
-    error: state.auth.error
-});
-
-export default connect(mapStateToProps, { login })(Login);

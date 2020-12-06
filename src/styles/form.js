@@ -32,5 +32,8 @@ export const useStyles = makeStyles((theme) => ({
         minWidth: '30vw',
         maxWidth: '50vw',
         color: 'black'
+    },
+    progress: {
+        marginTop: '-51px'
     }
 }));

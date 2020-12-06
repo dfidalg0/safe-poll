@@ -1,50 +1,89 @@
-import React, { useState } from 'react';
-import { Avatar, Breadcrumbs, Link, Button, CssBaseline, TextField, Typography, Container } from '@material-ui/core'
-import { connect } from 'react-redux';
+import {
+    Avatar, Breadcrumbs, Link,
+    Button, CssBaseline, TextField,
+    Typography, Container, CircularProgress
+} from '@material-ui/core'
+import { Alert } from '@material-ui/lab';
+
+import DisplayAlert from '@/components/displayAlert';
+
 import { reset_password_confirm } from '@/store/actions/auth';
 import { notify } from '@/store/actions/ui';
-import DisplayAlert from '@/components/displayAlert';
-import { Alert } from '@material-ui/lab';
+
+import { useDispatch, useSelector } from 'react-redux';
+import { useRouteMatch, useHistory } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
 import { useStyles } from '@/styles/form';
 
 
-function ResetPasswordConfirm({ match, reset_password_confirm, error, notify }) {
+export default function ResetPasswordConfirm() {
     const classes = useStyles();
+
+    const [loading, setLoading] = useState(false);
+
     const [passwordReset, setPasswordReset] = useState(false);
+
     const [data, setData] = useState({
         new_password: '',
         re_new_password: ''
     });
 
     const { new_password, re_new_password } = data;
-    const onChange = e => setData({ ...data, [e.target.name]: e.target.value });
+    const onChange = useCallback(e => setData(data => ({
+        ...data, [e.target.name]: e.target.value
+    })), []);
 
-    const onSubmit = e => {
+    const { uid, token } = useRouteMatch().params;
+
+    const dispatch = useDispatch();
+
+    const router = useHistory();
+
+    const onSubmit = useCallback(async e => {
         e.preventDefault();
         if (new_password === re_new_password) {
-            const uid = match.params.uid;
-            const token = match.params.token;
-            reset_password_confirm(uid, token, new_password, re_new_password);
+            setLoading(true);
+            await dispatch(reset_password_confirm(
+                uid, token,
+                new_password, re_new_password
+            ));
             setPasswordReset(true);
-            notify('Senha reiniciada com sucesso', 'success');
-        } else {
-            notify("As senhas não coincidem", 'error');
+            setLoading(false);
         }
+        else {
+            dispatch(notify("As senhas não coincidem", 'error'));
+        }
+    }, [new_password, re_new_password, dispatch, uid, token]);
 
-    };
+    const error = useSelector(state => state.auth.error);
 
-    function DisplaySucessAlert(error) {
-        if (error === undefined) {
+    useEffect(() => {
+        if (passwordReset && !error)
+            setTimeout(() => {
+                dispatch(notify('Senha alterada com succeso', 'success'));
+                router.replace('/');
+            }, 2000);
+    }, [router, passwordReset, error, dispatch])
+
+    const DisplaySucessAlert = useCallback(error => {
+        if (!error) {
             if (passwordReset) {
                 return (
-                    <Alert className={classes.alert} style={{marginBottom: '30px'}}severity="success">Sua senha foi alterada com sucesso!</Alert>
+                    <Alert className={classes.alert}
+                        style={{marginBottom: '30px'}}
+                        severity="success"
+                    >
+                        Sua senha foi alterada com sucesso! <br />
+                        Redirecionando para a página de Login...
+                    </Alert>
                 );
-            } else return null;
+            }
+            else return null;
 
         } else {
             return null;
         }
-    }
+    }, [passwordReset, classes]);
 
     return (
         <Container className={classes.app} maxWidth="xs">
@@ -58,11 +97,15 @@ function ResetPasswordConfirm({ match, reset_password_confirm, error, notify }) 
             <div className={classes.paper}>
                 {DisplayAlert(error)}
                 {DisplaySucessAlert(error)}
-                <Avatar className={classes.avatar}>
-                </Avatar>
+                <Avatar className={classes.avatar} />
+                {loading &&
+                    <CircularProgress size={45}
+                        className={classes.progress}
+                    />
+                }
                 <Typography component="h1" variant="h5" className={classes.typography} >
                     Alterar Senha
-        </Typography>
+                </Typography>
                 <form className={classes.form} noValidate onSubmit={e => onSubmit(e)}>
                     <TextField
                         variant="outlined"
@@ -75,6 +118,7 @@ function ResetPasswordConfirm({ match, reset_password_confirm, error, notify }) 
                         id="new_password"
                         autoComplete="current-password"
                         onChange={e => onChange(e)}
+                        disabled={loading}
                     />
                     <TextField
                         variant="outlined"
@@ -87,6 +131,7 @@ function ResetPasswordConfirm({ match, reset_password_confirm, error, notify }) 
                         id="re_new_password"
                         autoComplete="current-password"
                         onChange={e => onChange(e)}
+                        disabled={loading}
                     />
 
                     <Button
@@ -95,18 +140,13 @@ function ResetPasswordConfirm({ match, reset_password_confirm, error, notify }) 
                         variant="contained"
                         color="primary"
                         className={classes.submit}
+                        disabled={loading}
                     >
                         Confirmar
-          </Button>
+                    </Button>
                 </form>
                 <p></p>
             </div>
         </Container>
     );
 }
-
-const mapStateToProps = state => ({
-    error: state.auth.error
-});
-
-export default connect(mapStateToProps, { reset_password_confirm, notify })(ResetPasswordConfirm);
