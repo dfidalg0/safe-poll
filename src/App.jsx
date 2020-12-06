@@ -4,7 +4,8 @@ import {
 
 import {
     BrowserRouter as Router,
-    Switch
+    Switch,
+    Route
 } from 'react-router-dom';
 
 import { useSnackbar } from 'notistack';
@@ -15,6 +16,7 @@ import Home from '@/views/home';
 import ResetPassword from '@/views/resetPassword';
 import ResetPasswordConfirm from '@/views/resetPasswordConfirm';
 import Dashboard from '@/views/manage';
+import Vote from '@/views/voteForm';
 
 import LoadingScreen from '@/components/loading-screen';
 
@@ -87,6 +89,9 @@ export default function App(){
                     component={ResetPasswordConfirm}
                     condition={!isAuthenticated}
                     redirect="/manage"
+                />
+                <Route exact path='/polls/vote/:x/:y'
+                    component={Vote}
                 />
             </Switch>
         </Router>
