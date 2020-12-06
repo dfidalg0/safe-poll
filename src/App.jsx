@@ -22,7 +22,7 @@ import LoadingScreen from '@/components/loading-screen';
 
 import { useSelector, useDispatch } from 'react-redux';
 import { checkAuthenticated } from '@/store/actions/auth';
-import { fetchUserGroups } from '@/store/actions/items';
+import { fetchUserGroups, fetchUserPolls } from '@/store/actions/items';
 import { clearNotify } from '@/store/actions/ui';
 
 import { useEffect } from 'react';
@@ -39,6 +39,7 @@ export default function App(){
     useEffect(() => {
         if (isAuthenticated){
             dispatch(fetchUserGroups());
+            dispatch(fetchUserPolls());
         }
     }, [isAuthenticated, dispatch]);
 
