@@ -84,7 +84,7 @@ export default function CreatePoll({ open, onClose }){
     }, [deadline]);
 
     // Limpeza do formulário
-    const clear = () => {
+    const clear = useCallback(() => {
         // Limpando dados do formulário
         setTitle('');
         setDesc('');
@@ -95,7 +95,7 @@ export default function CreatePoll({ open, onClose }){
         // Limpando erros
         setOptionErrors([]);
         setNewOptionError(false);
-    };
+    }, []);
 
     // Atualização de erro nas opções
     useEffect(() => {
@@ -164,7 +164,11 @@ export default function CreatePoll({ open, onClose }){
 
         // Fim do estado de carregamento do envio
         setLoading(false);
-    }, [title, description, type_id, deadline, options, secret_vote, onClose, token, dispatch]);
+    }, [
+        title, description, type_id,
+        deadline, options, secret_vote,
+        onClose, token, dispatch, clear
+    ]);
 
     // Criação de nova opção
     const createOption = useCallback(() => {

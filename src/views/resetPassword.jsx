@@ -1,43 +1,55 @@
-import React, { useState } from 'react';
 import {
     Breadcrumbs, Button, CssBaseline,
-    TextField, Link, Typography,
+    TextField, Link as StyledLink, Typography,
     Container
-} from '@material-ui/core'
-import { connect } from 'react-redux';
-import { reset_password } from '@/store/actions/auth'
-import { Alert } from '@material-ui/lab'
+} from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
+
+import { Link } from 'react-router-dom';
+
+import { reset_password } from '@/store/actions/auth';
+
+import { useDispatch } from 'react-redux';
+import { useState, useCallback } from 'react';
 import { useStyles } from '@/styles/form'
 
-function ResetPassword({ reset_password }) {
+export default function ResetPassword() {
     const classes = useStyles();
     const [sent, setSent] = useState(false);
     const [email, setEmail] = useState('');
 
     const onChange = e => setEmail(e.target.value);
 
-    const onSubmit = e => {
-        e.preventDefault();
-        reset_password(email);
-        setSent(true);
-    };
+    const dispatch = useDispatch();
 
-    function displayMessage() {
+    const onSubmit = useCallback(e => {
+        e.preventDefault();
+        dispatch(reset_password(email));
+        setSent(true);
+    }, [dispatch, email]);
+
+    const displayMessage = useCallback(() =>  {
         if (sent) {
             return (
-                <Alert className={classes.alert} severity="info">Se o email inserido corresponder a alguma conta, instruções de recuperação serão enviadas.</Alert>
+                <Alert className={classes.alert} severity="info">
+                    Se o email inserido corresponder a alguma conta,
+                    instruções de recuperação serão enviadas.
+                </Alert>
             );
         } else {
             return null
         }
-    };
+    }, [sent, classes]);
 
     return (
         <Container className={classes.app} maxWidth="xs">
 
             <Breadcrumbs className={classes.breadcrumb} >
-                <Link color="inherit" href="/">
-                    Página Inicial </Link>
+                <StyledLink color="inherit" to="/"
+                    component={Link}
+                >
+                    Página Inicial
+                </StyledLink>
                 <Typography color="textPrimary">Resetar Senha</Typography>
             </Breadcrumbs>
             <CssBaseline />
@@ -46,7 +58,7 @@ function ResetPassword({ reset_password }) {
             <div className={classes.paper}>
                 <Typography component="h1" variant="h5" className={classes.typography} >
                     Resetar Senha
-        </Typography>
+                </Typography>
                 <form className={classes.form} noValidate onSubmit={e => onSubmit(e)}>
                     <TextField
                         variant="outlined"
@@ -60,6 +72,7 @@ function ResetPassword({ reset_password }) {
                         autoComplete="email"
                         autoFocus
                         onChange={e => onChange(e)}
+                        InputProps={{ readOnly: sent }}
                     />
 
                     <Button
@@ -68,14 +81,13 @@ function ResetPassword({ reset_password }) {
                         variant="contained"
                         color="primary"
                         className={classes.submit}
+                        disabled={sent}
                     >
                         Recuperar Senha
-          </Button>
+                     </Button>
                 </form>
                 <p></p>
             </div>
         </Container>
     );
 }
-
-export default connect(null, { reset_password })(ResetPassword);

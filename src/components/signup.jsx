@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
-import { Avatar, Button, TextField, Grid, Typography, Container } from '@material-ui/core'
-import { connect } from 'react-redux';
-import { signup } from '@/store/actions/auth'
-import DisplayAlert from './displayAlert'
-import { useStyles } from '@/styles/form'
+import {
+  Avatar, Button,TextField,
+  Grid, Typography, Container
+} from '@material-ui/core';
 
+import DisplayAlert from './displayAlert';
 
-function SignUp({ signup, error }) {
+import { signup } from '@/store/actions/auth';
+
+import { useDispatch, useSelector } from 'react-redux';
+import { useState, useCallback } from 'react';
+
+import { useStyles } from '@/styles/form';
+
+export default function SignUp() {
   const classes = useStyles();
 
   const [data, setData] = useState({
@@ -17,13 +23,19 @@ function SignUp({ signup, error }) {
   });
 
   const { name, email, password, re_password } = data;
-  const onChange = e => setData({ ...data, [e.target.name]: e.target.value });
+  const onChange = useCallback(e => setData(data => ({
+    ...data, [e.target.name]: e.target.value
+  })), []);
 
-  const onSubmit = e => {
+  const dispatch = useDispatch();
+
+  const onSubmit = useCallback(e => {
     e.preventDefault();
 
-    signup(name, email, password, re_password);
-  };
+    dispatch(signup(name, email, password, re_password));
+  }, [name, email, password, re_password, dispatch]);
+
+  const error = useSelector(state => state.auth.error);
 
   return (
     <Container component="main" maxWidth="xs">
@@ -106,9 +118,3 @@ function SignUp({ signup, error }) {
     </Container>
   );
 }
-
-const mapStateToProps = state => ({
-  error: state.auth.error
-});
-
-export default connect(mapStateToProps, { signup })(SignUp);

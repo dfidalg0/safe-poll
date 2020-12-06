@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import SwipeableViews from 'react-swipeable-views';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
@@ -36,9 +36,9 @@ export default function LoginSignUp() {
     const theme = useTheme();
     const [value, setValue] = useState(0);
 
-    const handleChange = (event, newValue) => {
+    const handleChange = useCallback((event, newValue) => {
         setValue(newValue);
-    };
+    }, []);
 
     return <div className={classes.root}>
         <AppBar position="static" color="default">

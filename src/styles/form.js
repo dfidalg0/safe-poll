@@ -26,5 +26,8 @@ export const useStyles = makeStyles((theme) => ({
     },
     alert: {
         marginTop: '30px'
+    },
+    progress: {
+        marginTop: '-51px'
     }
 }));

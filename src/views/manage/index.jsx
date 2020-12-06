@@ -4,7 +4,7 @@ import {
 
 import { makeStyles } from '@material-ui/core/styles';
 
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { fetchUserGroups } from '@/store/actions/items'
 import { logout } from '@/store/actions/auth';
@@ -21,7 +21,7 @@ import Poll from './poll';
 import Group from './group';
 
 import { useEffect } from 'react';
-import { useRouteMatch } from 'react-router-dom'
+import { useRouteMatch, useLocation } from 'react-router-dom'
 
 const useStyles = makeStyles({
     app: {
@@ -54,15 +54,12 @@ const useStyles = makeStyles({
     }
 });
 
-/**
- * @param {{
- *   logout: () => ReturnType<typeof logout>
- * }}
- */
-export default function Main({ groups }){
+export default function Main(){
     const classes = useStyles();
 
     const dispatch = useDispatch();
+
+    const groups = useSelector(state => state.items.groups);
 
     useEffect(() => {
         if (!groups) {
@@ -72,11 +69,14 @@ export default function Main({ groups }){
     }, [groups, dispatch]);
 
     const { url } = useRouteMatch();
+    const { pathname: path } = useLocation();
 
     return <>
         <AppBar className={classes.appBar} position="sticky">
             <Toolbar>
-                <Link to={url} className={classes.logo}>
+                <Link to={url} className={classes.logo}
+                    onClick={e => path === url ? e.preventDefault() : null}
+                >
                     <Typography variant="h6">
                         SafePoll
                     </Typography>
