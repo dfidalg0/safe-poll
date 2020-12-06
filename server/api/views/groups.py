@@ -30,6 +30,7 @@ def get_group(request: Request, pk: int) -> Response:
 @with_rules({
     'name': lambda v : type(v) == str,
     'emails': lambda v : (
+        len(v) > 0 and
         is_unique_list(v) and
         all(map(is_valid_email, v))
     )
@@ -45,12 +46,7 @@ def create_group(request: CleanRequest) -> Response:
     if not Group.objects.filter(name=name, admin=admin):
         try:
             with transaction.atomic():
-                max_id = int(Group.objects.latest('pk').pk)
-
                 users = list(map(lambda email : UserAccount(ref=email), emails))
-
-                for i, user in enumerate(users):
-                    user.id = max_id + i + 1
 
                 group = Group.objects.create(name=name, admin=admin)
                 UserAccount.objects.bulk_create(
@@ -79,6 +75,7 @@ def create_group(request: CleanRequest) -> Response:
 @permission_classes([IsAuthenticated])
 @with_rules({
     'emails': lambda v : (
+        len(v) > 0 and
         is_unique_list(v) and
         all(map(is_valid_email, v))
     )
@@ -92,16 +89,11 @@ def update_group(request: CleanRequest, pk: int) -> Response:
         with transaction.atomic():
             group = Group.objects.get(pk=pk, admin=admin)
 
-            max_id = int(Group.objects.latest('pk').pk)
-
             prev_users = group.users.all()
             prev_emails = set(map(lambda u : u.ref, prev_users))
 
             create = list(map(lambda email : UserAccount(ref=email), emails - prev_emails))
             delete = prev_users.filter(ref__in=prev_emails - emails)
-
-            for i, user in enumerate(create):
-                user.id = max_id + i + 1
 
             if create:
                 UserAccount.objects.bulk_create(
