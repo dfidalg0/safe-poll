@@ -90,7 +90,7 @@ export default function App(){
                     condition={!isAuthenticated}
                     redirect="/manage"
                 />
-                <Route exact path='/polls/vote/:x/:y'
+                <Route exact path='/polls/:id/vote'
                     component={Vote}
                 />
             </Switch>

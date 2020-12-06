@@ -1,20 +1,18 @@
 import classes from '../styles/home.module.css';
 import { logout } from '../store/actions/auth'
-import React, { useState } from 'react';
-import { Avatar, makeStyles, Button, TextField, Link, Grid, Typography, Container, Radio, RadioGroup, FormLabel, FormControl, FormGroup, FormControlLabel, FormHelperText } from '@material-ui/core';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Avatar, makeStyles, Button, Container, Radio, RadioGroup, FormLabel, FormControl, FormControlLabel, FormHelperText } from '@material-ui/core';
 import { connect } from 'react-redux';
-import { login } from '@/store/actions/auth'
-import DisplayAlert from '../components/displayAlert'
+import LoadingScreen from '@/components/loading-screen';
 import { useStyles } from '@/styles/form'
 import queryString from 'query-string';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { notify } from '@/store/actions/ui';
+import axios from 'axios';
 
 function Vote({ logout, isAuthenticated, match, location}) {
-    const classes = useStyles();
-    const [data, setData] = useState('');
-    const [error, setError] = useState(true);
-    const [note, setNote] = useState('Deixe apenas um candidato marcado.')
-    const newStyle = makeStyles((theme) => ({
+	const newStyle = makeStyles((theme) => ({
         root: {
             backgroundColor: theme.palette.background.paper,
             minWidth: '30vw',
@@ -22,45 +20,86 @@ function Vote({ logout, isAuthenticated, match, location}) {
             color: 'black'
         },
     }));
-    const setup = newStyle();
+
+    const classes = useStyles(),
+    	  [mark, setMark] = useState(''),
+    	  [error, setError] = useState(true),
+    	  [poll, setPoll] = useState(null),
+    	  [candidates, setCandidates] = useState(null),
+    	  [note, setNote] = useState('Deixe apenas um candidato marcado.'),
+    	  [loading, setLoading] = useState(true),
+    	  dispatch = useDispatch(),
+    	  router = useHistory(),
+    	  setup = newStyle();
 
     const handleChange = (event) => {
-        setData(event.target.value);
+        setMark(event.target.value);
         setError(false);
         setNote('Um candidato foi marcado.')
     };
 
-    const onSubmit = e => {
-        e.preventDefault();
-        //Devo mudar isto, eu sei
-        //login(email, password);
-    };
+    const result = queryString.parse(location.search),
+    	  id = useParams().id,
+    	  token = result.token;
 
-    //const result = queryString.parse(location.search);
-    const result = useParams();
+    const submit = useCallback(async () => {
+        const data = {
+            poll_id: poll.id,
+            option_id: Number(mark.slice(3)),
+            token,
+        }
+        try {
+            await axios.post('/api/votes/compute', data);
+            dispatch(notify('Voto registrado com sucesso', 'success'));
+        }
+        catch ({ response }) {
+            dispatch(notify(response.data.message, 'error'));
+        }
+    }, [poll, mark, token, dispatch]);
+
+   	useEffect(() => {
+   		const fetchData = async () => {
+            try {
+                const { data: poll } = await axios.get(`/api/polls/get/${id}/`);
+                setPoll(poll);
+                setCandidates(poll.options);
+            }
+            catch({ response: { data } }){
+                dispatch(notify(data.message, 'error'));
+                router.replace('/manage');
+            }
+            finally {
+                setLoading(false);
+            }
+        }
+
+        fetchData();
+   	});
+
+   	const setOptions = () => {
+   		let options = [];
+   		for(var i=0; i<candidates.length; i++){
+   			options.push(
+   				<FormControlLabel
+                    value={"opt"+candidates[i].id}
+                    control={<Radio />}
+                    label={candidates[i].name}
+                />
+   			)
+   		}
+   		return options;
+   	};
+
+   	if(loading) return <LoadingScreen />
     return (
         <Container className={setup.root} maxWidth="xs">
             <div className={classes.paper}>
                 <Avatar className={classes.avatar} />
-                <form className={classes.form} noValidate onSubmit={e => onSubmit(e)}>
+                <form className={classes.form} noValidate onSubmit={submit}>
                     <FormControl error={error} component="fieldset" className={classes.formControl}>
-                        <FormLabel component="legend">Escolha seu candidato na eleição {result.x}</FormLabel>
-                        <RadioGroup color="primary" value={data} onChange={handleChange}>
-                          <FormControlLabel
-                            value="Zezinho"
-                            control={<Radio />}
-                            label="Zezinho"
-                          />
-                          <FormControlLabel
-                            value="Luisinho"
-                            control={<Radio />}
-                            label="Luisinho"
-                          />
-                          <FormControlLabel
-                            value="Huguinho"
-                            control={<Radio />}
-                            label="Huguinho"
-                          />
+                        <FormLabel component="legend">Escolha seu candidato na eleição {poll.title}: {poll.description}</FormLabel>
+                        <RadioGroup color="primary" value={mark} onChange={handleChange}>
+                          {setOptions()}
                         </RadioGroup>
                         <FormHelperText>{note}</FormHelperText>
                     </FormControl>
