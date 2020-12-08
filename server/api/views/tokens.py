@@ -20,14 +20,16 @@ def register_emails(request: CleanRequest) -> Response:
         }, status=HTTP_404_NOT_FOUND)
 
     email_error_list = []
+    email_added_list = []
 
     for email in data["email_list"]:
         try:
             Token.objects.create_token(data["poll_id"], email)
+            email_added_list.append(email)
         except:
             email_error_list.append(email)
 
-    conclusion = {'failed_emails': email_error_list}
+    conclusion = {'failed_emails': email_error_list, 'added_emails': email_added_list}
     return Response(conclusion)
 
 
@@ -58,13 +60,15 @@ def register_emails_from_group(request: CleanRequest) -> Response:
         }, status=HTTP_404_NOT_FOUND)
 
     email_error_list = []
+    email_added_list = []
 
     for user in user_group.users.all():
         try:
             Token.objects.create_token(data["poll_id"], user.ref)
+            email_added_list.append(user.ref)
         except:
             email_error_list.append(user.ref)
 
-    conclusion = {'failed_emails': email_error_list}
+    conclusion = {'failed_emails': email_error_list, 'added_emails': email_added_list}
 
     return Response(conclusion)

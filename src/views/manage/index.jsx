@@ -39,7 +39,8 @@ const useStyles = makeStyles({
     },
     appBar: {
         backgroundColor: '#0b1016',
-        width: '100vw'
+        width: '98vw',
+        marginLeft: '1%',
     },
     logo: {
         textDecoration: 'none',

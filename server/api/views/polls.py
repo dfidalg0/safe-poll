@@ -1,5 +1,6 @@
 from .context import *
 
+
 @api_view(['GET'])
 def get_poll(request, pk):
     try:
@@ -99,7 +100,7 @@ def delete_poll(request, pk):
         poll.delete()
         return Response({
             'message': 'Eleição deletada com sucesso'
-         })
+        })
     except Poll.DoesNotExist:
         return Response({
             'message': 'Poll não encontrada'
@@ -116,13 +117,13 @@ def delete_poll(request, pk):
 def get_user_polls(request):
     user = request.user
 
-    polls = list(map(lambda poll : {
+    polls = list(map(lambda poll: {
         'id': poll.id,
         'title': poll.title,
         'description': poll.description,
         'deadline': poll.deadline
     },
-    Poll.objects
+        Poll.objects
         .only('id', 'title', 'description', 'deadline')
         .filter(admin=user)
     ))
@@ -138,5 +139,26 @@ def get_poll_result(request: CleanRequest, pk: int) -> Response:
         return Response(poll.compute_result())
     else:
         return Response({
-            'message':'A eleicao ainda nao finalizou'
+            'message': 'A eleicao ainda nao finalizou'
         }, status=HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_emails_from_poll(request: CleanRequest, pk: int) -> Response:
+    try:
+        admin = request.user
+        poll = Poll.objects.get(pk=pk, admin=admin)
+
+    except Poll.DoesNotExist:
+        return Response({
+            'message': 'Eleição não encontrada'
+        }, status=HTTP_404_NOT_FOUND)
+
+    emails = list(map(lambda token: token.user.ref,
+    Token.objects
+        .only('user')
+        .filter(poll=poll)
+    ))
+    conclusion = {'emails': emails}
+    return Response(conclusion)

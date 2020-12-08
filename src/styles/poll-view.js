@@ -7,11 +7,6 @@ export const useStyles = makeStyles({
         justifyContent: 'center',
         textAlign: 'center'
     },
-    bullet: {
-        display: 'inline-block',
-        margin: '0 2px',
-        transform: 'scale(0.8)',
-    },
     title: {
         fontSize: 14,
     },

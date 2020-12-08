@@ -1,4 +1,5 @@
 from .context import *
+from django.core.mail import EmailMultiAlternatives
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -52,15 +53,21 @@ def send_poll_emails(request: CleanRequest) -> Response:
             continue
         user_token = token.token
         # Construct an email message that uses the connection
-        email = mail.EmailMessage(
-            'Link para a eleicao {}'.format(poll.title),
-            'Link: www.safe-polls.com/{}'.format(user_token),
-            'contato.safepoll@gmail.com',
-            [user_email],
-            connection=connection
-            )
+        #email = EmailMultiAlternatives(
+        #    'Link para a eleicao {}'.format(poll.title),
+        #    'Link: www.safe-polls.com/{}'.format(user_token),
+        #    'contato.safepoll@gmail.com',
+        #    [user_email],
+        #    connection=connection
+        #    )
+
+        subject = 'Convite para participar da eleição: {}'.format(poll.title)
+        html_message = '<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{}</strong>, criada por {}. </p> <p> Por favor, clique <a href="http://localhost:3000/{}"> aqui</a> para votar.</p> <p>Obrigado!</p> <p>Equipe SafePoll</p>'.format(poll.title, poll.admin.get_full_name(), user_token)
+        msg = EmailMultiAlternatives(subject, '', 'contato.safepoll@gmail.com', [user_email])
+        msg.attach_alternative(html_message, "text/html")
+
         try:
-            email.send() # Send the email
+            msg.send() # Send the email
         except :
             failed_emails['failed_to_send'].append(user.id)
 
@@ -81,9 +88,8 @@ def send_poll_emails(request: CleanRequest) -> Response:
 @permission_classes([IsAuthenticated])
 @with_rules({
     'poll_id': is_unsigned_int,
-    'users_id_list': lambda v : (
-        is_unique_list(v) and
-        all(map(is_unsigned_int, v))
+    'users_emails_list': lambda v : (
+        is_unique_list(v)
     )
 })
 def send_list_emails(request: CleanRequest) -> Response:
@@ -103,15 +109,20 @@ def send_list_emails(request: CleanRequest) -> Response:
     #Check if poll is valid:
     if poll.deadline < datetime.date.today():
         return Response({
-            'message':'Eleicao nao eh valida acabou em {}'.format(poll.deadline)
-        })
+            'message':'Eleição não é válida, acabou em {}'.format(poll.deadline.strftime("%d/%m/%Y"))
+        }, status=HTTP_400_BAD_REQUEST)
 
     connection = mail.get_connection()
     # Manually open the connection
     connection.open()
 
     failed_emails = {'no_token':[], 'failed_to_send':[], 'have_already_voted':[], 'is_not_active':[]}
-    users_id_list = data['users_id_list']
+    users_emails_list = data['users_emails_list']
+
+    users_id_list = []
+    for email in users_emails_list:
+        users_id_list.append(UserAccount.objects.get(ref=email).pk)
+
     token_list = []
     for user_id in users_id_list:
         try:
@@ -134,15 +145,14 @@ def send_list_emails(request: CleanRequest) -> Response:
             continue
         user_token = token.token
         # Construct an email message that uses the connection
-        email = mail.EmailMessage(
-            'Link para a eleicao {}'.format(poll.title),
-            'Link: www.safe-polls.com/{}'.format(user_token),
-            'contato.safepoll@gmail.com',
-            [user_email],
-            connection=connection
-        )
+       
+        subject = 'Convite para participar da eleição: {}'.format(poll.title)
+        html_message = '<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{}</strong>, criada por {}. </p> <p> Por favor, clique <a href="http://localhost:3000/{}"> aqui</a> para votar.</p> <p>Obrigado!</p> <p>Equipe SafePoll</p>'.format(poll.title, poll.admin.get_full_name(), user_token)
+        msg = EmailMultiAlternatives(subject, '', 'contato.safepoll@gmail.com', [user_email])
+        msg.attach_alternative(html_message, "text/html")
+
         try:
-            email.send() # Send the email
+            msg.send() # Send the email
         except :
             failed_emails['failed_to_send'].append(user.id)
 
@@ -150,10 +160,10 @@ def send_list_emails(request: CleanRequest) -> Response:
 
     if any(map(len, failed_emails.values())) is False: #If both failed_emails.values are 0.
         return Response({
-            'message':'Convites para votacao enviados com sucesso.!'
+            'message':'Convites para votação enviado com sucesso!'
             }, status=HTTP_200_OK)
     else:
         return Response(data={
             'message': 'Falha no envio de emails',
             'failed_emails': failed_emails
-        }, status=HTTP_202_ACCEPTED)
+        }, status=HTTP_400_BAD_REQUEST)

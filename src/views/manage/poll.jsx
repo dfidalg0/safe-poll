@@ -3,7 +3,15 @@ import {
     CardContent, Card,
     Button, Typography,
     InputLabel, Select, MenuItem, Grid,
+    IconButton,
+    Paper
 } from '@material-ui/core';
+
+// Ícones
+import EmailIcon from '@material-ui/icons/Email';
+import {
+    DeleteOutline as DeleteIcon,
+} from '@material-ui/icons';
 
 import { Link } from "react-router-dom";
 import { fetchUserGroups, deletePoll } from '@/store/actions/items';
@@ -21,6 +29,7 @@ import { useStyles } from '@/styles/poll-view';
 export default function Poll() {
     const [loading, setLoading] = useState(true);
     const [poll, setPoll] = useState(null);
+    const [emails, setEmails] = useState(null);
 
     const dispatch = useDispatch();
 
@@ -38,8 +47,15 @@ export default function Poll() {
                 if (user.id !== poll.admin)
                     router.replace('/manage');
                 else setPoll(poll);
+
+                const { data } = await axios.get(`/api/polls/emails/${uid}`, {
+                    headers: {
+                        Authorization: `JWT ${token}`
+                    }
+                });
+                setEmails(data.emails);
             }
-            catch({ response: { data } }){
+            catch ({ response: { data } }) {
                 dispatch(notify(data.message, 'error'));
                 router.replace('/manage');
             }
@@ -49,7 +65,7 @@ export default function Poll() {
         }
 
         fetchData();
-    }, [uid, user, dispatch, router]);
+    }, [uid, user, dispatch, router, token]);
 
     const [group, setGroup] = useState('');
 
@@ -59,25 +75,31 @@ export default function Poll() {
 
     const submit = useCallback(async () => {
         const group_id = groups[group - 1].id
-        try {
-            const { data } = await axios.post('/api/tokens/create-from-group', {
-                poll_id: poll.id,
-                group_id,
-            }, {
-                headers: {
-                    Authorization: `JWT ${token}`
-                }
-            });
 
-            if (data.failed_emails.length){
-                dispatch(notify('Alguns emails falharam no proceso', 'warning'));
+        const { data } = await axios.post('/api/tokens/create-from-group', {
+            poll_id: poll.id,
+            group_id,
+        }, {
+            headers: {
+                Authorization: `JWT ${token}`
             }
-            else dispatch(notify('Grupo adicionado com sucesso', 'success'));
+        });
+
+        var new_emails = data.added_emails.filter(email => !emails.includes(email))
+
+        if (data.failed_emails.length) {
+            dispatch(notify('Alguns emails falharam no proceso', 'warning'));
         }
-        catch ({ response }) {
-            dispatch(notify(response.data.message, 'error'));
-        }
-    }, [poll, groups, token, group, dispatch]);
+        else {
+            if (new_emails.length === 0) {
+                dispatch(notify('Os emails deste grupo já estão cadastrados', 'warning'))
+            } else {
+                setEmails(emails.concat(new_emails));
+                dispatch(notify('Grupo adicionado com sucesso', 'success'))
+            }
+        };
+
+    }, [poll, groups, token, group, dispatch, emails]);
 
     const delete_poll = useCallback(async () => {
         const res = await axios.delete(`/api/polls/delete/${poll.id}/`, {
@@ -89,6 +111,24 @@ export default function Poll() {
         dispatch(deletePoll(poll.id));
         router.replace('/manage');
     }, [poll, token, dispatch, router]);
+
+    const send_email = useCallback(async (email) => {
+        try {
+            const res = await axios.post('/api/emails/send-list', {
+                poll_id: poll.id,
+                users_emails_list: [email]
+            }, {
+                headers: {
+                    Authorization: `JWT ${token}`
+                }
+            });
+            console.log(res);
+            dispatch(notify('Email enviado para ' + email))
+        } catch ({ response: { data } }) {
+            dispatch(notify(data.message, 'warning'))
+        }
+
+    }, [token, dispatch, poll])
 
     useEffect(() => {
         if (!groups) {
@@ -155,7 +195,25 @@ export default function Poll() {
                     </Button>
                 </Grid>
                 <Divider style={{ marginBottom: 20, marginTop: 20 }} />
+                {emails.map((email, index) =>
+                    <Grid container key={index} style={{ justifyContent: 'center', marginBottom: 10 }}>
+                        <Grid item xs={12} sm={8}>
+                            <Paper className={classes.paper}><Typography>{email}</Typography></Paper>
+                        </Grid>
 
+                        <Grid item xs={12} sm={1} >
+                            <IconButton>
+                                <DeleteIcon className={classes.deleteIcon} />
+                            </IconButton>
+                        </Grid>
+                        <Grid item xs={12} sm={1} >
+                            <IconButton onClick={() => send_email(email)}>
+                                <EmailIcon />
+                            </IconButton>
+                        </Grid>
+
+                    </Grid>
+                )}
             </CardContent>
             <CardActions>
                 <Button size="small">
