@@ -14,7 +14,9 @@ def register_emails(request: CleanRequest) -> Response:
 
     admin = request.user
 
-    if not Poll.objects.filter(id=data["poll_id"], admin=admin):
+    try:
+        poll = Poll.objects.get(id=data["poll_id"], admin=admin)
+    except Poll.DoesNotExist:
         return Response({
             'message': 'Eleição não encontrada'
         }, status=HTTP_404_NOT_FOUND)
