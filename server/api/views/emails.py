@@ -62,7 +62,7 @@ def send_poll_emails(request: CleanRequest) -> Response:
         #    )
 
         subject = 'Convite para participar da eleição: {}'.format(poll.title)
-        html_message = '<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{}</strong>, criada por {}. </p> <p> Por favor, clique <a href="http://localhost:3000/{}"> aqui</a> para votar.</p> <p>Obrigado!</p> <p>Equipe SafePoll</p>'.format(poll.title, poll.admin.get_full_name(), user_token)
+        html_message = '<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{}</strong>, criada por {}. </p> <p> Por favor, clique <a href="http://localhost:3000/polls/{}/vote?token={}"> aqui</a> para votar.</p> <p>Obrigado!</p> <p>Equipe SafePoll</p>'.format(poll.title, poll.admin.get_full_name(), poll.id, user_token)
         msg = EmailMultiAlternatives(subject, '', 'contato.safepoll@gmail.com', [user_email])
         msg.attach_alternative(html_message, "text/html")
 
@@ -147,7 +147,7 @@ def send_list_emails(request: CleanRequest) -> Response:
         # Construct an email message that uses the connection
        
         subject = 'Convite para participar da eleição: {}'.format(poll.title)
-        html_message = '<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{}</strong>, criada por {}. </p> <p> Por favor, clique <a href="http://localhost:3000/{}"> aqui</a> para votar.</p> <p>Obrigado!</p> <p>Equipe SafePoll</p>'.format(poll.title, poll.admin.get_full_name(), user_token)
+        html_message = '<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{}</strong>, criada por {}. </p> <p> Por favor, clique <a href="http://localhost:3000/polls/{}/vote?token={}"> aqui</a> para votar.</p> <p>Obrigado!</p> <p>Equipe SafePoll</p>'.format(poll.title, poll.admin.get_full_name(), poll.id, user_token)
         msg = EmailMultiAlternatives(subject, '', 'contato.safepoll@gmail.com', [user_email])
         msg.attach_alternative(html_message, "text/html")
 
