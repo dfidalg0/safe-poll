@@ -4,10 +4,12 @@ import {
     Button, Typography, CircularProgress,
     InputLabel, Select, MenuItem, Grid,
     IconButton,
-    Paper, Tooltip
+    Paper, Tooltip, Fab,
+    Dialog, TextField
 } from '@material-ui/core';
 
 // Ícones
+import AddIcon from '@material-ui/icons/Add';
 import EmailIcon from '@material-ui/icons/Email';
 import CheckIcon from '@material-ui/icons/Check';
 import {
@@ -24,8 +26,10 @@ import axios from 'axios';
 
 import { useRouteMatch, useHistory } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useStyles } from '@/styles/poll-view';
+
+import isEmail from 'validator/lib/isEmail';
 
 
 export default function Poll() {
@@ -111,11 +115,146 @@ export default function Poll() {
         )
     };
 
+
+    function AddInvidualEmails() {
+        const classes = useStyles();
+
+        const [addedEmails, setAddedEmails] = useState([]);
+
+        // novo email a ser adicionado
+        const [newEmail, setNewEmail] = useState('');
+
+        // Estado de erros de validação dos emails
+        const [newEmailError, setNewEmailError] = useState(false);
+
+
+        // Ref para a caixa de texto de novo email (usada para autofocus)
+        const newEmailRef = useRef();
+
+        const createEmail = useCallback(() => {
+            if (newEmail && !newEmailError) {
+                setAddedEmails(addedEmails => [...addedEmails, newEmail]);
+                setNewEmail('');
+            }
+        }, [newEmailError, newEmail]);
+
+        const deleteEmail = useCallback(index => {
+            const newEmails = [...addedEmails];
+            newEmails.splice(index, 1);
+            setAddedEmails(newEmails);
+        }, [addedEmails]);
+
+        useEffect(() => {
+            if (emails.includes(newEmail) || !isEmail(newEmail)) {
+                setNewEmailError(true);
+            } else {
+                setNewEmailError(false);
+            }
+        }, [newEmail]);
+
+        const token = useSelector(state => state.auth.access);
+
+        const dispatch = useDispatch();
+
+        const submit = useCallback(async () => {
+            const data = {
+                'email_list': addedEmails,
+                'poll_id': poll.id
+            }
+            try {
+                const res = await axios.post('/api/tokens/create', data, {
+                    headers: {
+                        Authorization: `JWT ${token}`
+                    }
+                });
+                dispatch(notify(res.data.added_emails.length + ' emails foram adicionados!', 'success'));
+                setEmails(emails.concat(res.data.added_emails))
+            }
+            catch ({ response }) {
+                dispatch(notify(response.data.message, 'error'));
+            }
+        }, [addedEmails, token, dispatch]);
+
+        return !groups ? <LoadingScreen /> : (
+            <div align="center">
+                <Card className={classes.root}>
+                    <CardContent>
+                        <Typography variant="button" display="block" gutterBottom >
+                            Adicionar e-mails:
+                        </Typography>
+
+                        <Divider style={{ marginBottom: 20, marginTop: 20 }} />
+                        {addedEmails.map((email, index) =>
+                            <Grid container key={index} style={{ justifyContent: 'center', marginBottom: 10 }}>
+                                <Grid item xs={12} sm={8}>
+                                    <Paper className={classes.paper}><Typography>{email}</Typography></Paper>
+                                </Grid>
+
+                                <Grid item xs={12} sm={1} >
+                                    <IconButton onClick={
+                                        () => deleteEmail(index)
+                                    }>
+                                        <DeleteIcon className={classes.deleteIcon} />
+                                    </IconButton>
+                                </Grid>
+                            </Grid>
+                        )}
+
+                        <Grid container style={{ justifyContent: 'center' }}>
+                            <Grid item xs={8}>
+                                <TextField
+                                    autoComplete="off"
+                                    inputRef={newEmailRef}
+                                    className={classes.option}
+                                    variant="outlined"
+                                    value={newEmail}
+                                    error={newEmail === '' ? false : newEmailError}
+                                    helperText={isEmail(newEmail) && newEmailError? 'Email já cadastrado' : null}
+                                    onChange={e => setNewEmail(e.target.value)}
+                                    onKeyDown={e => {
+                                        if (e.key === 'Enter') createEmail();
+                                    }}
+                                    InputProps={{
+                                        className: classes.input
+                                    }}
+                                    style={{ width: '100%', textAlign: 'center' }}
+                                />
+                            </Grid>
+                            <Grid item xs={1}>
+                                <IconButton onClick={createEmail}>
+                                    <AddIcon />
+                                </IconButton>
+                            </Grid>
+                        </Grid>
+                    </CardContent>
+                    <CardActions style={{ marginTop: 10 }}>
+                        <Grid
+                            container
+                            direction="row"
+                            justify='flex-end'
+                            alignItems="center"
+                        >
+                            <Grid item>
+                                <Button variant="contained" className={classes.button}
+                                    onClick={submit}
+                                    disabled={addedEmails.length === 0}
+                                >
+                                    Adicionar
+                            </Button>
+                            </Grid>
+                        </Grid>
+                    </CardActions>
+                </Card >
+            </div >
+        )
+    };
+
     const [loading, setLoading] = useState(true);
     const [loadingSendEmails, setLoadingSendEmails] = useState(false);
     const [loadingAdd, setLoadingAdd] = useState(false);
     const [poll, setPoll] = useState(null);
     const [emails, setEmails] = useState(null);
+    const [emailsAddOpen, setEmailsAddOpen] = useState(false);
 
     const dispatch = useDispatch();
 
@@ -215,7 +354,7 @@ export default function Poll() {
             setLoadingSendEmails(false);
             dispatch(notify(data.message, 'warning'))
         }
-    }, [poll, setLoadingSendEmails, dispatch])
+    }, [poll, setLoadingSendEmails, dispatch, token])
 
     useEffect(() => {
         if (!groups) {
@@ -283,7 +422,6 @@ export default function Poll() {
                     </Button>
                 </Grid>
                 <Divider style={{ marginBottom: 20, marginTop: 20 }} />
-
                 <Grid item style={{ marginTop: 20, marginBottom: 20 }}>
                     {loadingSendEmails ? <CircularProgress size={22} /> :
                         <Tooltip title="Enviar links de votação para todos os cadastrados">
@@ -297,6 +435,16 @@ export default function Poll() {
                     </Button>
                         </Tooltip>
                     }
+
+                    <Tooltip title="Adicionar e-mails" aria-label="add">
+                        <Fab color="primary" size='small' style={{ marginLeft: 20 }} onClick={() => setEmailsAddOpen(true)}>
+                            <AddIcon style={{ fontSize: 18 }} />
+                        </Fab>
+                    </Tooltip>
+
+                    <Dialog onClose={() => setEmailsAddOpen(false)} aria-labelledby="simple-dialog-title" open={emailsAddOpen}>
+                        <AddInvidualEmails />
+                    </Dialog>
                 </Grid>
 
 
