@@ -22,10 +22,15 @@ def register_emails(request: CleanRequest) -> Response:
     email_error_list = []
     email_added_list = []
 
+    emails_voted = list(map(lambda user: user.ref, poll.emails_voted.all()))
+
     for email in data["email_list"]:
         try:
-            Token.objects.create_token(data["poll_id"], email)
-            email_added_list.append(email)
+            if email not in emails_voted:
+                Token.objects.create_token(data["poll_id"], email)
+                email_added_list.append(email)
+            else:
+                email_error_list.append(email)
         except:
             email_error_list.append(email)
 
@@ -46,7 +51,7 @@ def register_emails_from_group(request: CleanRequest) -> Response:
     try:
         admin = request.user
 
-        Poll.objects.get(pk=data["poll_id"], admin=admin)
+        poll = Poll.objects.get(pk=data["poll_id"], admin=admin)
 
         user_group = Group.objects.get(pk=data["group_id"], admin=admin)
 
@@ -62,10 +67,15 @@ def register_emails_from_group(request: CleanRequest) -> Response:
     email_error_list = []
     email_added_list = []
 
+    emails_voted = list(map(lambda user: user.ref, poll.emails_voted.all()))
+
     for user in user_group.users.all():
         try:
-            Token.objects.create_token(data["poll_id"], user.ref)
-            email_added_list.append(user.ref)
+            if user.ref not in emails_voted:
+                Token.objects.create_token(data["poll_id"], user.ref)
+                email_added_list.append(user.ref)
+            else:
+                email_error_list.append(user.ref)
         except:
             email_error_list.append(user.ref)
 
