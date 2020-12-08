@@ -20,4 +20,13 @@ export const useStyles = makeStyles({
         flexDirection: "column",
         justifyContent: "center"
     },
+    deleteIcon: {
+        color: '#900a0a',
+    },
+    checkIcon: {
+        color: '#1b5e20'
+    },
+    emailIcon: {
+        color: '#37474f'
+    }
 });

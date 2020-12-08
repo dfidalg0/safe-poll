@@ -4,7 +4,7 @@ import {
     Button, Typography, CircularProgress,
     InputLabel, Select, MenuItem, Grid,
     IconButton,
-    Paper
+    Paper, Tooltip
 } from '@material-ui/core';
 
 // Ícones
@@ -85,7 +85,7 @@ export default function Poll() {
                 {poll.emails_voted.indexOf(email) > -1 ?
                     <Grid item xs={12} sm={2} >
                         <IconButton>
-                            <CheckIcon />
+                            <CheckIcon className={classes.checkIcon} />
                         </IconButton>
                     </Grid>
                     :
@@ -100,9 +100,11 @@ export default function Poll() {
                     null :
                     <Grid item xs={6} sm={1} >
                         {loadingSend ? <IconButton><CircularProgress size={18} /></IconButton> :
-                            <IconButton onClick={() => send_email(email)}>
-                                <EmailIcon />
-                            </IconButton>}
+                            <Tooltip title="Enviar e-mail individual">
+                                <IconButton onClick={() => send_email(email)}>
+                                    <EmailIcon className={classes.emailIcon} />
+                                </IconButton>
+                            </Tooltip>}
                     </Grid>
                 }
             </Grid>
@@ -110,6 +112,7 @@ export default function Poll() {
     };
 
     const [loading, setLoading] = useState(true);
+    const [loadingSendEmails, setLoadingSendEmails] = useState(false);
     const [loadingAdd, setLoadingAdd] = useState(false);
     const [poll, setPoll] = useState(null);
     const [emails, setEmails] = useState(null);
@@ -196,6 +199,24 @@ export default function Poll() {
         router.replace('/manage');
     }, [poll, token, dispatch, router]);
 
+    const send_email_to_everyone = useCallback(async () => {
+        setLoadingSendEmails(true);
+        try {
+            await axios.post('/api/emails/send', {
+                poll_id: poll.id,
+            }, {
+                headers: {
+                    Authorization: `JWT ${token}`
+                }
+            });
+            setLoadingSendEmails(false);
+            dispatch(notify('Emails enviados!'))
+        } catch ({ response: { data } }) {
+            setLoadingSendEmails(false);
+            dispatch(notify(data.message, 'warning'))
+        }
+    }, [poll, setLoadingSendEmails, dispatch])
+
     useEffect(() => {
         if (!groups) {
             dispatch(fetchUserGroups());
@@ -257,11 +278,28 @@ export default function Poll() {
                         onClick={submit}
                         disabled={group === ''}
                         size='large'
-                        style={{ width: '40%'}}
+                        style={{ width: '40%' }}
                     >   {loadingAdd ? <CircularProgress size={22} /> : 'Adicionar'}
                     </Button>
                 </Grid>
                 <Divider style={{ marginBottom: 20, marginTop: 20 }} />
+
+                <Grid item style={{ marginTop: 20, marginBottom: 20 }}>
+                    {loadingSendEmails ? <CircularProgress size={22} /> :
+                        <Tooltip title="Enviar links de votação para todos os cadastrados">
+                            <Button variant="contained" className={classes.button}
+                                onClick={send_email_to_everyone}
+                                endIcon={<EmailIcon />}
+                                disabled={emails.length === 0}
+                                size='large'
+                                style={{ width: '50%' }}
+                            >    Enviar emails
+                    </Button>
+                        </Tooltip>
+                    }
+                </Grid>
+
+
                 {emails.map((email, index) =>
                     <EmailItem email={email} key={index} />
                 )}
@@ -276,6 +314,7 @@ export default function Poll() {
                     <Button
                         className={classes.button}
                         onClick={delete_poll}
+                        endIcon={<DeleteIcon className={classes.deleteIcon} />}
                     >
                         Excluir
                     </Button>
