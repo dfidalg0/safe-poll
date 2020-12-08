@@ -208,7 +208,7 @@ export default function Poll() {
                                     variant="outlined"
                                     value={newEmail}
                                     error={newEmail === '' ? false : newEmailError}
-                                    helperText={isEmail(newEmail) && newEmailError? 'Email já cadastrado' : null}
+                                    helperText={isEmail(newEmail) && newEmailError ? 'Email já cadastrado' : null}
                                     onChange={e => setNewEmail(e.target.value)}
                                     onKeyDown={e => {
                                         if (e.key === 'Enter') createEmail();
@@ -311,18 +311,14 @@ export default function Poll() {
         });
 
         var new_emails = data.added_emails.filter(email => !emails.includes(email) && !poll.emails_voted.includes(email))
-
-        if (data.failed_emails.length) {
-            dispatch(notify('Alguns emails falharam no proceso', 'warning'));
+        
+        if (new_emails.length === 0) {
+            dispatch(notify('Os emails deste grupo já estão cadastrados', 'warning'))
+        } else {
+            setEmails(emails.concat(new_emails));
+            dispatch(notify('Grupo adicionado com sucesso', 'success'))
         }
-        else {
-            if (new_emails.length === 0) {
-                dispatch(notify('Os emails deste grupo já estão cadastrados', 'warning'))
-            } else {
-                setEmails(emails.concat(new_emails));
-                dispatch(notify('Grupo adicionado com sucesso', 'success'))
-            }
-        };
+
         setLoadingAdd(false);
     }, [poll, groups, token, group, dispatch, emails]);
 
