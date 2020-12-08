@@ -115,7 +115,6 @@ export default function Poll() {
         )
     };
 
-
     function AddInvidualEmails() {
         const classes = useStyles();
 
@@ -145,12 +144,12 @@ export default function Poll() {
         }, [addedEmails]);
 
         useEffect(() => {
-            if (emails.includes(newEmail) || !isEmail(newEmail)) {
+            if (emails.includes(newEmail) || addedEmails.includes(newEmail) || !isEmail(newEmail)) {
                 setNewEmailError(true);
             } else {
                 setNewEmailError(false);
             }
-        }, [newEmail]);
+        }, [newEmail, addedEmails]);
 
         const token = useSelector(state => state.auth.access);
 
@@ -311,7 +310,7 @@ export default function Poll() {
             }
         });
 
-        var new_emails = data.added_emails.filter(email => !emails.includes(email))
+        var new_emails = data.added_emails.filter(email => !emails.includes(email) && !poll.emails_voted.includes(email))
 
         if (data.failed_emails.length) {
             dispatch(notify('Alguns emails falharam no proceso', 'warning'));
