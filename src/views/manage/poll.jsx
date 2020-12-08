@@ -1,7 +1,7 @@
 import {
     Divider, CardActions,
     CardContent, Card,
-    Button, Typography,
+    Button, Typography, CircularProgress,
     InputLabel, Select, MenuItem, Grid,
     IconButton,
     Paper
@@ -9,6 +9,7 @@ import {
 
 // Ícones
 import EmailIcon from '@material-ui/icons/Email';
+import CheckIcon from '@material-ui/icons/Check';
 import {
     DeleteOutline as DeleteIcon,
 } from '@material-ui/icons';
@@ -26,8 +27,90 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useEffect, useState, useCallback } from 'react';
 import { useStyles } from '@/styles/poll-view';
 
+
 export default function Poll() {
+
+    function EmailItem({ email }) {
+        const [loadingSend, setLoadingSend] = useState(false);
+        const [loadingDelete, setLoadingDelete] = useState(false);
+
+        const delete_email = async (email) => {
+            setLoadingDelete(true);
+            try {
+                const res = await axios.post('/api/polls/emails/delete', {
+                    'email': email,
+                    poll_id: poll.id
+                },
+                    {
+                        headers: {
+                            Authorization: `JWT ${token}`
+                        }
+                    });
+                setLoadingDelete(false);
+                const new_emails = emails.filter(e => e !== email);
+                setEmails(new_emails);
+                dispatch(notify(res.data.message, 'success'));
+            } catch ({ response: { data } }) {
+                setLoadingDelete(false);
+                dispatch(notify(data.message, 'warning'));
+            }
+        };
+
+        const send_email = async (email) => {
+            setLoadingSend(true);
+            try {
+                await axios.post('/api/emails/send-list', {
+                    poll_id: poll.id,
+                    users_emails_list: [email]
+                }, {
+                    headers: {
+                        Authorization: `JWT ${token}`
+                    }
+                });
+                setLoadingSend(false);
+                dispatch(notify('Email enviado para ' + email))
+            } catch ({ response: { data } }) {
+                setLoadingSend(false);
+                dispatch(notify(data.message, 'warning'))
+            }
+
+        }
+
+        return (
+            <Grid container style={{ justifyContent: 'center', marginBottom: 10 }}>
+                <Grid item xs={12} sm={8}>
+                    <Paper className={classes.paper}><Typography>{email}</Typography></Paper>
+                </Grid>
+
+                {poll.emails_voted.indexOf(email) > -1 ?
+                    <Grid item xs={12} sm={2} >
+                        <IconButton>
+                            <CheckIcon />
+                        </IconButton>
+                    </Grid>
+                    :
+                    <Grid item xs={6} sm={1} >
+                        {loadingDelete ? <IconButton><CircularProgress size={18} /></IconButton> :
+                            <IconButton onClick={() => delete_email(email)}>
+                                <DeleteIcon className={classes.deleteIcon} />
+                            </IconButton>}
+                    </Grid>
+                }
+                {poll.emails_voted.indexOf(email) > -1 ?
+                    null :
+                    <Grid item xs={6} sm={1} >
+                        {loadingSend ? <IconButton><CircularProgress size={18} /></IconButton> :
+                            <IconButton onClick={() => send_email(email)}>
+                                <EmailIcon />
+                            </IconButton>}
+                    </Grid>
+                }
+            </Grid>
+        )
+    };
+
     const [loading, setLoading] = useState(true);
+    const [loadingAdd, setLoadingAdd] = useState(false);
     const [poll, setPoll] = useState(null);
     const [emails, setEmails] = useState(null);
 
@@ -74,6 +157,7 @@ export default function Poll() {
     const groups = useSelector(state => state.items.groups);
 
     const submit = useCallback(async () => {
+        setLoadingAdd(true);
         const group_id = groups[group - 1].id
 
         const { data } = await axios.post('/api/tokens/create-from-group', {
@@ -98,7 +182,7 @@ export default function Poll() {
                 dispatch(notify('Grupo adicionado com sucesso', 'success'))
             }
         };
-
+        setLoadingAdd(false);
     }, [poll, groups, token, group, dispatch, emails]);
 
     const delete_poll = useCallback(async () => {
@@ -111,24 +195,6 @@ export default function Poll() {
         dispatch(deletePoll(poll.id));
         router.replace('/manage');
     }, [poll, token, dispatch, router]);
-
-    const send_email = useCallback(async (email) => {
-        try {
-            const res = await axios.post('/api/emails/send-list', {
-                poll_id: poll.id,
-                users_emails_list: [email]
-            }, {
-                headers: {
-                    Authorization: `JWT ${token}`
-                }
-            });
-            console.log(res);
-            dispatch(notify('Email enviado para ' + email))
-        } catch ({ response: { data } }) {
-            dispatch(notify(data.message, 'warning'))
-        }
-
-    }, [token, dispatch, poll])
 
     useEffect(() => {
         if (!groups) {
@@ -190,29 +256,14 @@ export default function Poll() {
                     <Button variant="contained" className={classes.button}
                         onClick={submit}
                         disabled={group === ''}
-                    >
-                        Adicionar
+                        size='large'
+                        style={{ width: '40%'}}
+                    >   {loadingAdd ? <CircularProgress size={22} /> : 'Adicionar'}
                     </Button>
                 </Grid>
                 <Divider style={{ marginBottom: 20, marginTop: 20 }} />
                 {emails.map((email, index) =>
-                    <Grid container key={index} style={{ justifyContent: 'center', marginBottom: 10 }}>
-                        <Grid item xs={12} sm={8}>
-                            <Paper className={classes.paper}><Typography>{email}</Typography></Paper>
-                        </Grid>
-
-                        <Grid item xs={12} sm={1} >
-                            <IconButton>
-                                <DeleteIcon className={classes.deleteIcon} />
-                            </IconButton>
-                        </Grid>
-                        <Grid item xs={12} sm={1} >
-                            <IconButton onClick={() => send_email(email)}>
-                                <EmailIcon />
-                            </IconButton>
-                        </Grid>
-
-                    </Grid>
+                    <EmailItem email={email} key={index} />
                 )}
             </CardContent>
             <CardActions>
@@ -230,6 +281,6 @@ export default function Poll() {
                     </Button>
                 </Grid>
             </CardActions>
-        </Card>
+        </Card >
     )
 };

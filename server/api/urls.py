@@ -12,6 +12,7 @@ urlpatterns = [
     path('polls/mine', get_user_polls),
     path('polls/get/<int:pk>/result', get_poll_result),
     path('polls/emails/<int:pk>', get_emails_from_poll),
+    path('polls/emails/delete', delete_email_from_poll),
 
     path('emails/send', send_poll_emails),
     path('emails/send-list', send_list_emails),

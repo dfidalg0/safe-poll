@@ -7,7 +7,7 @@ def get_poll(request, pk):
         with transaction.atomic():
             poll = Poll.objects.get(pk=pk)
             options = list(map(model_to_dict, poll.options.all()))
-            emails_voted = list(map(model_to_dict, poll.emails_voted.all()))
+            emails_voted = list(map(lambda user: user.ref, poll.emails_voted.all()))
             poll = model_to_dict(poll)
             poll['options'] = options
             poll['emails_voted'] = emails_voted
@@ -160,5 +160,8 @@ def get_emails_from_poll(request: CleanRequest, pk: int) -> Response:
         .only('user')
         .filter(poll=poll)
     ))
+
+    emails_voted = list(map(lambda user: user.ref, poll.emails_voted.all()))
+    emails.extend(emails_voted)
     conclusion = {'emails': emails}
     return Response(conclusion)
