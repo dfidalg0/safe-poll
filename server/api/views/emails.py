@@ -66,11 +66,12 @@ def send_poll_emails(request: CleanRequest) -> Response:
         #    )
 
         subject = f'Convite para participar da eleição: {poll.title}'
-        html_message = '' +
+        html_message = (
             '<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{poll.title}</strong>' +
             f', criada por {poll.admin.get_full_name()}. </p> <p> Por favor, clique' +
             f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> aqui </a>' +
             ' para votar.</p> <p>Obrigado!</p> <p>Equipe SafePoll</p>'
+        )
 
         msg = EmailMultiAlternatives(subject, '', 'contato.safepoll@gmail.com', [user_email])
         msg.attach_alternative(html_message, "text/html")
@@ -156,11 +157,12 @@ def send_list_emails(request: CleanRequest) -> Response:
         # Construct an email message that uses the connection
 
         subject = f'Convite para participar da eleição: {poll.title}'
-        html_message = '' +
+        html_message = (
             '<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{poll.title}</strong>' +
             f', criada por {poll.admin.get_full_name()}. </p> <p> Por favor, clique' +
             f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> aqui </a>' +
             ' para votar.</p> <p>Obrigado!</p> <p>Equipe SafePoll</p>'
+        )
 
         msg = EmailMultiAlternatives(subject, '', 'contato.safepoll@gmail.com', [user_email])
         msg.attach_alternative(html_message, "text/html")

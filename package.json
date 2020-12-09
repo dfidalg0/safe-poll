@@ -34,7 +34,7 @@
   },
   "scripts": {
     "start": "craco start",
-    "api:dev": "pipenv run python manage.py runserver",
+    "api:dev": "cd server && pipenv run python manage.py runserver",
     "build": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject"
