@@ -177,5 +177,6 @@ CELERY_ENABLE_UTC        = True
 CELERY_ACCEPT_CONTENT    = ['json']
 CELERY_TASK_SERIALIZER   = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_BROKER_URL        = os.environ['REDIS_URL']
+if os.environ.get('BROKER_URL'):
+    CELERY_BROKER_URL = os.environ['BROKER_URL']
 #OBS: por default, o broker utilizado eh o rabbitMQ. Este deve ser instalado e ativado.
