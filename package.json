@@ -16,7 +16,10 @@
     "axios": "^0.21.0",
     "date-fns": "^2.16.1",
     "jsonwebtoken": "^8.5.1",
+    "lodash.isequal": "^4.5.0",
     "lodash.reduce": "^4.6.0",
+    "mitt": "^2.1.0",
+    "notistack": "^1.0.2",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-redux": "^7.2.2",
@@ -31,7 +34,7 @@
   },
   "scripts": {
     "start": "craco start",
-    "api:dev": "cd server && pipenv run -- ./manage.py runserver",
+    "api:dev": "cd server && pipenv run python manage.py runserver",
     "build": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject"

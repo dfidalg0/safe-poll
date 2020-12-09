@@ -2,14 +2,10 @@ import { makeStyles } from '@material-ui/core/styles';
 
 export const useStyles = makeStyles({
     root: {
-        width: '40%',
+        width: 500,
+        maxWidth: '90vw',
         justifyContent: 'center',
         textAlign: 'center'
-    },
-    bullet: {
-        display: 'inline-block',
-        margin: '0 2px',
-        transform: 'scale(0.8)',
     },
     title: {
         fontSize: 14,
@@ -24,4 +20,13 @@ export const useStyles = makeStyles({
         flexDirection: "column",
         justifyContent: "center"
     },
+    deleteIcon: {
+        color: '#900a0a',
+    },
+    checkIcon: {
+        color: '#1b5e20'
+    },
+    emailIcon: {
+        color: '#37474f'
+    }
 });

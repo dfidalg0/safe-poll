@@ -39,5 +39,9 @@ export const useStyles = makeStyles(theme => ({
     },
     deleteIcon: {
         color: '#900a0a'
+    },
+    closeButton: {
+        float: 'right',
+        marginTop: '-7pt'
     }
 }));

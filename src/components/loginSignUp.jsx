@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import SwipeableViews from 'react-swipeable-views';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
@@ -25,7 +25,8 @@ function TabPanel(props) {
 const useStyles = makeStyles((theme) => ({
     root: {
         backgroundColor: theme.palette.background.paper,
-        width: 500,
+        width: '500',
+        maxWidth: '90vw',
         color: 'black'
     },
 }));
@@ -35,35 +36,34 @@ export default function LoginSignUp() {
     const theme = useTheme();
     const [value, setValue] = useState(0);
 
-    const handleChange = (event, newValue) => {
+    const handleChange = useCallback((event, newValue) => {
         setValue(newValue);
-    };
+    }, []);
 
-    return (
-        <div className={classes.root}>
-            <AppBar position="static" color="default">
-                <Tabs
-                    value={value}
-                    onChange={handleChange}
-                    indicatorColor="primary"
-                    textColor="primary"
-                    variant="fullWidth"
-                >
-                    <Tab label="Login" />
-                    <Tab label="Cadastro" />
-                </Tabs>
-            </AppBar>
-            <SwipeableViews
-                axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
-                index={value}
+    return <div className={classes.root}>
+        <AppBar position="static" color="default">
+            <Tabs
+                value={value}
+                onChange={handleChange}
+                indicatorColor="primary"
+                textColor="primary"
+                variant="fullWidth"
             >
-                <TabPanel value={value} index={0} dir={theme.direction}>
-                    <Login />
-                </TabPanel>
-                <TabPanel value={value} index={1} dir={theme.direction}>
-                    <SignUp />
-                </TabPanel>
-            </SwipeableViews>
-        </div>
-    );
+                <Tab label="Login" />
+                <Tab label="Cadastro" />
+            </Tabs>
+        </AppBar>
+        <SwipeableViews
+            onSwitching={v => Number.isInteger(v) ? setValue(v) : null}
+            axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
+            index={value}
+        >
+            <TabPanel value={value} index={0} dir={theme.direction}>
+                <Login />
+            </TabPanel>
+            <TabPanel value={value} index={1} dir={theme.direction}>
+                <SignUp />
+            </TabPanel>
+        </SwipeableViews>
+    </div>;
 }

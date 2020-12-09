@@ -10,7 +10,8 @@ import {
 // Ícones
 import {
     DeleteOutline as DeleteIcon,
-    Add as AddIcon
+    Add as AddIcon,
+    Close as CloseIcon
 } from '@material-ui/icons';
 
 // Date Picker
@@ -27,8 +28,9 @@ import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useMediaQuery, useTheme } from '@material-ui/core';
 import { useStyles } from '@/styles/create-poll';
 
-import { pushPoll } from '@/store/actions/ui';
-import { connect } from 'react-redux';
+import { pushPoll } from '@/store/actions/items';
+import { notify } from '@/store/actions/ui';
+import { useDispatch, useSelector } from 'react-redux';
 
 // Lodash <3
 import reduce from 'lodash.reduce';
@@ -39,11 +41,9 @@ import axios from 'axios';
  * @param {{
  *   open: boolean;
  *   onClose: () => void;
- *   token: string;
- *   sendPoll: (poll: any) => ReturnType<typeof pushPoll>
  * }}
  */
-function CreatePoll({ open, onClose, token, sendPoll }){
+export default function CreatePoll({ open, onClose }){
     // Styles
     const theme = useTheme();
     const classes = useStyles();
@@ -84,7 +84,7 @@ function CreatePoll({ open, onClose, token, sendPoll }){
     }, [deadline]);
 
     // Limpeza do formulário
-    const clear = () => {
+    const clear = useCallback(() => {
         // Limpando dados do formulário
         setTitle('');
         setDesc('');
@@ -95,7 +95,7 @@ function CreatePoll({ open, onClose, token, sendPoll }){
         // Limpando erros
         setOptionErrors([]);
         setNewOptionError(false);
-    };
+    }, []);
 
     // Atualização de erro nas opções
     useEffect(() => {
@@ -131,6 +131,10 @@ function CreatePoll({ open, onClose, token, sendPoll }){
         !optionErrors.every(el => !el) || deadlineError
     ), [options, title, description, optionErrors, deadline, deadlineError]);
 
+    const token = useSelector(state => state.auth.access);
+
+    const dispatch = useDispatch();
+
     const submit = useCallback(async () => {
         const data = {
             title, description, type_id, deadline: deadline.toJSON().slice(0, 10),
@@ -147,18 +151,24 @@ function CreatePoll({ open, onClose, token, sendPoll }){
                 }
             });
 
-            sendPoll(res.data);
+            if (onClose) onClose();
+            clear();
+
+            dispatch(notify('Eleição criada com sucesso', 'success'));
+
+            dispatch(pushPoll(res.data));
         }
         catch ({ response: { data } }) {
-            alert(data.message);
+            dispatch(notify(data.message, 'error'));
         }
 
         // Fim do estado de carregamento do envio
         setLoading(false);
-
-        if (onClose) onClose();
-        clear();
-    }, [title, description, type_id, deadline, options, secret_vote, onClose, token, sendPoll]);
+    }, [
+        title, description, type_id,
+        deadline, options, secret_vote,
+        onClose, token, dispatch, clear
+    ]);
 
     // Criação de nova opção
     const createOption = useCallback(() => {
@@ -201,6 +211,12 @@ function CreatePoll({ open, onClose, token, sendPoll }){
             <Grid item xs={12}>
                 <DialogTitle>
                     Criar Eleição
+                    <IconButton
+                        className={classes.closeButton}
+                        onClick={onClose ? onClose : null}
+                    >
+                        <CloseIcon/>
+                    </IconButton>
                 </DialogTitle>
                 <Divider />
             </Grid>
@@ -364,7 +380,7 @@ function CreatePoll({ open, onClose, token, sendPoll }){
                             onClick={submit}
                             disabled={hasErrors}
                         >
-                                Criar
+                            Criar
                         </Button>}
                     </Grid>
                 </DialogActions>
@@ -372,15 +388,3 @@ function CreatePoll({ open, onClose, token, sendPoll }){
         </Grid>
     </Dialog>
 }
-
-function mapDispatchToProps(dispatch) {
-    return ({
-        sendPoll: (poll) => dispatch(pushPoll(poll))
-    })
-}
-
-export default connect(
-    state => ({
-        token: state.auth.access
-    }), mapDispatchToProps
-)(CreatePoll);

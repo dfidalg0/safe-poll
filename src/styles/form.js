@@ -26,5 +26,14 @@ export const useStyles = makeStyles((theme) => ({
     },
     alert: {
         marginTop: '30px'
+    },
+    root: {
+        backgroundColor: theme.palette.background.paper,
+        minWidth: '30vw',
+        maxWidth: '50vw',
+        color: 'black'
+    },
+    progress: {
+        marginTop: '-51px'
     }
 }));

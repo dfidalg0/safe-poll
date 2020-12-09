@@ -11,11 +11,16 @@ urlpatterns = [
     path('polls/delete/<int:pk>/', delete_poll),
     path('polls/mine', get_user_polls),
     path('polls/get/<int:pk>/result', get_poll_result),
+    path('polls/emails/<int:pk>', get_emails_from_poll),
+    path('polls/emails/delete', delete_email_from_poll),
 
     path('emails/send', send_poll_emails),
     path('emails/send-list', send_list_emails),
 
+    path('groups/get/<int:pk>', get_group),
+    path('groups/update/<int:pk>', update_group),
     path('groups/create', create_group),
+    path('groups/delete/<int:pk>', delete_group),
     path('groups/mine', user_groups),
 
     path('tokens/create', register_emails),

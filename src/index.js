@@ -1,8 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { ptBR } from '@material-ui/core/locale';
+
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+import { SnackbarProvider } from 'notistack';
 import { Provider } from 'react-redux';
+import { ConfirmationProvider } from '@/utils/confirm-dialog';
+
 import store from './store';
 
 import './index.css';
@@ -20,7 +24,11 @@ const theme = createMuiTheme({
 ReactDOM.render(
     <ThemeProvider theme={theme}>
         <Provider store={store}>
-            <App />
+            <SnackbarProvider>
+                <ConfirmationProvider>
+                    <App />
+                </ConfirmationProvider>
+            </SnackbarProvider>
         </Provider>
     </ThemeProvider>,
     document.getElementById('root')

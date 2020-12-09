@@ -1,4 +1,3 @@
-import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { Link } from "react-router-dom";
@@ -18,15 +17,22 @@ import {
     Add as AddIcon,
 } from '@material-ui/icons';
 
-import { useSelector, useDispatch } from 'react-redux';
-import { notify } from '@/store/actions/ui';
-import { pushGroup } from '@/store/actions/items';
-
-import isEmail from 'validator/lib/isEmail';
-
 import axios from 'axios';
 
-import { useHistory } from 'react-router-dom';
+import isEmail from 'validator/lib/isEmail';
+import isEqual from 'lodash.isequal';
+
+import { notify } from '@/store/actions/ui';
+
+import { deleteGroup } from '@/store/actions/items';
+
+import { useConfirm } from '@/utils/confirm-dialog';
+
+import { useSelector, useDispatch } from 'react-redux';
+
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+
+import { useRouteMatch, useHistory } from 'react-router-dom';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -67,28 +73,102 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-export default function EmailsGroup() {
+export default function Group() {
+    const { params: { uid } } = useRouteMatch();
+
     const classes = useStyles();
 
+    const [group, setGroup] = useState(null);
+
+    const token = useSelector(state => state.auth.access);
+
+    const dispatch = useDispatch();
+
+    const router = useHistory();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try{
+                const { data: group } = await axios.get(`/api/groups/get/${uid}`, {
+                    headers: {
+                        Authorization: `JWT ${token}`
+                    }
+                });
+
+                setGroup(group);
+                setEmails(group.emails);
+            }
+            catch({ response: { data } }){
+                dispatch(notify(data.message, 'error'));
+                router.replace('/manage');
+            }
+        }
+
+        if(!group) fetchData();
+    }, [uid, group, token, router, dispatch]);
+
     const [emails, setEmails] = useState([]);
-    const [name, setName] = useState('');
+
+    const submit = useCallback(async () => {
+        try {
+            const { data } = await axios.put(`/api/groups/update/${uid}`, { emails }, {
+                headers: {
+                    Authorization: `JWT ${token}`
+                }
+            });
+
+            setGroup(group => ({
+                ...group,
+                emails
+            }));
+
+            dispatch(notify(data.message, 'success'));
+        }
+        catch ({ response: { data } }) {
+            dispatch(notify(data.message, 'error'));
+        }
+    }, [uid, emails, token, dispatch]);
+
+    const confirm = useConfirm();
+
+    const submitDelete = useCallback(async () => {
+        const check = await confirm('A relação de emails deste grupo será perdida permanentemente');
+
+        if (!check){
+            return;
+        }
+
+        try {
+            const { data } = await axios.delete(`/api/groups/delete/${uid}`, {
+                headers: {
+                    Authorization: `JWT ${token}`
+                }
+            });
+
+            dispatch(deleteGroup(Number(uid)));
+            dispatch(notify(data.message, 'success'));
+
+            router.replace('/manage');
+        }
+        catch({ response: { data } }){
+            dispatch(notify(data.message), 'error');
+        }
+    }, [dispatch, confirm, uid, router, token]);
+
+    const disabled = useMemo(() => {
+        if (!group || !emails.length) return true;
+
+        const a = new Set(emails);
+        const b = new Set(group.emails);
+
+        return isEqual(a,b);
+    }, [emails, group]);
 
     // novo email a ser adicionado
     const [newEmail, setNewEmail] = useState('');
 
     // Estado de erros de validação dos emails
     const [newEmailError, setNewEmailError] = useState(false);
-
-    const groups = useSelector(state => state.items.groups)
-
-    // Estado de erros de validação do nome do grupo
-    const nameError = useMemo(() => {
-        return (groups || []).map(g => g.name).includes(name);
-    }, [groups, name]);
-
-    const disabled = useMemo(() => (
-        name === '' || emails.length === 0 || nameError
-    ), [name, emails, nameError]);
 
     // Ref para a caixa de texto de novo email (usada para autofocus)
     const newEmailRef = useRef();
@@ -114,62 +194,21 @@ export default function EmailsGroup() {
         }
     }, [newEmail, emails]);
 
-    const router = useHistory();
-
-    const token = useSelector(state => state.auth.access);
-
-    const dispatch = useDispatch();
-
-    const submit = useCallback(async () => {
-        const data = {
-            emails, name
-        }
-        try {
-            const { data: { id } } = await axios.post('/api/groups/create', data, {
-                headers: {
-                    Authorization: `JWT ${token}`
-                }
-            });
-            dispatch(pushGroup({
-                id, ...data
-            }));
-            dispatch(notify('Grupo criado com sucesso', 'success'));
-            router.replace(`/manage/groups/${id}`)
-        }
-        catch ({ response }) {
-            dispatch(notify(response.data.message, 'error'));
-        }
-    }, [name, emails, token, router, dispatch]);
-
-    return !groups ? <LoadingScreen /> : (
+    return !group ? <LoadingScreen /> : (
         <div align="center">
             <Card className={classes.root}>
                 <CardContent>
-                    <Typography variant="button" display="block" gutterBottom style={{ marginTop: 10 }}>
-                        Novo Grupo:
+                    <Typography variant="h6" display="block" gutterBottom style={{ marginTop: 10 }}>
+                        <span style={{marginLeft: '30pt'}}>
+                            {group.name}
+                        </span>
+                        <IconButton style={{ float: 'right', marginTop: '-5pt', color: 'red' }}
+                            onClick={submitDelete}
+                        >
+                            <DeleteIcon />
+                        </IconButton>
                     </Typography>
-                    <Grid container spacing={1} style={{ justifyContent: 'center' }}>
-                        <Grid item xs={12} sm={2}>
-                            <Typography className={classes.paper}>Nome:</Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField id="name"
-                                error={nameError}
-                                helperText={nameError ? 'Já existe grupo com esse nome' : null}
-                                autoComplete="off"
-                                className={classes.field}
-                                value={name}
-                                onChange={e => setName(e.target.value)}
-                                variant="outlined"
-                                margin="normal"
-                                required
-                                autoFocus
-                                InputProps={{
-                                    className: classes.input
-                                }}
-                                style={{ width: '100%', textAlign: 'center' }}
-                            /></Grid>
-                    </Grid>
+
 
                     <Divider style={{ marginBottom: 20, marginTop: 20 }} />
                     <Typography variant="button" display="block" gutterBottom style={{ marginBottom: 20 }}>
@@ -234,8 +273,8 @@ export default function EmailsGroup() {
                                 onClick={submit}
                                 disabled={disabled}
                             >
-                                Criar
-                        </Button>
+                                Atualizar
+                            </Button>
                         </Grid>
                     </Grid>
                 </CardActions>
