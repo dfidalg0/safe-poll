@@ -67,7 +67,8 @@ def create_poll(request: CleanRequest) -> Response:
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 @with_rules({
-    'deadline': is_after_today
+    # 'deadline': is_after_today
+    'deadline': is_valid_date_string
 })
 def update_poll(request: CleanRequest, pk: int) -> Response:
     data = request.clean_data
@@ -132,16 +133,20 @@ def get_user_polls(request):
 
 
 @api_view(['GET'])
-def get_poll_result(request: CleanRequest, pk: int) -> Response:
-    data = request.clean_data
-    poll = Poll.objects.get(pk=pk)
-    if poll.deadline < datetime.date.today():
-        return Response(poll.compute_result())
-    else:
+@permission_classes([IsAuthenticated])
+def get_poll_result(request: Request, pk: int) -> Response:
+    try:
+        poll = Poll.objects.get(pk=pk)
+        if poll.deadline < datetime.date.today():
+            return Response(poll.compute_result())
+        else:
+            return Response({
+                'message': 'A eleicao ainda não finalizou'
+            }, status=HTTP_400_BAD_REQUEST)
+    except:
         return Response({
-            'message': 'A eleicao ainda nao finalizou'
-        }, status=HTTP_400_BAD_REQUEST)
-
+            'message': 'Erro interno do servidor'
+        }, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

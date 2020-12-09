@@ -5,8 +5,11 @@ import {
     InputLabel, Select, MenuItem, Grid,
     IconButton,
     Paper, Tooltip, Fab,
-    Dialog, TextField
+    Dialog, TextField,
+    LinearProgress
 } from '@material-ui/core';
+
+import { Fragment } from 'react';
 
 // Ícones
 import AddIcon from '@material-ui/icons/Add';
@@ -32,6 +35,7 @@ import { useConfirm } from '@/utils/confirm-dialog';
 
 import isEmail from 'validator/lib/isEmail';
 
+import reduce from 'lodash.reduce';
 
 export default function Poll() {
 
@@ -265,6 +269,8 @@ export default function Poll() {
     const user = useSelector(state => state.auth.user);
     const token = useSelector(state => state.auth.access);
 
+    const [result, setResult] = useState(null);
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -273,12 +279,23 @@ export default function Poll() {
                     router.replace('/manage');
                 else setPoll(poll);
 
-                const { data } = await axios.get(`/api/polls/emails/${uid}`, {
-                    headers: {
-                        Authorization: `JWT ${token}`
-                    }
-                });
-                setEmails(data.emails);
+                if (new Date(poll.deadline) > new Date()){
+                    const { data } = await axios.get(`/api/polls/emails/${uid}`, {
+                        headers: {
+                            Authorization: `JWT ${token}`
+                        }
+                    });
+                    setEmails(data.emails);
+                }
+                else {
+                    const { data: result } = await axios.get(`/api/polls/get/${uid}/result`, {
+                        headers: {
+                            Authorization: `JWT ${token}`
+                        }
+                    });
+                    result.total = reduce(result.counting_votes, (res, val) => res + val, 0);
+                    setResult(result);
+                }
             }
             catch ({ response: { data } }) {
                 dispatch(notify(data.message, 'error'));
@@ -397,64 +414,93 @@ export default function Poll() {
 
                 <Divider style={{ marginBottom: 10, marginTop: 10 }} />
 
-                <Grid item xs={12}>
-                    <InputLabel htmlFor="type" style={{ padding: 10 }}>
-                        Grupo
-                    </InputLabel>
-                    <Select id="type"
-                        className={classes.field}
-                        required
-                        value={group}
-                        variant="outlined"
-                        onChange={e => setGroup(e.target.value)}
-                        style={{ width: '50%' }}
-                    >
-                        {!groups ? null : groups.map((group, index) =>
-                            <MenuItem value={index + 1} key={index}>
-                                {group.name}
-                            </MenuItem>
-                        )}
-                    </Select>
-                </Grid>
-                <Grid item style={{ marginTop: 20 }}>
-                    <Button variant="contained" className={classes.button}
-                        onClick={submit}
-                        disabled={group === ''}
-                        size='large'
-                        style={{ width: '40%' }}
-                    >   {loadingAdd ? <CircularProgress size={22} /> : 'Adicionar'}
-                    </Button>
-                </Grid>
-                <Divider style={{ marginBottom: 20, marginTop: 20 }} />
-                <Grid item style={{ marginTop: 20, marginBottom: 20 }}>
-                    {loadingSendEmails ? <CircularProgress size={22} /> :
-                        <Tooltip title="Enviar links de votação para todos os cadastrados">
-                            <Button variant="contained" className={classes.button}
-                                onClick={send_email_to_everyone}
-                                endIcon={<EmailIcon />}
-                                disabled={emails.length === 0}
-                                size='large'
-                                style={{ width: '50%' }}
-                            >    Enviar emails
-                    </Button>
+                { new Date(poll.deadline) > new Date() ? <>
+                    <Grid item xs={12}>
+                        <InputLabel htmlFor="type" style={{ padding: 10 }}>
+                            Grupo
+                        </InputLabel>
+                        <Select id="type"
+                            className={classes.field}
+                            required
+                            value={group}
+                            variant="outlined"
+                            onChange={e => setGroup(e.target.value)}
+                            style={{ width: '50%' }}
+                        >
+                            {!groups ? null : groups.map((group, index) =>
+                                <MenuItem value={index + 1} key={index}>
+                                    {group.name}
+                                </MenuItem>
+                            )}
+                        </Select>
+                    </Grid>
+                    <Grid item style={{ marginTop: 20 }}>
+                        <Button variant="contained" className={classes.button}
+                            onClick={submit}
+                            disabled={group === ''}
+                            size='large'
+                            style={{ width: '40%' }}
+                        >   {loadingAdd ? <CircularProgress size={22} /> : 'Adicionar'}
+                        </Button>
+                    </Grid>
+                    <Divider style={{ marginBottom: 20, marginTop: 20 }} />
+                    <Grid item style={{ marginTop: 20, marginBottom: 20 }}>
+                        {loadingSendEmails ? <CircularProgress size={22} /> :
+                            <Tooltip title="Enviar links de votação para todos os cadastrados">
+                                <Button variant="contained" className={classes.button}
+                                    onClick={send_email_to_everyone}
+                                    endIcon={<EmailIcon />}
+                                    disabled={emails.length === 0}
+                                    size='large'
+                                    style={{ width: '50%' }}
+                                >    Enviar emails
+                        </Button>
+                            </Tooltip>
+                        }
+
+                        <Tooltip title="Adicionar e-mails" aria-label="add">
+                            <Fab color="primary" size='small' style={{ marginLeft: 20 }} onClick={() => setEmailsAddOpen(true)}>
+                                <AddIcon style={{ fontSize: 18 }} />
+                            </Fab>
                         </Tooltip>
-                    }
 
-                    <Tooltip title="Adicionar e-mails" aria-label="add">
-                        <Fab color="primary" size='small' style={{ marginLeft: 20 }} onClick={() => setEmailsAddOpen(true)}>
-                            <AddIcon style={{ fontSize: 18 }} />
-                        </Fab>
-                    </Tooltip>
+                        <Dialog onClose={() => setEmailsAddOpen(false)} aria-labelledby="simple-dialog-title" open={emailsAddOpen}>
+                            <AddInvidualEmails />
+                        </Dialog>
+                    </Grid>
 
-                    <Dialog onClose={() => setEmailsAddOpen(false)} aria-labelledby="simple-dialog-title" open={emailsAddOpen}>
-                        <AddInvidualEmails />
-                    </Dialog>
+
+                    {emails.map((email, index) =>
+                        <EmailItem email={email} key={index} />
+                    )}
+                </> :
+                <Grid container alignItems="center" alignContent="center">
+                    <Grid item xs={12}>
+                        <Typography variant="h6">
+                            Resultados da eleição
+                        </Typography>
+                    </Grid>
+                    {poll.options.map((o, i) => <Fragment key={i}>
+                        <Grid item xs={3}>
+                            {result.winners.includes(o.id) ? <strong>
+                                {o.name}
+                            </strong> : o.name}
+                        </Grid>
+                        <Grid item xs={6}>
+                            <LinearProgress
+                                variant="determinate"
+                                value={100 * (result.counting_votes[o.id] || 0) / (result.total || 1)}
+                            />
+                        </Grid>
+                        <Grid item xs={3}>
+                            <Typography variant="caption">
+                                {result.counting_votes[o.id] || 0} votos
+                                ({100 * (result.counting_votes[o.id] || 0) / (result.total || 1)}%)
+                            </Typography>
+                        </Grid>
+                    </Fragment>)}
                 </Grid>
-
-
-                {emails.map((email, index) =>
-                    <EmailItem email={email} key={index} />
-                )}
+                }
             </CardContent>
             <CardActions>
                 <Button size="small">
