@@ -39,8 +39,7 @@ const useStyles = makeStyles({
     },
     appBar: {
         backgroundColor: '#0b1016',
-        width: '98vw',
-        marginLeft: '1%',
+        width: '100vw'
     },
     logo: {
         textDecoration: 'none',
@@ -51,7 +50,7 @@ const useStyles = makeStyles({
         color: 'white'
     },
     panel: {
-        margin: '30pt 0px 30pt 0px',
+        margin: '104px 0px 30pt 0px',
     }
 });
 
@@ -73,7 +72,7 @@ export default function Main(){
     const { pathname: path } = useLocation();
 
     return <>
-        <AppBar className={classes.appBar} position="sticky">
+        <AppBar className={classes.appBar} position="fixed">
             <Toolbar>
                 <Link to={url} className={classes.logo}
                     onClick={e => path === url ? e.preventDefault() : null}

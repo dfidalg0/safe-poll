@@ -26,6 +26,8 @@ import { notify } from '@/store/actions/ui';
 
 import { deleteGroup } from '@/store/actions/items';
 
+import { useConfirm } from '@/utils/confirm-dialog';
+
 import { useSelector, useDispatch } from 'react-redux';
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
@@ -127,7 +129,15 @@ export default function Group() {
         }
     }, [uid, emails, token, dispatch]);
 
+    const confirm = useConfirm();
+
     const submitDelete = useCallback(async () => {
+        const check = await confirm('A relação de emails deste grupo será perdida permanentemente');
+
+        if (!check){
+            return;
+        }
+
         try {
             const { data } = await axios.delete(`/api/groups/delete/${uid}`, {
                 headers: {
@@ -143,7 +153,7 @@ export default function Group() {
         catch({ response: { data } }){
             dispatch(notify(data.message), 'error');
         }
-    }, [dispatch, uid, router, token]);
+    }, [dispatch, confirm, uid, router, token]);
 
     const disabled = useMemo(() => {
         if (!group || !emails.length) return true;

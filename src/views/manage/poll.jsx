@@ -28,6 +28,7 @@ import { useRouteMatch, useHistory } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useStyles } from '@/styles/poll-view';
+import { useConfirm } from '@/utils/confirm-dialog';
 
 import isEmail from 'validator/lib/isEmail';
 
@@ -311,7 +312,7 @@ export default function Poll() {
         });
 
         var new_emails = data.added_emails.filter(email => !emails.includes(email) && !poll.emails_voted.includes(email))
-        
+
         if (new_emails.length === 0) {
             dispatch(notify('Os emails deste grupo já estão cadastrados', 'warning'))
         } else {
@@ -322,7 +323,15 @@ export default function Poll() {
         setLoadingAdd(false);
     }, [poll, groups, token, group, dispatch, emails]);
 
+    const confirm = useConfirm();
+
     const delete_poll = useCallback(async () => {
+        const check = await confirm('Esta eleição será apagada e todos os votos serão perdidos.');
+
+        if (!check){
+            return;
+        }
+
         const res = await axios.delete(`/api/polls/delete/${poll.id}/`, {
             headers: {
                 Authorization: `JWT ${token}`
@@ -331,7 +340,7 @@ export default function Poll() {
         dispatch(notify(res.data.message, 'success'));
         dispatch(deletePoll(poll.id));
         router.replace('/manage');
-    }, [poll, token, dispatch, router]);
+    }, [poll, token, dispatch, confirm, router]);
 
     const send_email_to_everyone = useCallback(async () => {
         setLoadingSendEmails(true);
