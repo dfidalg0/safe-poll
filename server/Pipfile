@@ -9,12 +9,12 @@ verify_ssl = true
 django = "*"
 djoser = "*"
 djangorestframework = "*"
-djangorestframework-simplejwt = "*"
 jwt = "*"
 celery = "*"
 gunicorn = "*"
 whitenoise = "*"
 psycopg2-binary = "*"
+djangorestframework-simplejwt = "*"
 
 [requires]
 python_version = "3.6"
