@@ -24,7 +24,6 @@ idna==2.10
 importlib-metadata==1.7.0
 itypes==1.2.0
 Jinja2==2.11.2
-jwt==1.1.0
 kombu==5.0.2
 MarkupSafe==1.1.1
 oauthlib==3.1.0
