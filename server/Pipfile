@@ -15,6 +15,7 @@ gunicorn = "*"
 whitenoise = "*"
 psycopg2-binary = "*"
 djangorestframework-simplejwt = "*"
+djangorestframework-jwt = "*"
 
 [requires]
 python_version = "3.6"
