@@ -67,7 +67,7 @@ def send_poll_emails(request: CleanRequest) -> Response:
 
         subject = f'Convite para participar da eleição: {poll.title}'
         html_message = (
-            '<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{poll.title}</strong>' +
+            f'<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{poll.title}</strong>' +
             f', criada por {poll.admin.get_full_name()}. </p> <p> Por favor, clique' +
             f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> aqui </a>' +
             ' para votar.</p> <p>Obrigado!</p> <p>Equipe SafePoll</p>'
@@ -158,7 +158,7 @@ def send_list_emails(request: CleanRequest) -> Response:
 
         subject = f'Convite para participar da eleição: {poll.title}'
         html_message = (
-            '<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{poll.title}</strong>' +
+            f'<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{poll.title}</strong>' +
             f', criada por {poll.admin.get_full_name()}. </p> <p> Por favor, clique' +
             f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> aqui </a>' +
             ' para votar.</p> <p>Obrigado!</p> <p>Equipe SafePoll</p>'
