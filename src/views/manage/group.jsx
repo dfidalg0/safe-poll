@@ -36,11 +36,10 @@ import { useRouteMatch, useHistory } from 'react-router-dom';
 
 const useStyles = makeStyles(theme => ({
     root: {
+        width: '500px',
+        maxWidth: '98%',
         justifyContent: 'center',
-        textAlign: 'center',
-        marginTop: '5%',
-        flexGrow: 1,
-        width: 500
+        textAlign: 'center'
     },
     bullet: {
         display: 'inline-block',
@@ -70,7 +69,10 @@ const useStyles = makeStyles(theme => ({
             backgroundColor: theme.palette.secondary.main,
             color: theme.palette.secondary.contrastText,
         }
-    }
+    },
+    deleteIcon: {
+        color: '#900a0a',
+    },
 }));
 
 export default function Group() {
@@ -195,14 +197,14 @@ export default function Group() {
     }, [newEmail, emails]);
 
     return !group ? <LoadingScreen /> : (
-        <div align="center">
+        <Grid container className={classes.root} justify="center">
             <Card className={classes.root}>
                 <CardContent>
                     <Typography variant="h6" display="block" gutterBottom style={{ marginTop: 10 }}>
                         <span style={{marginLeft: '30pt'}}>
                             {group.name}
                         </span>
-                        <IconButton style={{ float: 'right', marginTop: '-5pt', color: 'red' }}
+                        <IconButton style={{ float: 'right', marginTop: '-5pt', color: '#900a0a' }}
                             onClick={submitDelete}
                         >
                             <DeleteIcon />
@@ -216,11 +218,11 @@ export default function Group() {
                 </Typography>
                     {emails.map((email, index) =>
                         <Grid container key={index} style={{ justifyContent: 'center', marginBottom: 10 }}>
-                            <Grid item xs={12} sm={8}>
-                                <Paper className={classes.paper}><Typography>{email}</Typography></Paper>
+                            <Grid item xs={10}>
+                                <Paper className={classes.paper}><Typography noWrap className={classes.paper}>{email}</Typography></Paper>
                             </Grid>
 
-                            <Grid item xs={12} sm={1} >
+                            <Grid item xs={2} >
                                 <IconButton onClick={
                                     () => deleteEmail(index)
                                 }>
@@ -231,7 +233,7 @@ export default function Group() {
                     )}
 
                     <Grid container style={{ justifyContent: 'center' }}>
-                        <Grid item xs={8}>
+                        <Grid item xs={10}>
                             <TextField
                                 autoComplete="off"
                                 inputRef={newEmailRef}
@@ -249,7 +251,7 @@ export default function Group() {
                                 style={{ width: '100%', textAlign: 'center' }}
                             />
                         </Grid>
-                        <Grid item xs={1}>
+                        <Grid item xs={2}>
                             <IconButton onClick={createEmail}>
                                 <AddIcon />
                             </IconButton>
@@ -279,6 +281,6 @@ export default function Group() {
                     </Grid>
                 </CardActions>
             </Card >
-        </div>
+        </Grid>
     )
 };
