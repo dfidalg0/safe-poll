@@ -87,35 +87,35 @@ export default function Poll() {
 
         return (
             <Grid container style={{ justifyContent: 'center', marginBottom: 10 }}>
-                <Grid item xs={12} sm={8}>
-                    <Paper className={classes.paper}><Typography>{email}</Typography></Paper>
+                <Grid item xs={10}>
+                    <Paper className={classes.paper}>
+                        <Typography noWrap className={classes.paper}>{email}</Typography>
+                    </Paper>
                 </Grid>
-
                 {poll.emails_voted.indexOf(email) > -1 ?
-                    <Grid item xs={12} sm={2} >
+                    <Grid item xs={2}>
                         <IconButton>
                             <CheckIcon className={classes.checkIcon} />
                         </IconButton>
                     </Grid>
-                    :
-                    <Grid item xs={6} sm={1} >
-                        {loadingDelete ? <IconButton><CircularProgress size={18} /></IconButton> :
-                            <IconButton onClick={() => delete_email(email)}>
-                                <DeleteIcon className={classes.deleteIcon} />
-                            </IconButton>}
-                    </Grid>
+                    : <>
+                        <Grid item xs={1} >
+                            {loadingDelete ? <IconButton><CircularProgress size={18} /></IconButton> :
+                                <IconButton onClick={() => delete_email(email)}>
+                                    <DeleteIcon className={classes.deleteIcon} />
+                                </IconButton>}
+                        </Grid>
+                        <Grid item xs={1} >
+                            {loadingSend ? <IconButton><CircularProgress size={18} /></IconButton> :
+                                <Tooltip title="Enviar e-mail individual">
+                                    <IconButton onClick={() => send_email(email)}>
+                                        <EmailIcon className={classes.emailIcon} />
+                                    </IconButton>
+                                </Tooltip>}
+                        </Grid>
+                    </>
                 }
-                {poll.emails_voted.indexOf(email) > -1 ?
-                    null :
-                    <Grid item xs={6} sm={1} >
-                        {loadingSend ? <IconButton><CircularProgress size={18} /></IconButton> :
-                            <Tooltip title="Enviar e-mail individual">
-                                <IconButton onClick={() => send_email(email)}>
-                                    <EmailIcon className={classes.emailIcon} />
-                                </IconButton>
-                            </Tooltip>}
-                    </Grid>
-                }
+
             </Grid>
         )
     };
@@ -190,11 +190,12 @@ export default function Poll() {
                         <Divider style={{ marginBottom: 20, marginTop: 20 }} />
                         {addedEmails.map((email, index) =>
                             <Grid container key={index} style={{ justifyContent: 'center', marginBottom: 10 }}>
-                                <Grid item xs={12} sm={8}>
-                                    <Paper className={classes.paper}><Typography>{email}</Typography></Paper>
+                                <Grid item xs={10}>
+                                    <Paper className={classes.paper}><Typography noWrap className={classes.paper}>{email}</Typography>
+                                    </Paper>
                                 </Grid>
 
-                                <Grid item xs={12} sm={1} >
+                                <Grid item xs={2}>
                                     <IconButton onClick={
                                         () => deleteEmail(index)
                                     }>
@@ -205,7 +206,7 @@ export default function Poll() {
                         )}
 
                         <Grid container style={{ justifyContent: 'center' }}>
-                            <Grid item xs={8}>
+                            <Grid item xs={10}>
                                 <TextField
                                     autoComplete="off"
                                     inputRef={newEmailRef}
@@ -224,7 +225,7 @@ export default function Poll() {
                                     style={{ width: '100%', textAlign: 'center' }}
                                 />
                             </Grid>
-                            <Grid item xs={1}>
+                            <Grid item xs={2}>
                                 <IconButton onClick={createEmail}>
                                     <AddIcon />
                                 </IconButton>
@@ -277,9 +278,12 @@ export default function Poll() {
                 const { data: poll } = await axios.get(`/api/polls/get/${uid}/`);
                 if (user.id !== poll.admin)
                     router.replace('/manage');
-                else setPoll(poll);
+                else {
+                    poll.deadline = new Date(poll.deadline);
+                    setPoll(poll);
+                }
 
-                if (new Date(poll.deadline) > new Date()){
+                if (new Date(poll.deadline) > new Date()) {
                     const { data } = await axios.get(`/api/polls/emails/${uid}`, {
                         headers: {
                             Authorization: `JWT ${token}`
@@ -345,7 +349,7 @@ export default function Poll() {
     const delete_poll = useCallback(async () => {
         const check = await confirm('Esta eleição será apagada e todos os votos serão perdidos.');
 
-        if (!check){
+        if (!check) {
             return;
         }
 
@@ -397,7 +401,7 @@ export default function Poll() {
                 </Typography>
                 <Divider style={{ marginBottom: 10, marginTop: 10 }} />
                 <Typography variant="overline" display="block" gutterBottom>
-                    Deadline: <br /> {poll.deadline}
+                    Deadline: <br /> {poll.deadline.toLocaleDateString()}
                 </Typography>
                 <Typography variant="overline" display="block" gutterBottom>
                     Voto Secreto:  {poll.secret_vote ? 'Sim' : 'Não'}
@@ -414,18 +418,19 @@ export default function Poll() {
 
                 <Divider style={{ marginBottom: 10, marginTop: 10 }} />
 
-                { new Date(poll.deadline) > new Date() ? <>
+                {new Date(poll.deadline) > new Date() ? <>
                     <Grid item xs={12}>
                         <InputLabel htmlFor="type" style={{ padding: 10 }}>
                             Grupo
                         </InputLabel>
+                    </Grid>
+                    <Grid item xs={12}>
                         <Select id="type"
                             className={classes.field}
                             required
                             value={group}
                             variant="outlined"
                             onChange={e => setGroup(e.target.value)}
-                            style={{ width: '50%' }}
                         >
                             {!groups ? null : groups.map((group, index) =>
                                 <MenuItem value={index + 1} key={index}>
@@ -439,7 +444,6 @@ export default function Poll() {
                             onClick={submit}
                             disabled={group === ''}
                             size='large'
-                            style={{ width: '40%' }}
                         >   {loadingAdd ? <CircularProgress size={22} /> : 'Adicionar'}
                         </Button>
                     </Grid>
@@ -474,32 +478,32 @@ export default function Poll() {
                         <EmailItem email={email} key={index} />
                     )}
                 </> :
-                <Grid container alignItems="center" alignContent="center">
-                    <Grid item xs={12}>
-                        <Typography variant="h6">
-                            Resultados da eleição
+                    <Grid container alignItems="center" alignContent="center">
+                        <Grid item xs={12}>
+                            <Typography variant="h6">
+                                Resultados da eleição
                         </Typography>
-                    </Grid>
-                    {poll.options.map((o, i) => <Fragment key={i}>
-                        <Grid item xs={3}>
-                            {result.winners.includes(o.id) ? <strong>
-                                {o.name}
-                            </strong> : o.name}
                         </Grid>
-                        <Grid item xs={6}>
-                            <LinearProgress
-                                variant="determinate"
-                                value={100 * (result.counting_votes[o.id] || 0) / (result.total || 1)}
-                            />
-                        </Grid>
-                        <Grid item xs={3}>
-                            <Typography variant="caption">
-                                {result.counting_votes[o.id] || 0} votos
+                        {poll.options.map((o, i) => <Fragment key={i}>
+                            <Grid item xs={3}>
+                                {result.winners.includes(o.id) ? <strong>
+                                    {o.name}
+                                </strong> : o.name}
+                            </Grid>
+                            <Grid item xs={6}>
+                                <LinearProgress
+                                    variant="determinate"
+                                    value={100 * (result.counting_votes[o.id] || 0) / (result.total || 1)}
+                                />
+                            </Grid>
+                            <Grid item xs={3}>
+                                <Typography variant="caption">
+                                    {result.counting_votes[o.id] || 0} votos
                                 ({100 * (result.counting_votes[o.id] || 0) / (result.total || 1)}%)
                             </Typography>
-                        </Grid>
-                    </Fragment>)}
-                </Grid>
+                            </Grid>
+                        </Fragment>)}
+                    </Grid>
                 }
             </CardContent>
             <CardActions>

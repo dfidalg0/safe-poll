@@ -2,8 +2,8 @@ import { makeStyles } from '@material-ui/core/styles';
 
 export const useStyles = makeStyles({
     root: {
-        width: 500,
-        maxWidth: '90vw',
+        width: '500px',
+        maxWidth: '98%',
         justifyContent: 'center',
         textAlign: 'center'
     },
