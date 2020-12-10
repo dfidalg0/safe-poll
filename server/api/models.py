@@ -100,7 +100,7 @@ else:
 @shared_task
 def kill_poll_tokens(poll_id):
     poll = Poll.objects.get(pk=poll_id)
-    poll.delete()
+    token_list = Token.objects.filter(poll_id=poll.id).delete()
     print('Tokens from poll {} were deleted.'.format(poll.id))
 
 
