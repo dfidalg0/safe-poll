@@ -369,7 +369,7 @@ export default function Poll() {
     const send_email_to_everyone = useCallback(async () => {
         setLoadingSendEmails(true);
         try {
-            await axios.post('/api/emails/send', {
+            const res = await axios.post('/api/emails/send', {
                 poll_id: poll.id,
             }, {
                 headers: {
@@ -377,7 +377,14 @@ export default function Poll() {
                 }
             });
             setLoadingSendEmails(false);
-            dispatch(notify('Emails enviados!'))
+            if(res.status === 202 && res.data.faltam_votar === 0){
+                dispatch(notify('Todos os cadastrados já votaram!'))
+            } else if(res.status === 202 && res.data.failed_emails.failed_to_send.length > 0) {
+                dispatch(notify('Alguns e-mails apresentaram problema no envio', 'warning'))
+            } else {
+                dispatch(notify('Emails enviados!', 'success'))
+            }
+                
         } catch ({ response: { data } }) {
             setLoadingSendEmails(false);
             dispatch(notify(data.message, 'warning'))
