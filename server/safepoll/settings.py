@@ -204,6 +204,15 @@ CELERY_ENABLE_UTC        = True
 CELERY_ACCEPT_CONTENT    = ['json']
 CELERY_TASK_SERIALIZER   = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+
 if os.environ.get('BROKER_URL'):
     CELERY_BROKER_URL = os.environ['BROKER_URL']
-#OBS: por default, o broker utilizado eh o rabbitMQ. Este deve ser instalado e ativado.
+
+# Configurações de Segurança - Checks do Django
+if DATABASE_URL:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 3600 * 24 * 10
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
