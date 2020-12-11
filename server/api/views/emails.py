@@ -35,6 +35,8 @@ def send_poll_emails(request: CleanRequest) -> Response:
     connection.open()
 
     failed_emails = {'failed_to_send':[], 'have_already_voted':[], 'is_not_active':[]}
+    failed_emails['have_already_voted'] = list(map(lambda user: user.ref, poll.emails_voted.all()))
+    
     try:
         token_list = Token.objects.filter(poll__id= poll.id)
     except Token.DoesNotExist:
@@ -43,7 +45,7 @@ def send_poll_emails(request: CleanRequest) -> Response:
         }, status=HTTP_404_NOT_FOUND)
 
     emails_voted_list = poll.emails_voted.all()
-
+    
     for token in token_list:
         user = token.user
         if not user.is_active:
@@ -51,10 +53,6 @@ def send_poll_emails(request: CleanRequest) -> Response:
             continue
         user_email = user.ref
 
-        #Check if the user has already voted.
-        if user in emails_voted_list:
-            failed_emails['have_already_voted'].append(user.id)
-            continue
         user_token = token.token
         # Construct an email message that uses the connection
         #email = EmailMultiAlternatives(
@@ -90,7 +88,8 @@ def send_poll_emails(request: CleanRequest) -> Response:
     else:
         return Response(data={
             'message': 'Falha no envio de emails',
-            'failed_emails': failed_emails
+            'failed_emails': failed_emails,
+            'faltam_votar': len(token_list) 
         }, status=HTTP_202_ACCEPTED)
 
 
