@@ -275,11 +275,14 @@ export default function Poll() {
         const fetchData = async () => {
             try {
                 const { data: poll } = await axios.get(`/api/polls/get/${uid}/`);
+
+                poll.deadline = new Date(Number(new Date(poll.deadline)) + 10800000);
+
                 if (user.id !== poll.admin)
                     router.replace('/manage');
                 else setPoll(poll);
 
-                if (new Date(poll.deadline) > new Date()){
+                if (poll.deadline > new Date()){
                     const { data } = await axios.get(`/api/polls/emails/${uid}`, {
                         headers: {
                             Authorization: `JWT ${token}`
@@ -397,7 +400,7 @@ export default function Poll() {
                 </Typography>
                 <Divider style={{ marginBottom: 10, marginTop: 10 }} />
                 <Typography variant="overline" display="block" gutterBottom>
-                    Deadline: <br /> {poll.deadline}
+                    Deadline: <br /> {poll.deadline.toLocaleDateString()}
                 </Typography>
                 <Typography variant="overline" display="block" gutterBottom>
                     Voto Secreto:  {poll.secret_vote ? 'Sim' : 'Não'}
@@ -414,7 +417,7 @@ export default function Poll() {
 
                 <Divider style={{ marginBottom: 10, marginTop: 10 }} />
 
-                { new Date(poll.deadline) > new Date() ? <>
+                { poll.deadline > new Date() ? <>
                     <Grid item xs={12}>
                         <InputLabel htmlFor="type" style={{ padding: 10 }}>
                             Grupo

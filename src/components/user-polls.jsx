@@ -86,7 +86,7 @@ export default function UserPolls() {
     const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
 
     const FormRow = useCallback(({ poll }) => {
-        const deadline = new Date(poll.deadline);
+        const deadline = new Date(Number(new Date(poll.deadline)) + 10800000);
 
         const twoDaysLeft = Number(deadline) - Date.now() < 2 * 24 * 3600 * 1000;
 

@@ -67,7 +67,6 @@ def create_poll(request: CleanRequest) -> Response:
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 @with_rules({
-    # 'deadline': is_after_today
     'deadline': is_valid_date_string
 })
 def update_poll(request: CleanRequest, pk: int) -> Response:
