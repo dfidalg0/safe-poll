@@ -105,8 +105,10 @@ def kill_poll_tokens(poll_id):
 
 
 @shared_task
-def kill_test(test_id):
-    Test.objects.get(pk=test_id).delete()
+def kill_test(poll_id):
+    poll = Poll.objects.get(pk=poll_id)
+    poll.title = poll.title + '_teste_celery_sucesso'
+    poll.save()
     print('Test deleted!')
 
 

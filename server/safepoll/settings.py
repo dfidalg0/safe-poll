@@ -161,7 +161,7 @@ EMAIL_HOST_PASSWORD = 'itaces28'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-DOMAIN = os.environ.get('HEROKU_URL', 'localhost:3000')
+DOMAIN = os.environ.get('HEROKU_URL', 'localhost:3000').replace('https://', '', 1)
 SITE_NAME = 'Safe Poll'
 
 
