@@ -136,7 +136,7 @@ def get_user_polls(request):
 def get_poll_result(request: Request, pk: int) -> Response:
     try:
         poll = Poll.objects.get(pk=pk)
-        if poll.deadline < datetime.date.today():
+        if poll.deadline <= datetime.date.today():
             return Response(poll.compute_result())
         else:
             return Response({
