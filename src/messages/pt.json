@@ -1,6 +1,7 @@
 {
   "home-page.login": "Entrar",
   "home-page.signup": "Cadastro",
+  "home-page.forgot-password-question": "Esqueceu sua senha?",
   "manage.my-groups": "Meus Grupos",
   "manage.my-elections": "Minhas Eleições"
 }
