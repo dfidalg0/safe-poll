@@ -1,7 +1,14 @@
 {
   "home-page.login": "Login",
   "home-page.signup": "Sign Up",
+  "home-page.password": "Password",
   "home-page.forgot-password-question": "Did you forgot your password?",
+  "home-page.signup-act": "Sign Up",
+  "home-page.name-signup": "Name",
+  "home-page.password-again": "Type your password again",
+  "reset-page.homepage": "Home Page",
+  "reset-page.reset-password": "Reset Password",
+  "reset-page.recover-password": "Recover Password",
   "manage.my-groups": "My Groups",
   "manage.my-elections": "My Elections"
 }

@@ -12,8 +12,21 @@ import { reset_password } from '@/store/actions/auth';
 import { useDispatch } from 'react-redux';
 import { useState, useCallback } from 'react';
 import { useStyles } from '@/styles/form'
+import {defineMessages, injectIntl} from "react-intl";
 
-export default function ResetPassword() {
+const messages = defineMessages({
+  Homepage: {
+    id: 'reset-page.homepage',
+  },
+  ResetPassword: {
+    id: 'reset-page.reset-password',
+  },
+  RecoverPassword: {
+    id: 'reset-page.recover-password',
+  },
+})
+
+function ResetPassword({intl}) {
     const classes = useStyles();
     const [sent, setSent] = useState(false);
     const [email, setEmail] = useState('');
@@ -48,16 +61,16 @@ export default function ResetPassword() {
                 <StyledLink color="inherit" to="/"
                     component={Link}
                 >
-                    Página Inicial
+                    {intl.formatMessage(messages.Homepage)}
                 </StyledLink>
-                <Typography color="textPrimary">Resetar Senha</Typography>
+                <Typography color="textPrimary">{intl.formatMessage(messages.ResetPassword)}</Typography>
             </Breadcrumbs>
             <CssBaseline />
 
             {displayMessage()}
             <div className={classes.paper}>
                 <Typography component="h1" variant="h5" className={classes.typography} >
-                    Resetar Senha
+                    {intl.formatMessage(messages.ResetPassword)}
                 </Typography>
                 <form className={classes.form} noValidate onSubmit={e => onSubmit(e)}>
                     <TextField
@@ -83,7 +96,7 @@ export default function ResetPassword() {
                         className={classes.submit}
                         disabled={sent}
                     >
-                        Recuperar Senha
+                        {intl.formatMessage(messages.RecoverPassword)}
                      </Button>
                 </form>
                 <p></p>
@@ -91,3 +104,5 @@ export default function ResetPassword() {
         </Container>
     );
 }
+
+export default injectIntl(ResetPassword);

@@ -11,8 +11,24 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useState, useCallback } from 'react';
 
 import { useStyles } from '@/styles/form';
+import {defineMessages, injectIntl} from "react-intl";
 
-export default function SignUp() {
+const messages = defineMessages({
+  Name: {
+    id: 'home-page.name-signup',
+  },
+  Signup: {
+    id: 'home-page.signup-act',
+  },
+  Password: {
+    id: 'home-page.password',
+  },
+  PasswordAgain: {
+    id: 'home-page.password-again',
+  },
+})
+
+function SignUp({intl}) {
   const classes = useStyles();
 
   const [data, setData] = useState({
@@ -45,7 +61,7 @@ export default function SignUp() {
 
         </Avatar>
         <Typography component="h1" variant="h5">
-          Cadastre-se
+          {intl.formatMessage(messages.Signup)}
         </Typography>
         <form className={classes.form} noValidate onSubmit={e => onSubmit(e)}>
           <Grid container spacing={2}>
@@ -57,7 +73,7 @@ export default function SignUp() {
                 required
                 fullWidth
                 id="name"
-                label="Nome"
+                label= {intl.formatMessage(messages.Name)}
                 autoFocus
                 onChange={e => onChange(e)}
               />
@@ -81,7 +97,7 @@ export default function SignUp() {
                 required
                 fullWidth
                 name="password"
-                label="Senha"
+                label={intl.formatMessage(messages.Password)}
                 type="password"
                 id="password"
                 autoComplete="current-password"
@@ -94,7 +110,7 @@ export default function SignUp() {
                 required
                 fullWidth
                 name="re_password"
-                label="Digite novamente sua senha"
+                label={intl.formatMessage(messages.PasswordAgain)}
                 type="password"
                 id="re_password"
                 autoComplete="current-password"
@@ -109,7 +125,7 @@ export default function SignUp() {
             color="primary"
             className={classes.submit}
           >
-            Cadastre-se
+            {intl.formatMessage(messages.Signup)}
           </Button>
           <p></p>
         </form>
@@ -118,3 +134,5 @@ export default function SignUp() {
     </Container>
   );
 }
+
+export default injectIntl(SignUp);
