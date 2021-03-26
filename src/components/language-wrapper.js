@@ -15,7 +15,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const LocaleContext = createContext();
+export const LocaleContext = createContext();
 
 const local = navigator.language;
 

@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import { SnackbarProvider } from 'notistack';
 import { Provider } from 'react-redux';
@@ -12,27 +11,24 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
-const theme = createMuiTheme(
-  {
-    palette: {
-      primary: { main: '#1976d2' },
-    },
+const theme = createMuiTheme({
+  palette: {
+    primary: { main: '#1976d2' },
   },
-  navigator.language
-);
+});
 
 ReactDOM.render(
-  <ThemeProvider theme={theme}>
-    <Provider store={store}>
-      <SnackbarProvider>
-        <ConfirmationProvider>
-          <LanguageWrapper>
+  <LanguageWrapper>
+    <ThemeProvider theme={theme}>
+      <Provider store={store}>
+        <SnackbarProvider>
+          <ConfirmationProvider>
             <App />
-          </LanguageWrapper>
-        </ConfirmationProvider>
-      </SnackbarProvider>
-    </Provider>
-  </ThemeProvider>,
+          </ConfirmationProvider>
+        </SnackbarProvider>
+      </Provider>
+    </ThemeProvider>
+  </LanguageWrapper>,
   document.getElementById('root')
 );
 

@@ -62,6 +62,18 @@ const messages = defineMessages({
   myElections: {
     id: 'manage.my-elections',
   },
+  title: {
+    id: 'manage.title',
+  },
+  deadline: {
+    id: 'manage.deadline',
+  },
+  noneElections: {
+    id: 'manage.none-elections',
+  },
+  create: {
+    id: 'manage.create',
+  },
 });
 
 function UserPolls({ intl }) {
@@ -149,10 +161,14 @@ function UserPolls({ intl }) {
           <Grid container item xs={12} spacing={0}>
             <>
               <Grid item xs={7}>
-                <Paper className={classes.tableHead}>Título</Paper>
+                <Paper className={classes.tableHead}>
+                  {intl.formatMessage(messages.title)}
+                </Paper>
               </Grid>
               <Grid item xs={5}>
-                <Paper className={classes.tableHead}>Deadline</Paper>
+                <Paper className={classes.tableHead}>
+                  {intl.formatMessage(messages.deadline)}
+                </Paper>
               </Grid>
             </>
           </Grid>
@@ -165,7 +181,7 @@ function UserPolls({ intl }) {
                   width: '100%',
                 }}
               >
-                Nenhuma eleição cadastrada!
+                {intl.formatMessage(messages.noneElections)}
               </Typography>
             </Grid>
           ) : (
@@ -184,7 +200,7 @@ function UserPolls({ intl }) {
               className={classes.createButton}
               endIcon={<AddIcon />}
             >
-              Criar
+              {intl.formatMessage(messages.create)}
             </Button>
           </Grid>
 

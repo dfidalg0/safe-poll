@@ -53,6 +53,15 @@ const messages = defineMessages({
   myGroups: {
     id: 'manage.my-groups',
   },
+  name: {
+    id: 'common-messages.name',
+  },
+  noneGroups: {
+    id: 'manage.none-groups',
+  },
+  create: {
+    id: 'manage.create',
+  },
 });
 
 function UserGroups({ intl }) {
@@ -101,7 +110,9 @@ function UserGroups({ intl }) {
           <Grid container item xs={12} spacing={0}>
             <>
               <Grid item xs={12}>
-                <Paper className={classes.tableHead}>Nome</Paper>
+                <Paper className={classes.tableHead}>
+                  {intl.formatMessage(messages.name)}
+                </Paper>
               </Grid>
             </>
           </Grid>
@@ -114,7 +125,7 @@ function UserGroups({ intl }) {
                   width: '100%',
                 }}
               >
-                Nenhum grupo cadastrado!
+                {intl.formatMessage(messages.noneGroups)}
               </Typography>
             </Grid>
           ) : (
@@ -134,7 +145,7 @@ function UserGroups({ intl }) {
               className={classes.createButton}
               endIcon={<AddIcon />}
             >
-              Criar
+              {intl.formatMessage(messages.create)}
             </Button>
           </Grid>
 

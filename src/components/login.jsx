@@ -21,10 +21,10 @@ const messages = defineMessages({
   forgotPassword: {
     id: 'home-page.forgot-password-question',
   },
-  Entrar: {
+  entrar: {
     id: 'home-page.login',
   },
-  Password: {
+  password: {
     id: 'home-page.password',
   },
 });
@@ -64,7 +64,7 @@ function Login({ intl }) {
         {DisplayAlert(error)}
         <Avatar className={classes.avatar} />
         <Typography component='h1' variant='h5' className={classes.typography}>
-          {intl.formatMessage(messages.Entrar)}
+          {intl.formatMessage(messages.entrar)}
         </Typography>
         <form className={classes.form} noValidate onSubmit={(e) => onSubmit(e)}>
           <TextField
@@ -86,7 +86,7 @@ function Login({ intl }) {
             required
             fullWidth
             name='password'
-            label={intl.formatMessage(messages.Password)}
+            label={intl.formatMessage(messages.password)}
             type='password'
             id='password'
             autoComplete='current-password'
@@ -100,7 +100,7 @@ function Login({ intl }) {
             color='primary'
             className={classes.submit}
           >
-            {intl.formatMessage(messages.Entrar)}
+            {intl.formatMessage(messages.entrar)}
           </Button>
           <Grid container>
             <Grid item xs>
