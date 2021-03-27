@@ -36,5 +36,6 @@
   "reset-passowrd.change-password": "Alterar Senha",
   "reset-password.new-password": "Nova Senha",
   "reset-password.type-again": "Digite Novamente",
-  "manage.confirm": "Confirmar"
+  "manage.confirm": "Confirmar",
+  "manage.leave": "Sair"
 }

@@ -36,5 +36,6 @@
   "reset-passowrd.change-password": "Cambiar contraseña",
   "reset-password.new-password": "Nueva contraseña",
   "reset-password.type-again": "Escriba de vuelta",
-  "manage.confirm": "Confirmar"
+  "manage.confirm": "Confirmar",
+  "manage.leave": "Salir"
 }

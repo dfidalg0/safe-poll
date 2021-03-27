@@ -17,6 +17,7 @@ import { LocaleSelector } from './../../components/language-wrapper';
 
 import { useEffect } from 'react';
 import { useRouteMatch, useLocation } from 'react-router-dom';
+import { defineMessages, injectIntl } from 'react-intl';
 
 const useStyles = makeStyles({
   app: {
@@ -49,7 +50,13 @@ const useStyles = makeStyles({
   },
 });
 
-export default function Main() {
+const messages = defineMessages({
+  leave: {
+    id: 'manage.leave',
+  },
+});
+
+function Main({ intl }) {
   const classes = useStyles();
 
   const dispatch = useDispatch();
@@ -78,7 +85,7 @@ export default function Main() {
           </Link>
           <LocaleSelector black={true} />
           <Button className={classes.button} onClick={() => dispatch(logout())}>
-            Sair
+            {intl.formatMessage(messages.leave)}
           </Button>
         </Toolbar>
       </AppBar>
@@ -93,3 +100,5 @@ export default function Main() {
     </>
   );
 }
+
+export default injectIntl(Main);

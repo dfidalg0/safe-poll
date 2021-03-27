@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+
 import { SnackbarProvider } from 'notistack';
 import { Provider } from 'react-redux';
 import { ConfirmationProvider } from '@/utils/confirm-dialog';
@@ -11,23 +11,15 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
-const theme = createMuiTheme({
-  palette: {
-    primary: { main: '#1976d2' },
-  },
-});
-
 ReactDOM.render(
   <LanguageWrapper>
-    <ThemeProvider theme={theme}>
-      <Provider store={store}>
-        <SnackbarProvider>
-          <ConfirmationProvider>
-            <App />
-          </ConfirmationProvider>
-        </SnackbarProvider>
-      </Provider>
-    </ThemeProvider>
+    <Provider store={store}>
+      <SnackbarProvider>
+        <ConfirmationProvider>
+          <App />
+        </ConfirmationProvider>
+      </SnackbarProvider>
+    </Provider>
   </LanguageWrapper>,
   document.getElementById('root')
 );

@@ -404,6 +404,12 @@ function CreatePoll({ open, onClose, intl }) {
                     invalidDateMessage={intl.formatMessage(
                       messages.invalidDate
                     )}
+                    format={
+                      languageContext.locale === 'pt-BR' ||
+                      languageContext.locale === 'es-Es'
+                        ? 'dd/MM/yyyy'
+                        : 'yyyy/MM/dd'
+                    }
                   />
                 </Grid>
               </MuiPickersUtilsProvider>
