@@ -24,13 +24,13 @@ def send_poll_emails(request: CleanRequest) -> Response:
         poll = Poll.objects.get(pk=data['poll_id'] , admin=admin)
     except Poll.DoesNotExist:
         return Response({
-            'message':'Eleicao não encontrada'
+            'message':'Eleicao nÃ£o encontrada'
         }, status=HTTP_404_NOT_FOUND)
 
     #Check if poll is valid:
     if poll.deadline < datetime.date.today():
         return Response({
-            'message':'Elei��o finalizada em {}'.format(poll.deadline)
+            'message':'Eleicao finalizada em {}'.format(poll.deadline)
         }, status=HTTP_400_BAD_REQUEST)
 
     tk.send_emails.apply_async((poll,), countdown=0)
@@ -62,7 +62,7 @@ def send_list_emails(request: CleanRequest) -> Response:
     #Check if poll is valid:
     if poll.deadline < datetime.date.today():
         return Response({
-            'message':'Eleição não é válida, acabou em {}'.format(poll.deadline.strftime("%d/%m/%Y"))
+            'message':'EleiÃ§Ã£o nÃ£o Ã© vÃ¡lida, acabou em {}'.format(poll.deadline.strftime("%d/%m/%Y"))
         }, status=HTTP_400_BAD_REQUEST)
 
     connection = mail.get_connection()
@@ -99,9 +99,9 @@ def send_list_emails(request: CleanRequest) -> Response:
         user_token = token.token
         # Construct an email message that uses the connection
 
-        subject = f'Convite para participar da eleição: {poll.title}'
+        subject = f'Convite para participar da eleiÃ§Ã£o: {poll.title}'
         html_message = (
-            f'<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{poll.title}</strong>' +
+            f'<p>OlÃ¡!</p> <p>VocÃª foi convidado para participar da eleiÃ§Ã£o <strong>{poll.title}</strong>' +
             f', criada por {poll.admin.get_full_name()}. </p> <p> Por favor, clique' +
             f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> aqui </a>' +
             ' para votar.</p> <p>Obrigado!</p> <p>Equipe SafePoll</p>'
@@ -119,7 +119,7 @@ def send_list_emails(request: CleanRequest) -> Response:
 
     if any(map(len, failed_emails.values())) is False: #If both failed_emails.values are 0.
         return Response({
-            'message':'Convites para votação enviado com sucesso!'
+            'message':'Convites para votaÃ§Ã£o enviado com sucesso!'
             }, status=HTTP_200_OK)
     else:
         return Response(data={
