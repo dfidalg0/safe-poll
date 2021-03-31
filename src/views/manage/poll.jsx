@@ -47,6 +47,9 @@ import reduce from 'lodash.reduce';
 import { defineMessages, injectIntl } from 'react-intl';
 
 const messages = defineMessages({
+  finish: {
+    id: 'manage.poll.finish'
+  },
   individualEmailSent: {
     id: 'manage.poll.individual-email-sent',
   },
@@ -400,52 +403,69 @@ function Poll({ intl }) {
 
   const [result, setResult] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data: poll } = await axios.get(`/api/polls/get/${uid}/`);
+  const fetchData = useCallback(async () => {
+    try {
+      const { data: poll } = await axios.get(`/api/polls/get/${uid}/`);
 
-        poll.deadline = new Date(Number(new Date(poll.deadline)) + 10800000);
+      poll.deadline = new Date(Number(new Date(poll.deadline)) + 10800000);
 
-        if (user.id !== poll.admin) router.replace('/manage');
-        else {
-          poll.deadline = new Date(poll.deadline);
-          setPoll(poll);
-        }
+      if (user.id !== poll.admin) router.replace('/manage');
+      else {
+        poll.deadline = new Date(poll.deadline);
+        setPoll(poll);
+      }
 
-        if (poll.deadline > new Date()) {
-          const { data } = await axios.get(`/api/polls/emails/${uid}`, {
+      if (poll.deadline > new Date()) {
+        const { data } = await axios.get(`/api/polls/emails/${uid}`, {
+          headers: {
+            Authorization: `JWT ${token}`,
+          },
+        });
+        setEmails(data.emails);
+      } else {
+        const { data: result } = await axios.get(
+          `/api/polls/get/${uid}/result`,
+          {
             headers: {
               Authorization: `JWT ${token}`,
             },
-          });
-          setEmails(data.emails);
-        } else {
-          const { data: result } = await axios.get(
-            `/api/polls/get/${uid}/result`,
-            {
-              headers: {
-                Authorization: `JWT ${token}`,
-              },
-            }
-          );
-          result.total = reduce(
-            result.counting_votes,
-            (res, val) => res + val,
-            0
-          );
-          setResult(result);
-        }
-      } catch ({ response: { data } }) {
-        dispatch(notify(data.message, 'error'));
-        router.replace('/manage');
-      } finally {
-        setLoading(false);
+          }
+        );
+        result.total = reduce(
+          result.counting_votes,
+          (res, val) => res + val,
+          0
+        );
+        setResult(result);
       }
-    };
-
-    fetchData();
+    } catch ({ response: { data } }) {
+      dispatch(notify(data.message, 'error'));
+      router.replace('/manage');
+    } finally {
+      setLoading(false);
+    }
   }, [uid, user, dispatch, router, token]);
+
+  const finishPoll = useCallback(async () => {
+    try {
+      await axios.put(`/api/polls/update/${poll.id}`, {
+        deadline: (new Date()).toJSON().slice(0, 10)
+      }, {
+        headers: {
+          Authorization: `JWT ${token}`
+        }
+      })
+
+      window.location.reload();
+    }
+    catch (err) {
+      notify(err.response.message, 'error');
+    }
+  }, [poll, token]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const [group, setGroup] = useState('');
 
@@ -560,6 +580,13 @@ function Poll({ intl }) {
           {intl.formatMessage(messages.deadline)} <br />{' '}
           {poll.deadline.toLocaleDateString()}
         </Typography>
+
+        {poll.deadline > new Date() ? <>
+          <Button onClick={finishPoll}>
+            {intl.formatMessage(messages.finish)}
+          </Button>
+        </> : null}
+
         <Typography variant='overline' display='block' gutterBottom>
           {intl.formatMessage(messages.secretVote)}
           {': '}

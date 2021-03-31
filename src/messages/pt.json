@@ -66,6 +66,7 @@
   "manage.update": "Atualizar",
   "manage.action-canceled": "Ação cancelada",
   "manage.poll.send-emails": "Enviar emails",
+  "manage.poll.finish": "Finalizar",
   "manage.yes": "sim",
   "manage.no": "não"
 }
