@@ -1,8 +1,6 @@
 from .context import *
 from django.core.mail import EmailMultiAlternatives
-import sys
-sys.path.insert(0, "../")
-import tasks as tk 
+import ..tasks as tk 
 
 import os
 
