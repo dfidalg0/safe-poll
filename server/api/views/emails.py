@@ -1,5 +1,8 @@
 from .context import *
 from django.core.mail import EmailMultiAlternatives
+import sys
+sys.path.insert(0, "..")
+import tasks as tk 
 
 import os
 
@@ -27,70 +30,11 @@ def send_poll_emails(request: CleanRequest) -> Response:
     #Check if poll is valid:
     if poll.deadline < datetime.date.today():
         return Response({
-            'message':'Eleição finalizada em {}'.format(poll.deadline)
+            'message':'Elei��o finalizada em {}'.format(poll.deadline)
         }, status=HTTP_400_BAD_REQUEST)
 
-    connection = mail.get_connection()
-    # Manually open the connection
-    connection.open()
+    tk.send_emails.apply_async((poll,), countdown=0)
 
-    failed_emails = {'failed_to_send':[], 'have_already_voted':[], 'is_not_active':[]}
-    failed_emails['have_already_voted'] = list(map(lambda user: user.ref, poll.emails_voted.all()))
-    
-    try:
-        token_list = Token.objects.filter(poll__id= poll.id)
-    except Token.DoesNotExist:
-        return Response({
-            'message': 'Usuarios nao encontrados',
-        }, status=HTTP_404_NOT_FOUND)
-
-    emails_voted_list = poll.emails_voted.all()
-    
-    for token in token_list:
-        user = token.user
-        if not user.is_active:
-            failed_emails['is_not_active'].append(user.id)
-            continue
-        user_email = user.ref
-
-        user_token = token.token
-        # Construct an email message that uses the connection
-        #email = EmailMultiAlternatives(
-        #    'Link para a eleicao {}'.format(poll.title),
-        #    'Link: www.safe-polls.com/{}'.format(user_token),
-        #    'contato.safepoll@gmail.com',
-        #    [user_email],
-        #    connection=connection
-        #    )
-
-        subject = f'Convite para participar da eleição: {poll.title}'
-        html_message = (
-            f'<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{poll.title}</strong>' +
-            f', criada por {poll.admin.get_full_name()}. </p> <p> Por favor, clique' +
-            f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> aqui </a>' +
-            ' para votar.</p> <p>Obrigado!</p> <p>Equipe SafePoll</p>'
-        )
-
-        msg = EmailMultiAlternatives(subject, '', 'contato.safepoll@gmail.com', [user_email])
-        msg.attach_alternative(html_message, "text/html")
-
-        try:
-            msg.send() # Send the email
-        except :
-            failed_emails['failed_to_send'].append(user.id)
-
-    connection.close()
-
-    if any(map(len, failed_emails.values())) is False: #If both failed_emails.values are 0.
-        return Response({
-            'message':'Convites para votacao enviados com sucesso.!'
-        }, status=HTTP_200_OK)
-    else:
-        return Response(data={
-            'message': 'Falha no envio de emails',
-            'failed_emails': failed_emails,
-            'faltam_votar': len(token_list) 
-        }, status=HTTP_202_ACCEPTED)
 
 
 @api_view(['POST'])
