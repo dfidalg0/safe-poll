@@ -1,6 +1,6 @@
 from .context import *
 from django.core.mail import EmailMultiAlternatives
-import ..tasks as tk 
+from ..tasks import * 
 
 import os
 
@@ -31,7 +31,7 @@ def send_poll_emails(request: CleanRequest) -> Response:
             'message':'Eleicao finalizada em {}'.format(poll.deadline)
         }, status=HTTP_400_BAD_REQUEST)
 
-    tk.send_emails.apply_async((poll,), countdown=0)
+    send_emails.apply_async((poll,), countdown=0)
 
 
 
