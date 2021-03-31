@@ -1,9 +1,16 @@
 import {
-    Avatar, Button, Container,
-    Radio, RadioGroup, FormLabel,
-    FormControl, FormControlLabel,
-    FormHelperText, CircularProgress,
-    Typography
+  Avatar,
+  Button,
+  Container,
+  Radio,
+  RadioGroup,
+  FormLabel,
+  FormControl,
+  FormControlLabel,
+  FormHelperText,
+  CircularProgress,
+  Typography,
+  Grid,
 } from '@material-ui/core';
 
 import LoadingScreen from '@/components/loading-screen';
@@ -16,113 +23,143 @@ import { notify } from '@/store/actions/ui';
 import { useDispatch } from 'react-redux';
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
-import { useStyles } from '@/styles/form'
+import { useStyles } from '@/styles/form';
+import { defineMessages, injectIntl } from 'react-intl';
+import { LocaleSelector } from './../components/language-wrapper';
 
-export default function Vote({ location}) {
-    const classes = useStyles(),
-    	  [mark, setMark] = useState(''),
-    	  [error, setError] = useState(true),
-    	  [poll, setPoll] = useState(null),
-    	  [candidates, setCandidates] = useState(null),
-    	  [note, setNote] = useState('Deixe apenas um candidato marcado.'),
-    	  [loading, setLoading] = useState(true),
-    	  dispatch = useDispatch(),
-    	  router = useHistory();
+const messages = defineMessages({
+  chooseCandidate: {
+    id: 'vote-form.choose-candidate',
+  },
+  sendVote: {
+    id: 'vote-form.send-vote',
+  },
+  confirm: {
+    id: 'vote-form.confirm',
+  },
+  candidateChoosen: {
+    id: 'vote-form.candidate-choosen',
+  },
+});
 
-    const handleChange = useCallback(event => {
-        setMark(event.target.value);
-        setError(false);
-        setNote('Um candidato foi marcado.')
-    }, []);
+function Vote({ location, intl }) {
+  const classes = useStyles(),
+    [mark, setMark] = useState(''),
+    [error, setError] = useState(true),
+    [poll, setPoll] = useState(null),
+    [candidates, setCandidates] = useState(null),
+    [loading, setLoading] = useState(true),
+    dispatch = useDispatch(),
+    router = useHistory();
 
-    const result = queryString.parse(location.search),
-    	  id = useParams().id,
-    	  token = result.token;
+  const handleChange = useCallback((event) => {
+    setMark(event.target.value);
+    setError(false);
+  }, []);
 
-    const submit = useCallback(async () => {
-        const data = {
-            poll_id: poll.id,
-            option_id: Number(mark.slice(3)),
-            token,
-        }
-        try {
-            setLoading(true);
-            await axios.post('/api/votes/compute', data);
-            dispatch(notify('Voto registrado com sucesso', 'success'));
-            router.replace('/');
-        }
-        catch ({ response }) {
-            dispatch(notify(response.data.message, 'error'));
-            setLoading(false);
-        }
-    }, [poll, mark, token, dispatch, router]);
+  const result = queryString.parse(location.search),
+    id = useParams().id,
+    token = result.token;
 
-   	useEffect(() => {
-   		const fetchData = async () => {
-            try {
-                setLoading(true);
-                const { data: poll } = await axios.get(`/api/polls/get/${id}/`);
-                setPoll(poll);
-                setCandidates(poll.options);
-            }
-            catch({ response: { data } }){
-                dispatch(notify(data.message, 'error'));
-                router.replace('/manage');
-            }
-            finally {
-                setLoading(false);
-            }
-        }
+  const submit = useCallback(async () => {
+    const data = {
+      poll_id: poll.id,
+      option_id: Number(mark.slice(3)),
+      token,
+    };
+    try {
+      setLoading(true);
+      await axios.post('/api/votes/compute', data);
+      dispatch(notify(intl.formatMessage(messages.confirm), 'success'));
+      router.replace('/');
+    } catch ({ response }) {
+      dispatch(notify(response.data.message, 'error'));
+      setLoading(false);
+    }
+  }, [poll, mark, token, dispatch, router, intl]);
 
-        fetchData();
-   	}, [dispatch, router, id]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const { data: poll } = await axios.get(`/api/polls/get/${id}/`);
+        setPoll(poll);
+        setCandidates(poll.options);
+      } catch ({ response: { data } }) {
+        dispatch(notify(data.message, 'error'));
+        router.replace('/manage');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (!poll || !candidates) return <LoadingScreen />;
+    fetchData();
+  }, [dispatch, router, id]);
 
-    return (
-        <Container className={classes.root} maxWidth="xs">
-            <div className={classes.paper}>
-                <Avatar className={classes.avatar} />
-                {loading && <CircularProgress style={{ marginTop: '-51px' }} size={45}/>}
-                <Typography variant="h6">
-                    {poll.title}
-                </Typography>
-                <Typography variant="body1">
-                    {poll.description}
-                </Typography>
-                <form className={classes.form} noValidate>
-                    <FormControl error={error}
-                        component="fieldset"
-                        className={classes.formControl}
-                        disabled={loading}
-                    >
-                        <FormLabel component="legend">
-                            Escolha seu candidato:
-                        </FormLabel>
-                        <RadioGroup color="primary" value={mark} onChange={handleChange}>
-                            {candidates.map((candidate, i) => <FormControlLabel
-                                key={i}
-                                value={"opt" + candidate.id}
-                                control={<Radio />}
-                                label={candidate.name}
-                            />)}
-                        </RadioGroup>
-                        <FormHelperText>{note}</FormHelperText>
-                    </FormControl>
+  if (!poll || !candidates) return <LoadingScreen />;
 
-                    <Button
-                        fullWidth
-                        variant="contained"
-                        color="primary"
-                        className={classes.submit}
-                        disabled={loading || !mark}
-                        onClick={submit}
-                    >
-                        Enviar voto
-                    </Button>
-                </form>
-                <p></p>
-            </div>
+  return (
+    <Grid container direction='column'>
+      <Grid item>
+        <LocaleSelector />
+      </Grid>
+      <Grid item>
+        <Container className={classes.root} maxWidth='xs'>
+          <div className={classes.paper}>
+            <Avatar className={classes.avatar} />
+            {loading && (
+              <CircularProgress style={{ marginTop: '-51px' }} size={45} />
+            )}
+            <Typography variant='h6'>{poll.title}</Typography>
+            <Typography variant='body1'>{poll.description}</Typography>
+            <form className={classes.form} noValidate>
+              <FormControl
+                error={error}
+                component='fieldset'
+                className={classes.formControl}
+                disabled={loading}
+              >
+                <FormLabel component='legend'>
+                  {intl.formatMessage(messages.chooseCandidate)}
+                </FormLabel>
+                <RadioGroup
+                  color='primary'
+                  value={mark}
+                  onChange={handleChange}
+                >
+                  {candidates.map((candidate, i) => (
+                    <FormControlLabel
+                      key={i}
+                      value={'opt' + candidate.id}
+                      control={<Radio />}
+                      label={candidate.name}
+                    />
+                  ))}
+                </RadioGroup>
+                <FormHelperText>
+                  {mark !== ''
+                    ? intl.formatMessage(messages.candidateChoosen)
+                    : null}
+                </FormHelperText>
+              </FormControl>
+
+              <Button
+                fullWidth
+                variant='contained'
+                color='primary'
+                className={classes.submit}
+                disabled={loading || !mark}
+                onClick={submit}
+              >
+                {intl.formatMessage(messages.sendVote)}
+              </Button>
+            </form>
+            <p></p>
+          </div>
         </Container>
-    );
-};
+      </Grid>
+    </Grid>
+  );
+}
+
+export default injectIntl(Vote);

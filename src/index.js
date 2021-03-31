@@ -1,37 +1,27 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { ptBR } from '@material-ui/core/locale';
 
-import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import { SnackbarProvider } from 'notistack';
 import { Provider } from 'react-redux';
-import { ConfirmationProvider } from '@/utils/confirm-dialog';
-
+import ConfirmationProvider from '@/utils/confirm-dialog';
+import LanguageWrapper from './components/language-wrapper';
 import store from './store';
 
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
-const theme = createMuiTheme({
-    palette: {
-        primary: { main: '#1976d2' },
-    },
-}, ptBR);
-
-
-
 ReactDOM.render(
-    <ThemeProvider theme={theme}>
-        <Provider store={store}>
-            <SnackbarProvider>
-                <ConfirmationProvider>
-                    <App />
-                </ConfirmationProvider>
-            </SnackbarProvider>
-        </Provider>
-    </ThemeProvider>,
-    document.getElementById('root')
+  <LanguageWrapper>
+    <Provider store={store}>
+      <SnackbarProvider>
+        <ConfirmationProvider>
+          <App />
+        </ConfirmationProvider>
+      </SnackbarProvider>
+    </Provider>
+  </LanguageWrapper>,
+  document.getElementById('root')
 );
 
 // If you want to start measuring performance in your app, pass a function
