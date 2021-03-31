@@ -1,21 +1,33 @@
-import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 import {
-    Divider, Grid, TextField,
-    CardActions, CardContent, Card,
-    Button, Typography, IconButton,
-    Paper
+  Divider,
+  Grid,
+  TextField,
+  CardActions,
+  CardContent,
+  Card,
+  Button,
+  Typography,
+  IconButton,
+  Paper,
 } from '@material-ui/core';
 
 import LoadingScreen from '@/components/loading-screen';
 
 // Ícones
 import {
-    DeleteOutline as DeleteIcon,
-    Add as AddIcon,
+  DeleteOutline as DeleteIcon,
+  Add as AddIcon,
 } from '@material-ui/icons';
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -27,221 +39,284 @@ import isEmail from 'validator/lib/isEmail';
 import axios from 'axios';
 
 import { useHistory } from 'react-router-dom';
+import { defineMessages, injectIntl } from 'react-intl';
 
-const useStyles = makeStyles(theme => ({
-    root: {
-        width: '500px',
-        maxWidth: '98%',
-        justifyContent: 'center',
-        textAlign: 'center'
+const useStyles = makeStyles((theme) => ({
+  root: {
+    width: '500px',
+    maxWidth: '98%',
+    justifyContent: 'center',
+    textAlign: 'center',
+  },
+  bullet: {
+    display: 'inline-block',
+    margin: '0 2px',
+    transform: 'scale(0.8)',
+  },
+  title: {
+    fontSize: 14,
+  },
+  pos: {
+    marginBottom: 12,
+  },
+  paper: {
+    height: '100%',
+    verticalAlign: 'middle',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
+  button: {
+    marginRight: 5,
+    marginTop: '10px',
+    marginBottom: '10px',
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.main,
+      color: theme.palette.secondary.contrastText,
     },
-    bullet: {
-        display: 'inline-block',
-        margin: '0 2px',
-        transform: 'scale(0.8)',
-    },
-    title: {
-        fontSize: 14,
-    },
-    pos: {
-        marginBottom: 12,
-    },
-    paper: {
-        height: '100%',
-        verticalAlign: 'middle',
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center"
-    },
-    button: {
-        marginRight: 5,
-        marginTop: '10px',
-        marginBottom: '10px',
-        backgroundColor: theme.palette.primary.main,
-        color: theme.palette.primary.contrastText,
-        '&:hover': {
-            backgroundColor: theme.palette.secondary.main,
-            color: theme.palette.secondary.contrastText,
-        }
-    },
-    deleteIcon: {
-        color: '#900a0a',
-    },
+  },
+  deleteIcon: {
+    color: '#900a0a',
+  },
 }));
 
-export default function EmailsGroup() {
-    const classes = useStyles();
+const messages = defineMessages({
+  back: {
+    id: 'manage.back',
+  },
+  newGroup: {
+    id: 'manage.group.new',
+  },
+  groupAlreadyExists: {
+    id: 'manage.group.already-exists',
+  },
+  create: {
+    id: 'manage.create',
+  },
+  createSuccess: {
+    id: 'manage.group.success',
+  },
+  name: {
+    id: 'common-messages.name',
+  },
+});
 
-    const [emails, setEmails] = useState([]);
-    const [name, setName] = useState('');
+function EmailsGroup({ intl }) {
+  const classes = useStyles();
 
-    // novo email a ser adicionado
-    const [newEmail, setNewEmail] = useState('');
+  const [emails, setEmails] = useState([]);
+  const [name, setName] = useState('');
 
-    // Estado de erros de validação dos emails
-    const [newEmailError, setNewEmailError] = useState(false);
+  // novo email a ser adicionado
+  const [newEmail, setNewEmail] = useState('');
 
-    const groups = useSelector(state => state.items.groups)
+  // Estado de erros de validação dos emails
+  const [newEmailError, setNewEmailError] = useState(false);
 
-    // Estado de erros de validação do nome do grupo
-    const nameError = useMemo(() => {
-        return (groups || []).map(g => g.name).includes(name);
-    }, [groups, name]);
+  const groups = useSelector((state) => state.items.groups);
 
-    const disabled = useMemo(() => (
-        name === '' || emails.length === 0 || nameError
-    ), [name, emails, nameError]);
+  // Estado de erros de validação do nome do grupo
+  const nameError = useMemo(() => {
+    return (groups || []).map((g) => g.name).includes(name);
+  }, [groups, name]);
 
-    // Ref para a caixa de texto de novo email (usada para autofocus)
-    const newEmailRef = useRef();
+  const disabled = useMemo(
+    () => name === '' || emails.length === 0 || nameError,
+    [name, emails, nameError]
+  );
 
-    const createEmail = useCallback(() => {
-        if (newEmail && !newEmailError) {
-            setEmails(emails => [...emails, newEmail]);
-            setNewEmail('');
-        }
-    }, [newEmailError, newEmail]);
+  // Ref para a caixa de texto de novo email (usada para autofocus)
+  const newEmailRef = useRef();
 
-    const deleteEmail = useCallback(index => {
-        const newEmails = [...emails];
-        newEmails.splice(index, 1);
-        setEmails(newEmails);
-    }, [emails]);
+  const createEmail = useCallback(() => {
+    if (newEmail && !newEmailError) {
+      setEmails((emails) => [...emails, newEmail]);
+      setNewEmail('');
+    }
+  }, [newEmailError, newEmail]);
 
-    useEffect(() => {
-        if (emails.includes(newEmail) || !isEmail(newEmail)) {
-            setNewEmailError(true);
-        } else {
-            setNewEmailError(false);
-        }
-    }, [newEmail, emails]);
+  const deleteEmail = useCallback(
+    (index) => {
+      const newEmails = [...emails];
+      newEmails.splice(index, 1);
+      setEmails(newEmails);
+    },
+    [emails]
+  );
 
-    const router = useHistory();
+  useEffect(() => {
+    if (emails.includes(newEmail) || !isEmail(newEmail)) {
+      setNewEmailError(true);
+    } else {
+      setNewEmailError(false);
+    }
+  }, [newEmail, emails]);
 
-    const token = useSelector(state => state.auth.access);
+  const router = useHistory();
 
-    const dispatch = useDispatch();
+  const token = useSelector((state) => state.auth.access);
 
-    const submit = useCallback(async () => {
-        const data = {
-            emails, name
-        }
-        try {
-            const { data: { id } } = await axios.post('/api/groups/create', data, {
-                headers: {
-                    Authorization: `JWT ${token}`
+  const dispatch = useDispatch();
+
+  const submit = useCallback(async () => {
+    const data = {
+      emails,
+      name,
+    };
+    try {
+      const {
+        data: { id },
+      } = await axios.post('/api/groups/create', data, {
+        headers: {
+          Authorization: `JWT ${token}`,
+        },
+      });
+      dispatch(
+        pushGroup({
+          id,
+          ...data,
+        })
+      );
+      dispatch(notify(intl.formatMessage(messages.createSuccess), 'success'));
+      router.replace(`/manage/groups/${id}`);
+    } catch ({ response }) {
+      dispatch(notify(response.data.message, 'error'));
+    }
+  }, [name, emails, token, router, dispatch, intl]);
+
+  return !groups ? (
+    <LoadingScreen />
+  ) : (
+    <Grid container className={classes.root} justify='center'>
+      <Card className={classes.root}>
+        <CardContent>
+          <Typography
+            variant='button'
+            display='block'
+            gutterBottom
+            style={{ marginTop: 10 }}
+          >
+            {intl.formatMessage(messages.newGroup)}
+          </Typography>
+          <Grid container spacing={1} style={{ justifyContent: 'center' }}>
+            <Grid item xs={12} sm={2}>
+              <Typography className={classes.paper}>
+                {intl.formatMessage(messages.name)}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                id='name'
+                error={nameError}
+                helperText={
+                  nameError
+                    ? intl.formatMessage(messages.groupAlreadyExists)
+                    : null
                 }
-            });
-            dispatch(pushGroup({
-                id, ...data
-            }));
-            dispatch(notify('Grupo criado com sucesso', 'success'));
-            router.replace(`/manage/groups/${id}`)
-        }
-        catch ({ response }) {
-            dispatch(notify(response.data.message, 'error'));
-        }
-    }, [name, emails, token, router, dispatch]);
+                autoComplete='off'
+                className={classes.field}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                variant='outlined'
+                margin='normal'
+                required
+                autoFocus
+                InputProps={{
+                  className: classes.input,
+                }}
+                style={{ width: '100%', textAlign: 'center' }}
+              />
+            </Grid>
+          </Grid>
 
-    return !groups ? <LoadingScreen /> : (
-        <Grid container className={classes.root} justify="center">
-            <Card className={classes.root}>
-                <CardContent>
-                    <Typography variant="button" display="block" gutterBottom style={{ marginTop: 10 }}>
-                        Novo Grupo:
-                    </Typography>
-                    <Grid container spacing={1} style={{ justifyContent: 'center' }}>
-                        <Grid item xs={12} sm={2}>
-                            <Typography className={classes.paper}>Nome:</Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField id="name"
-                                error={nameError}
-                                helperText={nameError ? 'Já existe grupo com esse nome' : null}
-                                autoComplete="off"
-                                className={classes.field}
-                                value={name}
-                                onChange={e => setName(e.target.value)}
-                                variant="outlined"
-                                margin="normal"
-                                required
-                                autoFocus
-                                InputProps={{
-                                    className: classes.input
-                                }}
-                                style={{ width: '100%', textAlign: 'center' }}
-                            /></Grid>
-                    </Grid>
+          <Divider style={{ marginBottom: 20, marginTop: 20 }} />
+          <Typography
+            variant='button'
+            display='block'
+            gutterBottom
+            style={{ marginBottom: 20 }}
+          >
+            Emails:
+          </Typography>
+          {emails.map((email, index) => (
+            <Grid
+              container
+              key={index}
+              style={{ justifyContent: 'center', marginBottom: 10 }}
+            >
+              <Grid item xs={10}>
+                <Paper className={classes.paper}>
+                  <Typography noWrap className={classes.paper}>
+                    {email}
+                  </Typography>
+                </Paper>
+              </Grid>
 
-                    <Divider style={{ marginBottom: 20, marginTop: 20 }} />
-                    <Typography variant="button" display="block" gutterBottom style={{ marginBottom: 20 }}>
-                        Emails:
-                </Typography>
-                    {emails.map((email, index) =>
-                        <Grid container key={index} style={{ justifyContent: 'center', marginBottom: 10 }}>
-                            <Grid item xs={10}>
-                                <Paper className={classes.paper}><Typography noWrap className={classes.paper}>{email}</Typography></Paper>
-                            </Grid>
+              <Grid item xs={2}>
+                <IconButton onClick={() => deleteEmail(index)}>
+                  <DeleteIcon className={classes.deleteIcon} />
+                </IconButton>
+              </Grid>
+            </Grid>
+          ))}
 
-                            <Grid item xs={2}>
-                                <IconButton onClick={
-                                    () => deleteEmail(index)
-                                }>
-                                    <DeleteIcon className={classes.deleteIcon} />
-                                </IconButton>
-                            </Grid>
-                        </Grid>
-                    )}
+          <Grid container style={{ justifyContent: 'center' }}>
+            <Grid item xs={10}>
+              <TextField
+                autoComplete='off'
+                inputRef={newEmailRef}
+                className={classes.option}
+                variant='outlined'
+                value={newEmail}
+                error={newEmail === '' ? false : newEmailError}
+                onChange={(e) => setNewEmail(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') createEmail();
+                }}
+                InputProps={{
+                  className: classes.input,
+                }}
+                style={{ width: '100%', textAlign: 'center' }}
+              />
+            </Grid>
+            <Grid item xs={2}>
+              <IconButton onClick={createEmail}>
+                <AddIcon />
+              </IconButton>
+            </Grid>
+          </Grid>
+        </CardContent>
+        <CardActions style={{ marginTop: 10 }}>
+          <Grid
+            container
+            direction='row'
+            justify='space-between'
+            alignItems='center'
+          >
+            <Grid item>
+              <Button>
+                <Link to='/manage' className={classes.link}>
+                  {intl.formatMessage(messages.back)}
+                </Link>
+              </Button>
+            </Grid>
+            <Grid item>
+              <Button
+                variant='contained'
+                className={classes.button}
+                onClick={submit}
+                disabled={disabled}
+              >
+                {intl.formatMessage(messages.create)}
+              </Button>
+            </Grid>
+          </Grid>
+        </CardActions>
+      </Card>
+    </Grid>
+  );
+}
 
-                    <Grid container style={{ justifyContent: 'center' }}>
-                        <Grid item xs={10}>
-                            <TextField
-                                autoComplete="off"
-                                inputRef={newEmailRef}
-                                className={classes.option}
-                                variant="outlined"
-                                value={newEmail}
-                                error={newEmail === '' ? false : newEmailError}
-                                onChange={e => setNewEmail(e.target.value)}
-                                onKeyDown={e => {
-                                    if (e.key === 'Enter') createEmail();
-                                }}
-                                InputProps={{
-                                    className: classes.input
-                                }}
-                                style={{ width: '100%', textAlign: 'center' }}
-                            />
-                        </Grid>
-                        <Grid item xs={2}>
-                            <IconButton onClick={createEmail}>
-                                <AddIcon />
-                            </IconButton>
-                        </Grid>
-                    </Grid>
-                </CardContent>
-                <CardActions style={{ marginTop: 10 }}>
-                    <Grid
-                        container
-                        direction="row"
-                        justify="space-between"
-                        alignItems="center"
-                    >
-                        <Grid item>
-                            <Button><Link to='/manage' className={classes.link}>
-                                Voltar</Link>
-                            </Button>
-                        </Grid>
-                        <Grid item>
-                            <Button variant="contained" className={classes.button}
-                                onClick={submit}
-                                disabled={disabled}
-                            >
-                                Criar
-                        </Button>
-                        </Grid>
-                    </Grid>
-                </CardActions>
-            </Card >
-        </Grid>
-    )
-};
+export default injectIntl(EmailsGroup);
