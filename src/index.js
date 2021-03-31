@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 
 import { SnackbarProvider } from 'notistack';
 import { Provider } from 'react-redux';
-import { ConfirmationProvider } from '@/utils/confirm-dialog';
+import ConfirmationProvider from '@/utils/confirm-dialog';
 import LanguageWrapper from './components/language-wrapper';
 import store from './store';
 

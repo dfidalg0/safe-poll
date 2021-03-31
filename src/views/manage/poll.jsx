@@ -44,8 +44,84 @@ import { useConfirm } from '@/utils/confirm-dialog';
 import isEmail from 'validator/lib/isEmail';
 
 import reduce from 'lodash.reduce';
+import { defineMessages, injectIntl } from 'react-intl';
 
-export default function Poll() {
+const messages = defineMessages({
+  individualEmailSent: {
+    id: 'manage.poll.individual-email-sent',
+  },
+  sendIndividualEmail: {
+    id: 'manage.poll.send-invidual-email',
+  },
+  addedEmailsSuccess: {
+    id: 'manage.poll.added-emails-success',
+  },
+  addEmails: {
+    id: 'manage.poll.add-emails',
+  },
+  emailAlreadyExists: {
+    id: 'manage.poll.email-already-exists',
+  },
+  add: {
+    id: 'manage.add',
+  },
+  emailsAlreadyAdded: {
+    id: 'manage.poll.group-emails-already-added',
+  },
+  addGroupSuccess: {
+    id: 'manage.poll.added-group-success',
+  },
+  deletePoll: {
+    id: 'manage.poll.delete-election',
+  },
+  everyoneHasVoted: {
+    id: 'manage.poll.everyone-has-voted',
+  },
+  failEmails: {
+    id: 'manage.poll.some-emails-couldnot-be-sent',
+  },
+  deadline: {
+    id: 'manage.create-poll.deadline',
+  },
+  secretVote: {
+    id: 'manage.create-poll.secretVote',
+  },
+  candidates: {
+    id: 'manage.create-poll.candidates',
+  },
+  delete: {
+    id: 'manage.delete',
+  },
+  back: {
+    id: 'manage.back',
+  },
+  emailsSuccessfullySent: {
+    id: 'manage.poll.emails-successfully-sent',
+  },
+  result: {
+    id: 'manage.poll.result',
+  },
+  votes: {
+    id: 'manage.poll.votes',
+  },
+  sendLinks: {
+    id: 'manage.poll.send-links',
+  },
+  group: {
+    id: 'manage.poll.group',
+  },
+  sendEmails: {
+    id: 'manage.poll.send-emails',
+  },
+  yes: {
+    id: 'manage.yes',
+  },
+  no: {
+    id: 'manage.no',
+  },
+});
+
+function Poll({ intl }) {
   function EmailItem({ email }) {
     const [loadingSend, setLoadingSend] = useState(false);
     const [loadingDelete, setLoadingDelete] = useState(false);
@@ -91,7 +167,9 @@ export default function Poll() {
           }
         );
         setLoadingSend(false);
-        dispatch(notify('Email enviado para ' + email));
+        dispatch(
+          notify(intl.formatMessage(messages.individualEmailSent) + email)
+        );
       } catch ({ response: { data } }) {
         setLoadingSend(false);
         dispatch(notify(data.message, 'warning'));
@@ -132,7 +210,9 @@ export default function Poll() {
                   <CircularProgress size={18} />
                 </IconButton>
               ) : (
-                <Tooltip title='Enviar e-mail individual'>
+                <Tooltip
+                  title={intl.formatMessage(messages.sendIndividualEmail)}
+                >
                   <IconButton onClick={() => send_email(email)}>
                     <EmailIcon className={classes.emailIcon} />
                   </IconButton>
@@ -147,7 +227,6 @@ export default function Poll() {
 
   function AddInvidualEmails() {
     const classes = useStyles();
-
     const [addedEmails, setAddedEmails] = useState([]);
 
     // novo email a ser adicionado
@@ -204,7 +283,8 @@ export default function Poll() {
         });
         dispatch(
           notify(
-            res.data.added_emails.length + ' emails foram adicionados!',
+            res.data.added_emails.length +
+              intl.formatMessage(messages.addedEmailsSuccess),
             'success'
           )
         );
@@ -221,7 +301,7 @@ export default function Poll() {
         <Card className={classes.root}>
           <CardContent>
             <Typography variant='button' display='block' gutterBottom>
-              Adicionar e-mails:
+              {intl.formatMessage(messages.addEmails)}
             </Typography>
 
             <Divider style={{ marginBottom: 20, marginTop: 20 }} />
@@ -258,7 +338,7 @@ export default function Poll() {
                   error={newEmail === '' ? false : newEmailError}
                   helperText={
                     isEmail(newEmail) && newEmailError
-                      ? 'Email já cadastrado'
+                      ? intl.formatMessage(messages.emailAlreadyExists)
                       : null
                   }
                   onChange={(e) => setNewEmail(e.target.value)}
@@ -292,7 +372,7 @@ export default function Poll() {
                   onClick={submit}
                   disabled={addedEmails.length === 0}
                 >
-                  Adicionar
+                  {intl.formatMessage(messages.add)}
                 </Button>
               </Grid>
             </Grid>
@@ -395,21 +475,21 @@ export default function Poll() {
     );
 
     if (new_emails.length === 0) {
-      dispatch(notify('Os emails deste grupo já estão cadastrados', 'warning'));
+      dispatch(
+        notify(intl.formatMessage(messages.emailsAlreadyAdded), 'warning')
+      );
     } else {
       setEmails(emails.concat(new_emails));
-      dispatch(notify('Grupo adicionado com sucesso', 'success'));
+      dispatch(notify(intl.formatMessage(messages.addGroupSuccess), 'success'));
     }
 
     setLoadingAdd(false);
-  }, [poll, groups, token, group, dispatch, emails]);
+  }, [poll, groups, token, group, dispatch, emails, intl]);
 
   const confirm = useConfirm();
 
   const delete_poll = useCallback(async () => {
-    const check = await confirm(
-      'Esta eleição será apagada e todos os votos serão perdidos.'
-    );
+    const check = await confirm(intl.formatMessage(messages.deletePoll));
 
     if (!check) {
       return;
@@ -423,7 +503,7 @@ export default function Poll() {
     dispatch(notify(res.data.message, 'success'));
     dispatch(deletePoll(poll.id));
     router.replace('/manage');
-  }, [poll, token, dispatch, confirm, router]);
+  }, [poll, token, dispatch, confirm, router, intl]);
 
   const send_email_to_everyone = useCallback(async () => {
     setLoadingSendEmails(true);
@@ -441,22 +521,22 @@ export default function Poll() {
       );
       setLoadingSendEmails(false);
       if (res.status === 202 && res.data.faltam_votar === 0) {
-        dispatch(notify('Todos os cadastrados já votaram!'));
+        dispatch(notify(intl.formatMessage(messages.everyoneHasVoted)));
       } else if (
         res.status === 202 &&
         res.data.failed_emails.failed_to_send.length > 0
       ) {
-        dispatch(
-          notify('Alguns e-mails apresentaram problema no envio', 'warning')
-        );
+        dispatch(notify(intl.formatMessage(messages.failEmails), 'warning'));
       } else {
-        dispatch(notify('Emails enviados!', 'success'));
+        dispatch(
+          notify(intl.formatMessage(messages.emailsSuccessfullySent), 'success')
+        );
       }
     } catch ({ response: { data } }) {
       setLoadingSendEmails(false);
       dispatch(notify(data.message, 'warning'));
     }
-  }, [poll, setLoadingSendEmails, dispatch, token]);
+  }, [poll, setLoadingSendEmails, dispatch, token, intl]);
 
   useEffect(() => {
     if (!groups) {
@@ -477,13 +557,18 @@ export default function Poll() {
         </Typography>
         <Divider style={{ marginBottom: 10, marginTop: 10 }} />
         <Typography variant='overline' display='block' gutterBottom>
-          Deadline: <br /> {poll.deadline.toLocaleDateString()}
+          {intl.formatMessage(messages.deadline)} <br />{' '}
+          {poll.deadline.toLocaleDateString()}
         </Typography>
         <Typography variant='overline' display='block' gutterBottom>
-          Voto Secreto: {poll.secret_vote ? 'Sim' : 'Não'}
+          {intl.formatMessage(messages.secretVote)}
+          {': '}
+          {poll.secret_vote
+            ? intl.formatMessage(messages.yes)
+            : intl.formatMessage(messages.no)}
         </Typography>
         <Typography variant='overline' display='block' gutterBottom>
-          Opções:
+          {intl.formatMessage(messages.candidates)}
         </Typography>
 
         {poll.options.map((option, index) => (
@@ -503,7 +588,7 @@ export default function Poll() {
           <>
             <Grid item xs={12}>
               <InputLabel htmlFor='type' style={{ padding: 10 }}>
-                Grupo
+                {intl.formatMessage(messages.group)}
               </InputLabel>
             </Grid>
             <Grid item xs={12}>
@@ -533,7 +618,11 @@ export default function Poll() {
                 size='large'
               >
                 {' '}
-                {loadingAdd ? <CircularProgress size={22} /> : 'Adicionar'}
+                {loadingAdd ? (
+                  <CircularProgress size={22} />
+                ) : (
+                  intl.formatMessage(messages.add)
+                )}
               </Button>
             </Grid>
             <Divider style={{ marginBottom: 20, marginTop: 20 }} />
@@ -541,7 +630,7 @@ export default function Poll() {
               {loadingSendEmails ? (
                 <CircularProgress size={22} />
               ) : (
-                <Tooltip title='Enviar links de votação para todos os cadastrados'>
+                <Tooltip title={intl.formatMessage(messages.sendLinks)}>
                   <Button
                     variant='contained'
                     className={classes.button}
@@ -551,13 +640,15 @@ export default function Poll() {
                     size='large'
                     style={{ width: '50%' }}
                   >
-                    {' '}
-                    Enviar emails
+                    {intl.formatMessage(messages.sendEmails)}
                   </Button>
                 </Tooltip>
               )}
 
-              <Tooltip title='Adicionar e-mails' aria-label='add'>
+              <Tooltip
+                title={intl.formatMessage(messages.addEmails)}
+                aria-label='add'
+              >
                 <Fab
                   color='primary'
                   size='small'
@@ -584,7 +675,9 @@ export default function Poll() {
         ) : (
           <Grid container alignItems='center' alignContent='center'>
             <Grid item xs={12}>
-              <Typography variant='h6'>Resultados da eleição</Typography>
+              <Typography variant='h6'>
+                {intl.formatMessage(messages.result)}
+              </Typography>
             </Grid>
             {poll.options.map((o, i) => (
               <Fragment key={i}>
@@ -606,7 +699,8 @@ export default function Poll() {
                 </Grid>
                 <Grid item xs={3}>
                   <Typography variant='caption'>
-                    {result.counting_votes[o.id] || 0} votos (
+                    {result.counting_votes[o.id] || 0}{' '}
+                    {intl.formatMessage(messages.votes)} (
                     {(100 * (result.counting_votes[o.id] || 0)) /
                       (result.total || 1)}
                     %)
@@ -620,7 +714,7 @@ export default function Poll() {
       <CardActions>
         <Button size='small'>
           <Link to='/manage' className={classes.link}>
-            Voltar
+            {intl.formatMessage(messages.back)}
           </Link>
         </Button>
         <Grid container justify='flex-end'>
@@ -629,10 +723,12 @@ export default function Poll() {
             onClick={delete_poll}
             endIcon={<DeleteIcon className={classes.deleteIcon} />}
           >
-            Excluir
+            {intl.formatMessage(messages.delete)}
           </Button>
         </Grid>
       </CardActions>
     </Card>
   );
 }
+
+export default injectIntl(Poll);

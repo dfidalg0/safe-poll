@@ -1,20 +1,26 @@
 import { makeStyles } from '@material-ui/core/styles';
 
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 import {
-    Divider, Grid, TextField,
-    CardActions, CardContent, Card,
-    Button, Typography, IconButton,
-    Paper
+  Divider,
+  Grid,
+  TextField,
+  CardActions,
+  CardContent,
+  Card,
+  Button,
+  Typography,
+  IconButton,
+  Paper,
 } from '@material-ui/core';
 
 import LoadingScreen from '@/components/loading-screen';
 
 // Ícones
 import {
-    DeleteOutline as DeleteIcon,
-    Add as AddIcon,
+  DeleteOutline as DeleteIcon,
+  Add as AddIcon,
 } from '@material-ui/icons';
 
 import axios from 'axios';
@@ -33,254 +39,295 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 
 import { useRouteMatch, useHistory } from 'react-router-dom';
+import { defineMessages, injectIntl } from 'react-intl';
 
-const useStyles = makeStyles(theme => ({
-    root: {
-        width: '500px',
-        maxWidth: '98%',
-        justifyContent: 'center',
-        textAlign: 'center'
+const useStyles = makeStyles((theme) => ({
+  root: {
+    width: '500px',
+    maxWidth: '98%',
+    justifyContent: 'center',
+    textAlign: 'center',
+  },
+  bullet: {
+    display: 'inline-block',
+    margin: '0 2px',
+    transform: 'scale(0.8)',
+  },
+  title: {
+    fontSize: 14,
+  },
+  pos: {
+    marginBottom: 12,
+  },
+  paper: {
+    height: '100%',
+    verticalAlign: 'middle',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
+  button: {
+    marginRight: 5,
+    marginTop: '10px',
+    marginBottom: '10px',
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.main,
+      color: theme.palette.secondary.contrastText,
     },
-    bullet: {
-        display: 'inline-block',
-        margin: '0 2px',
-        transform: 'scale(0.8)',
-    },
-    title: {
-        fontSize: 14,
-    },
-    pos: {
-        marginBottom: 12,
-    },
-    paper: {
-        height: '100%',
-        verticalAlign: 'middle',
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center"
-    },
-    button: {
-        marginRight: 5,
-        marginTop: '10px',
-        marginBottom: '10px',
-        backgroundColor: theme.palette.primary.main,
-        color: theme.palette.primary.contrastText,
-        '&:hover': {
-            backgroundColor: theme.palette.secondary.main,
-            color: theme.palette.secondary.contrastText,
-        }
-    },
-    deleteIcon: {
-        color: '#900a0a',
-    },
+  },
+  deleteIcon: {
+    color: '#900a0a',
+  },
 }));
 
-export default function Group() {
-    const { params: { uid } } = useRouteMatch();
+const messages = defineMessages({
+  confirmDelete: {
+    id: 'manage.group.confirm-delete',
+  },
+  back: {
+    id: 'manage.back',
+  },
+  update: {
+    id: 'manage.update',
+  },
+});
 
-    const classes = useStyles();
+function Group({ intl }) {
+  const {
+    params: { uid },
+  } = useRouteMatch();
 
-    const [group, setGroup] = useState(null);
+  const classes = useStyles();
 
-    const token = useSelector(state => state.auth.access);
+  const [group, setGroup] = useState(null);
 
-    const dispatch = useDispatch();
+  const token = useSelector((state) => state.auth.access);
 
-    const router = useHistory();
+  const dispatch = useDispatch();
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try{
-                const { data: group } = await axios.get(`/api/groups/get/${uid}`, {
-                    headers: {
-                        Authorization: `JWT ${token}`
-                    }
-                });
+  const router = useHistory();
 
-                setGroup(group);
-                setEmails(group.emails);
-            }
-            catch({ response: { data } }){
-                dispatch(notify(data.message, 'error'));
-                router.replace('/manage');
-            }
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data: group } = await axios.get(`/api/groups/get/${uid}`, {
+          headers: {
+            Authorization: `JWT ${token}`,
+          },
+        });
+
+        setGroup(group);
+        setEmails(group.emails);
+      } catch ({ response: { data } }) {
+        dispatch(notify(data.message, 'error'));
+        router.replace('/manage');
+      }
+    };
+
+    if (!group) fetchData();
+  }, [uid, group, token, router, dispatch]);
+
+  const [emails, setEmails] = useState([]);
+
+  const submit = useCallback(async () => {
+    try {
+      const { data } = await axios.put(
+        `/api/groups/update/${uid}`,
+        { emails },
+        {
+          headers: {
+            Authorization: `JWT ${token}`,
+          },
         }
+      );
 
-        if(!group) fetchData();
-    }, [uid, group, token, router, dispatch]);
+      setGroup((group) => ({
+        ...group,
+        emails,
+      }));
 
-    const [emails, setEmails] = useState([]);
+      dispatch(notify(data.message, 'success'));
+    } catch ({ response: { data } }) {
+      dispatch(notify(data.message, 'error'));
+    }
+  }, [uid, emails, token, dispatch]);
 
-    const submit = useCallback(async () => {
-        try {
-            const { data } = await axios.put(`/api/groups/update/${uid}`, { emails }, {
-                headers: {
-                    Authorization: `JWT ${token}`
-                }
-            });
+  const confirm = useConfirm();
 
-            setGroup(group => ({
-                ...group,
-                emails
-            }));
+  const submitDelete = useCallback(async () => {
+    const check = await confirm(intl.formatMessage(messages.confirmDelete));
 
-            dispatch(notify(data.message, 'success'));
-        }
-        catch ({ response: { data } }) {
-            dispatch(notify(data.message, 'error'));
-        }
-    }, [uid, emails, token, dispatch]);
+    if (!check) {
+      return;
+    }
 
-    const confirm = useConfirm();
+    try {
+      const { data } = await axios.delete(`/api/groups/delete/${uid}`, {
+        headers: {
+          Authorization: `JWT ${token}`,
+        },
+      });
 
-    const submitDelete = useCallback(async () => {
-        const check = await confirm('A relação de emails deste grupo será perdida permanentemente');
+      dispatch(deleteGroup(Number(uid)));
+      dispatch(notify(data.message, 'success'));
 
-        if (!check){
-            return;
-        }
+      router.replace('/manage');
+    } catch ({ response: { data } }) {
+      dispatch(notify(data.message), 'error');
+    }
+  }, [dispatch, confirm, uid, router, token, intl]);
 
-        try {
-            const { data } = await axios.delete(`/api/groups/delete/${uid}`, {
-                headers: {
-                    Authorization: `JWT ${token}`
-                }
-            });
+  const disabled = useMemo(() => {
+    if (!group || !emails.length) return true;
 
-            dispatch(deleteGroup(Number(uid)));
-            dispatch(notify(data.message, 'success'));
+    const a = new Set(emails);
+    const b = new Set(group.emails);
 
-            router.replace('/manage');
-        }
-        catch({ response: { data } }){
-            dispatch(notify(data.message), 'error');
-        }
-    }, [dispatch, confirm, uid, router, token]);
+    return isEqual(a, b);
+  }, [emails, group]);
 
-    const disabled = useMemo(() => {
-        if (!group || !emails.length) return true;
+  // novo email a ser adicionado
+  const [newEmail, setNewEmail] = useState('');
 
-        const a = new Set(emails);
-        const b = new Set(group.emails);
+  // Estado de erros de validação dos emails
+  const [newEmailError, setNewEmailError] = useState(false);
 
-        return isEqual(a,b);
-    }, [emails, group]);
+  // Ref para a caixa de texto de novo email (usada para autofocus)
+  const newEmailRef = useRef();
 
-    // novo email a ser adicionado
-    const [newEmail, setNewEmail] = useState('');
+  const createEmail = useCallback(() => {
+    if (newEmail && !newEmailError) {
+      setEmails((emails) => [...emails, newEmail]);
+      setNewEmail('');
+    }
+  }, [newEmailError, newEmail]);
 
-    // Estado de erros de validação dos emails
-    const [newEmailError, setNewEmailError] = useState(false);
+  const deleteEmail = useCallback(
+    (index) => {
+      const newEmails = [...emails];
+      newEmails.splice(index, 1);
+      setEmails(newEmails);
+    },
+    [emails]
+  );
 
-    // Ref para a caixa de texto de novo email (usada para autofocus)
-    const newEmailRef = useRef();
+  useEffect(() => {
+    if (emails.includes(newEmail) || !isEmail(newEmail)) {
+      setNewEmailError(true);
+    } else {
+      setNewEmailError(false);
+    }
+  }, [newEmail, emails]);
 
-    const createEmail = useCallback(() => {
-        if (newEmail && !newEmailError) {
-            setEmails(emails => [...emails, newEmail]);
-            setNewEmail('');
-        }
-    }, [newEmailError, newEmail]);
+  return !group ? (
+    <LoadingScreen />
+  ) : (
+    <Grid container className={classes.root} justify='center'>
+      <Card className={classes.root}>
+        <CardContent>
+          <Typography
+            variant='h6'
+            display='block'
+            gutterBottom
+            style={{ marginTop: 10 }}
+          >
+            <span style={{ marginLeft: '30pt' }}>{group.name}</span>
+            <IconButton
+              style={{ float: 'right', marginTop: '-5pt', color: '#900a0a' }}
+              onClick={submitDelete}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Typography>
 
-    const deleteEmail = useCallback(index => {
-        const newEmails = [...emails];
-        newEmails.splice(index, 1);
-        setEmails(newEmails);
-    }, [emails]);
+          <Divider style={{ marginBottom: 20, marginTop: 20 }} />
+          <Typography
+            variant='button'
+            display='block'
+            gutterBottom
+            style={{ marginBottom: 20 }}
+          >
+            Emails:
+          </Typography>
+          {emails.map((email, index) => (
+            <Grid
+              container
+              key={index}
+              style={{ justifyContent: 'center', marginBottom: 10 }}
+            >
+              <Grid item xs={10}>
+                <Paper className={classes.paper}>
+                  <Typography noWrap className={classes.paper}>
+                    {email}
+                  </Typography>
+                </Paper>
+              </Grid>
 
-    useEffect(() => {
-        if (emails.includes(newEmail) || !isEmail(newEmail)) {
-            setNewEmailError(true);
-        } else {
-            setNewEmailError(false);
-        }
-    }, [newEmail, emails]);
+              <Grid item xs={2}>
+                <IconButton onClick={() => deleteEmail(index)}>
+                  <DeleteIcon className={classes.deleteIcon} />
+                </IconButton>
+              </Grid>
+            </Grid>
+          ))}
 
-    return !group ? <LoadingScreen /> : (
-        <Grid container className={classes.root} justify="center">
-            <Card className={classes.root}>
-                <CardContent>
-                    <Typography variant="h6" display="block" gutterBottom style={{ marginTop: 10 }}>
-                        <span style={{marginLeft: '30pt'}}>
-                            {group.name}
-                        </span>
-                        <IconButton style={{ float: 'right', marginTop: '-5pt', color: '#900a0a' }}
-                            onClick={submitDelete}
-                        >
-                            <DeleteIcon />
-                        </IconButton>
-                    </Typography>
+          <Grid container style={{ justifyContent: 'center' }}>
+            <Grid item xs={10}>
+              <TextField
+                autoComplete='off'
+                inputRef={newEmailRef}
+                className={classes.option}
+                variant='outlined'
+                value={newEmail}
+                error={newEmail === '' ? false : newEmailError}
+                onChange={(e) => setNewEmail(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') createEmail();
+                }}
+                InputProps={{
+                  className: classes.input,
+                }}
+                style={{ width: '100%', textAlign: 'center' }}
+              />
+            </Grid>
+            <Grid item xs={2}>
+              <IconButton onClick={createEmail}>
+                <AddIcon />
+              </IconButton>
+            </Grid>
+          </Grid>
+        </CardContent>
+        <CardActions style={{ marginTop: 10 }}>
+          <Grid
+            container
+            direction='row'
+            justify='space-between'
+            alignItems='center'
+          >
+            <Grid item>
+              <Button>
+                <Link to='/manage' className={classes.link}>
+                  {intl.formatMessage(messages.back)}
+                </Link>
+              </Button>
+            </Grid>
+            <Grid item>
+              <Button
+                variant='contained'
+                className={classes.button}
+                onClick={submit}
+                disabled={disabled}
+              >
+                {intl.formatMessage(messages.update)}
+              </Button>
+            </Grid>
+          </Grid>
+        </CardActions>
+      </Card>
+    </Grid>
+  );
+}
 
-
-                    <Divider style={{ marginBottom: 20, marginTop: 20 }} />
-                    <Typography variant="button" display="block" gutterBottom style={{ marginBottom: 20 }}>
-                        Emails:
-                </Typography>
-                    {emails.map((email, index) =>
-                        <Grid container key={index} style={{ justifyContent: 'center', marginBottom: 10 }}>
-                            <Grid item xs={10}>
-                                <Paper className={classes.paper}><Typography noWrap className={classes.paper}>{email}</Typography></Paper>
-                            </Grid>
-
-                            <Grid item xs={2} >
-                                <IconButton onClick={
-                                    () => deleteEmail(index)
-                                }>
-                                    <DeleteIcon className={classes.deleteIcon} />
-                                </IconButton>
-                            </Grid>
-                        </Grid>
-                    )}
-
-                    <Grid container style={{ justifyContent: 'center' }}>
-                        <Grid item xs={10}>
-                            <TextField
-                                autoComplete="off"
-                                inputRef={newEmailRef}
-                                className={classes.option}
-                                variant="outlined"
-                                value={newEmail}
-                                error={newEmail === '' ? false : newEmailError}
-                                onChange={e => setNewEmail(e.target.value)}
-                                onKeyDown={e => {
-                                    if (e.key === 'Enter') createEmail();
-                                }}
-                                InputProps={{
-                                    className: classes.input
-                                }}
-                                style={{ width: '100%', textAlign: 'center' }}
-                            />
-                        </Grid>
-                        <Grid item xs={2}>
-                            <IconButton onClick={createEmail}>
-                                <AddIcon />
-                            </IconButton>
-                        </Grid>
-                    </Grid>
-                </CardContent>
-                <CardActions style={{ marginTop: 10 }}>
-                    <Grid
-                        container
-                        direction="row"
-                        justify="space-between"
-                        alignItems="center"
-                    >
-                        <Grid item>
-                            <Button><Link to='/manage' className={classes.link}>
-                                Voltar</Link>
-                            </Button>
-                        </Grid>
-                        <Grid item>
-                            <Button variant="contained" className={classes.button}
-                                onClick={submit}
-                                disabled={disabled}
-                            >
-                                Atualizar
-                            </Button>
-                        </Grid>
-                    </Grid>
-                </CardActions>
-            </Card >
-        </Grid>
-    )
-};
+export default injectIntl(Group);

@@ -406,7 +406,7 @@ function CreatePoll({ open, onClose, intl }) {
                     )}
                     format={
                       languageContext.locale === 'pt-BR' ||
-                      languageContext.locale === 'es-Es'
+                      languageContext.locale === 'es-ES'
                         ? 'dd/MM/yyyy'
                         : 'yyyy/MM/dd'
                     }
