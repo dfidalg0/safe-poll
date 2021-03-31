@@ -24,7 +24,7 @@ def send_poll_emails(request: CleanRequest) -> Response:
         poll = Poll.objects.get(pk=data['poll_id'] , admin=admin)
     except Poll.DoesNotExist:
         return Response({
-            'message':'Eleicao nÃ£o encontrada'
+            'message':'Eleicao nao encontrada'
         }, status=HTTP_404_NOT_FOUND)
 
     #Check if poll is valid:
