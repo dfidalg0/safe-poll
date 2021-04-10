@@ -28,6 +28,33 @@ const messages = defineMessages({
   sendIndividualEmail: {
     id: 'manage.poll.send-invidual-email',
   },
+  emailSuccessfullyDeleted: {
+    id: 'success-message.email-deleted',
+  },
+  emailNotFoundError: {
+    id: 'error.email-not-found',
+  },
+  pollNotFoundError: {
+    id: 'error.election-not-found',
+  },
+  internalServerError: {
+    id: 'error.internal-server',
+  },
+  invalidFormError: {
+    id: 'error.invalid-form',
+  },
+  pollDeadlineError: {
+    id: 'error.election-already-finished',
+  },
+  sendEmailsError: {
+    id: 'error.send-emails-fail',
+  },
+  successfulySentEmails: {
+    id: 'success-message.emails-sent',
+  },
+  errorGeneric: {
+    id: 'error.generic',
+  },
 });
 
 function EmailItem({ email, token, emails, poll, intl, setEmails }) {
@@ -39,7 +66,7 @@ function EmailItem({ email, token, emails, poll, intl, setEmails }) {
   const delete_email = async (email) => {
     setLoadingDelete(true);
     try {
-      const res = await axios.post(
+      await axios.post(
         '/api/polls/emails/delete',
         {
           email: email,
@@ -54,10 +81,18 @@ function EmailItem({ email, token, emails, poll, intl, setEmails }) {
       setLoadingDelete(false);
       const new_emails = emails.filter((e) => e !== email);
       setEmails(new_emails);
-      dispatch(notify(res.data.message, 'success'));
-    } catch ({ response: { data } }) {
+      dispatch(
+        notify(intl.formatMessage(messages.emailSuccessfullyDeleted), 'success')
+      );
+    } catch ({ response: { status, type } }) {
       setLoadingDelete(false);
-      dispatch(notify(data.message, 'warning'));
+      let info;
+      if (status === 404) {
+        if (type === 'poll') info = messages.pollNotFoundError;
+        else info = messages.emailNotFoundError;
+      } else if (status === 500) info = messages.internalServerError;
+      else info = messages.invalidFormError;
+      dispatch(notify(intl.formatMessage(info), 'warning'));
     }
   };
 
@@ -80,9 +115,14 @@ function EmailItem({ email, token, emails, poll, intl, setEmails }) {
       dispatch(
         notify(intl.formatMessage(messages.individualEmailSent, { email }))
       );
-    } catch ({ response: { data } }) {
+    } catch ({ response: { status } }) {
       setLoadingSend(false);
-      dispatch(notify(data.message, 'warning'));
+      let info;
+      if (status === 404) info = messages.pollNotFoundError;
+      else if (status === 422) info = messages.invalidFormError;
+      else if (status === 400) info = messages.pollDeadlineError;
+      else info = messages.errorGeneric;
+      dispatch(notify(intl.formatMessage(info), 'warning'));
     }
   };
 

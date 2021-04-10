@@ -92,6 +92,24 @@ const messages = defineMessages({
   update: {
     id: 'manage.update',
   },
+  deleteGroupSuccess: {
+    id: 'success-message.group-deleted',
+  },
+  internalServerError: {
+    id: 'error.internal-server',
+  },
+  groupNotFound: {
+    id: 'error.group-not-found',
+  },
+  genericError: {
+    id: 'error.generic',
+  },
+  invalidForm: {
+    id: 'error.invalid-form',
+  },
+  successfullyUpdated: {
+    id: 'success-message.group-updated',
+  },
 });
 
 function Group({ intl }) {
@@ -120,20 +138,24 @@ function Group({ intl }) {
 
         setGroup(group);
         setEmails(group.emails);
-      } catch ({ response: { data } }) {
-        dispatch(notify(data.message, 'error'));
+      } catch ({ response: { status } }) {
+        let info;
+        if (status === 500) info = messages.internalServerError;
+        else if (status === 404) info = messages.groupNotFound;
+        else info = messages.genericError;
+        dispatch(notify(intl.formatMessage(info), 'error'));
         router.replace('/manage');
       }
     };
 
     if (!group) fetchData();
-  }, [uid, group, token, router, dispatch]);
+  }, [uid, group, token, router, dispatch, intl]);
 
   const [emails, setEmails] = useState([]);
 
   const submit = useCallback(async () => {
     try {
-      const { data } = await axios.put(
+      await axios.put(
         `/api/groups/update/${uid}`,
         { emails },
         {
@@ -148,11 +170,17 @@ function Group({ intl }) {
         emails,
       }));
 
-      dispatch(notify(data.message, 'success'));
-    } catch ({ response: { data } }) {
-      dispatch(notify(data.message, 'error'));
+      dispatch(
+        notify(intl.formatMessage(messages.successfullyUpdated), 'success')
+      );
+    } catch ({ response: { status } }) {
+      let info;
+      if (status === 500) info = messages.internalServerError;
+      else if (status === 404) info = messages.groupNotFound;
+      else info = messages.genericError;
+      dispatch(notify(intl.formatMessage(info), 'error'));
     }
-  }, [uid, emails, token, dispatch]);
+  }, [uid, emails, token, dispatch, intl]);
 
   const confirm = useConfirm();
 
@@ -164,18 +192,24 @@ function Group({ intl }) {
     }
 
     try {
-      const { data } = await axios.delete(`/api/groups/delete/${uid}`, {
+      await axios.delete(`/api/groups/delete/${uid}`, {
         headers: {
           Authorization: `JWT ${token}`,
         },
       });
 
       dispatch(deleteGroup(Number(uid)));
-      dispatch(notify(data.message, 'success'));
+      dispatch(
+        notify(intl.formatMessage(messages.deleteGroupSuccess), 'success')
+      );
 
       router.replace('/manage');
-    } catch ({ response: { data } }) {
-      dispatch(notify(data.message), 'error');
+    } catch ({ response: { status } }) {
+      let info;
+      if (status === 500) info = messages.internalServerError;
+      else if (status === 404) info = messages.groupNotFound;
+      else info = messages.genericError;
+      dispatch(notify(intl.formatMessage(info)), 'error');
     }
   }, [dispatch, confirm, uid, router, token, intl]);
 

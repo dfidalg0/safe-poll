@@ -88,6 +88,15 @@ const messages = defineMessages({
   secretVote: {
     id: 'manage.create-poll.secretVote',
   },
+  internalServerError: {
+    id: 'error.internal-server',
+  },
+  invalidFormError: {
+    id: 'error.invalid-form',
+  },
+  genericError: {
+    id: 'error.generic',
+  },
 });
 
 /**
@@ -226,8 +235,16 @@ function CreatePoll({ open, onClose, intl }) {
       );
 
       dispatch(pushPoll(res.data));
-    } catch ({ response: { data } }) {
-      dispatch(notify(data.message, 'error'));
+    } catch ({ response: { status } }) {
+      let info;
+      if (status === 500) {
+        info = messages.internalServerError;
+      } else if (status === 422) {
+        info = messages.invalidFormError;
+      } else {
+        info = messages.internalServerError;
+      }
+      dispatch(notify(intl.formatMessage(info), 'error'));
     }
 
     // Fim do estado de carregamento do envio

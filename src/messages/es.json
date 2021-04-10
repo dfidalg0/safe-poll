@@ -68,5 +68,16 @@
   "manage.poll.send-emails": "Enviar correos electrónicos",
   "manage.poll.finish": "Terminar",
   "manage.yes": "sí",
-  "manage.no": "no"
+  "manage.no": "no",
+  "error.internal-server": "Error de servidor interno",
+  "error.invalid-form": "Forma invalida",
+  "error.generic": "Ocurrio un error. Por favor, inténtelo de nuevo más tarde",
+  "error.election-not-found": "Elección no encontrada",
+  "success-message.email-deleted": "Correo electrónico eliminado correctament",
+  "error.email-not-found": "El correo electrónico no encontrado",
+  "error.election-already-finished": "La elección no es válida. La fecha límite ha finalizado.",
+  "error.group-same-name": "¡El grupo con este nombre ya existe!",
+  "success-message.group-deleted": "¡Grupo eliminado correctamente!",
+  "error.group-not-found": "Grupo no encontrado",
+  "success-message.group-updated": "Grupo actualizado correctamente"
 }

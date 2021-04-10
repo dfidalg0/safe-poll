@@ -40,6 +40,15 @@ const messages = defineMessages({
   add: {
     id: 'manage.add',
   },
+  electionNotFoundError: {
+    id: 'error.election-not-found',
+  },
+  genericError: {
+    id: 'error.generic',
+  },
+  invalidFormError: {
+    id: 'error.invalid-form',
+  },
 });
 
 function AddInvidualEmails({
@@ -115,8 +124,16 @@ function AddInvidualEmails({
       );
       setEmails(emails.concat(res.data.added_emails));
       setOpened(false);
-    } catch ({ response }) {
-      dispatch(notify(response.data.message, 'error'));
+    } catch ({ response: { status } }) {
+      let info;
+      if (status === 404) {
+        info = messages.electionNotFoundError;
+      } else if (status === 422) {
+        info = messages.invalidFormError;
+      } else {
+        info = messages.genericError;
+      }
+      dispatch(notify(intl.formatMessage(info), 'error'));
     }
   }, [
     addedEmails,

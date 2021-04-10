@@ -175,10 +175,10 @@ def send_list_emails(request: CleanRequest) -> Response:
 
     if any(map(len, failed_emails.values())) is False: #If both failed_emails.values are 0.
         return Response({
-            'message':'Convites para votação enviado com sucesso!'
+            'message':'Convites para votação enviados com sucesso!'
             }, status=HTTP_200_OK)
     else:
         return Response(data={
             'message': 'Falha no envio de emails',
             'failed_emails': failed_emails
-        }, status=HTTP_400_BAD_REQUEST)
+        }, status=HTTP_202_ACCEPTED)
