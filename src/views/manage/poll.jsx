@@ -10,12 +10,9 @@ import {
   Select,
   MenuItem,
   Grid,
-  IconButton,
-  Paper,
   Tooltip,
   Fab,
   Dialog,
-  TextField,
   LinearProgress,
 } from '@material-ui/core';
 
@@ -24,7 +21,6 @@ import { Fragment } from 'react';
 // Ícones
 import AddIcon from '@material-ui/icons/Add';
 import EmailIcon from '@material-ui/icons/Email';
-import CheckIcon from '@material-ui/icons/Check';
 import { DeleteOutline as DeleteIcon } from '@material-ui/icons';
 
 import { Link } from 'react-router-dom';
@@ -37,33 +33,23 @@ import axios from 'axios';
 
 import { useRouteMatch, useHistory } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useContext } from 'react';
 import { useStyles } from '@/styles/poll-view';
 import { useConfirm } from '@/utils/confirm-dialog';
 
-import isEmail from 'validator/lib/isEmail';
-
 import reduce from 'lodash.reduce';
+import { format } from 'date-fns';
 import { defineMessages, injectIntl } from 'react-intl';
+import EmailItem from './../../components/poll-email-item';
+import AddInvidualEmails from './../../components/poll-add-invidual-email';
+import { LocaleContext } from './../../components/language-wrapper';
 
 const messages = defineMessages({
   finish: {
-    id: 'manage.poll.finish'
-  },
-  individualEmailSent: {
-    id: 'manage.poll.individual-email-sent',
-  },
-  sendIndividualEmail: {
-    id: 'manage.poll.send-invidual-email',
-  },
-  addedEmailsSuccess: {
-    id: 'manage.poll.added-emails-success',
+    id: 'manage.poll.finish',
   },
   addEmails: {
     id: 'manage.poll.add-emails',
-  },
-  emailAlreadyExists: {
-    id: 'manage.poll.email-already-exists',
   },
   add: {
     id: 'manage.add',
@@ -125,266 +111,6 @@ const messages = defineMessages({
 });
 
 function Poll({ intl }) {
-  function EmailItem({ email }) {
-    const [loadingSend, setLoadingSend] = useState(false);
-    const [loadingDelete, setLoadingDelete] = useState(false);
-
-    const delete_email = async (email) => {
-      setLoadingDelete(true);
-      try {
-        const res = await axios.post(
-          '/api/polls/emails/delete',
-          {
-            email: email,
-            poll_id: poll.id,
-          },
-          {
-            headers: {
-              Authorization: `JWT ${token}`,
-            },
-          }
-        );
-        setLoadingDelete(false);
-        const new_emails = emails.filter((e) => e !== email);
-        setEmails(new_emails);
-        dispatch(notify(res.data.message, 'success'));
-      } catch ({ response: { data } }) {
-        setLoadingDelete(false);
-        dispatch(notify(data.message, 'warning'));
-      }
-    };
-
-    const send_email = async (email) => {
-      setLoadingSend(true);
-      try {
-        await axios.post(
-          '/api/emails/send-list',
-          {
-            poll_id: poll.id,
-            users_emails_list: [email],
-          },
-          {
-            headers: {
-              Authorization: `JWT ${token}`,
-            },
-          }
-        );
-        setLoadingSend(false);
-        dispatch(
-          notify(intl.formatMessage(messages.individualEmailSent) + email)
-        );
-      } catch ({ response: { data } }) {
-        setLoadingSend(false);
-        dispatch(notify(data.message, 'warning'));
-      }
-    };
-
-    return (
-      <Grid container style={{ justifyContent: 'center', marginBottom: 10 }}>
-        <Grid item xs={10}>
-          <Paper className={classes.paper}>
-            <Typography noWrap className={classes.paper}>
-              {email}
-            </Typography>
-          </Paper>
-        </Grid>
-        {poll.emails_voted.indexOf(email) > -1 ? (
-          <Grid item xs={2}>
-            <IconButton>
-              <CheckIcon className={classes.checkIcon} />
-            </IconButton>
-          </Grid>
-        ) : (
-          <>
-            <Grid item xs={1}>
-              {loadingDelete ? (
-                <IconButton>
-                  <CircularProgress size={18} />
-                </IconButton>
-              ) : (
-                <IconButton onClick={() => delete_email(email)}>
-                  <DeleteIcon className={classes.deleteIcon} />
-                </IconButton>
-              )}
-            </Grid>
-            <Grid item xs={1}>
-              {loadingSend ? (
-                <IconButton>
-                  <CircularProgress size={18} />
-                </IconButton>
-              ) : (
-                <Tooltip
-                  title={intl.formatMessage(messages.sendIndividualEmail)}
-                >
-                  <IconButton onClick={() => send_email(email)}>
-                    <EmailIcon className={classes.emailIcon} />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Grid>
-          </>
-        )}
-      </Grid>
-    );
-  }
-
-  function AddInvidualEmails() {
-    const classes = useStyles();
-    const [addedEmails, setAddedEmails] = useState([]);
-
-    // novo email a ser adicionado
-    const [newEmail, setNewEmail] = useState('');
-
-    // Estado de erros de validação dos emails
-    const [newEmailError, setNewEmailError] = useState(false);
-
-    // Ref para a caixa de texto de novo email (usada para autofocus)
-    const newEmailRef = useRef();
-
-    const createEmail = useCallback(() => {
-      if (newEmail && !newEmailError) {
-        setAddedEmails((addedEmails) => [...addedEmails, newEmail]);
-        setNewEmail('');
-      }
-    }, [newEmailError, newEmail]);
-
-    const deleteEmail = useCallback(
-      (index) => {
-        const newEmails = [...addedEmails];
-        newEmails.splice(index, 1);
-        setAddedEmails(newEmails);
-      },
-      [addedEmails]
-    );
-
-    useEffect(() => {
-      if (
-        emails.includes(newEmail) ||
-        addedEmails.includes(newEmail) ||
-        !isEmail(newEmail)
-      ) {
-        setNewEmailError(true);
-      } else {
-        setNewEmailError(false);
-      }
-    }, [newEmail, addedEmails]);
-
-    const token = useSelector((state) => state.auth.access);
-
-    const dispatch = useDispatch();
-
-    const submit = useCallback(async () => {
-      const data = {
-        email_list: addedEmails,
-        poll_id: poll.id,
-      };
-      try {
-        const res = await axios.post('/api/tokens/create', data, {
-          headers: {
-            Authorization: `JWT ${token}`,
-          },
-        });
-        dispatch(
-          notify(
-            res.data.added_emails.length +
-              intl.formatMessage(messages.addedEmailsSuccess),
-            'success'
-          )
-        );
-        setEmails(emails.concat(res.data.added_emails));
-      } catch ({ response }) {
-        dispatch(notify(response.data.message, 'error'));
-      }
-    }, [addedEmails, token, dispatch]);
-
-    return !groups ? (
-      <LoadingScreen />
-    ) : (
-      <div align='center'>
-        <Card className={classes.root}>
-          <CardContent>
-            <Typography variant='button' display='block' gutterBottom>
-              {intl.formatMessage(messages.addEmails)}
-            </Typography>
-
-            <Divider style={{ marginBottom: 20, marginTop: 20 }} />
-            {addedEmails.map((email, index) => (
-              <Grid
-                container
-                key={index}
-                style={{ justifyContent: 'center', marginBottom: 10 }}
-              >
-                <Grid item xs={10}>
-                  <Paper className={classes.paper}>
-                    <Typography noWrap className={classes.paper}>
-                      {email}
-                    </Typography>
-                  </Paper>
-                </Grid>
-
-                <Grid item xs={2}>
-                  <IconButton onClick={() => deleteEmail(index)}>
-                    <DeleteIcon className={classes.deleteIcon} />
-                  </IconButton>
-                </Grid>
-              </Grid>
-            ))}
-
-            <Grid container style={{ justifyContent: 'center' }}>
-              <Grid item xs={10}>
-                <TextField
-                  autoComplete='off'
-                  inputRef={newEmailRef}
-                  className={classes.option}
-                  variant='outlined'
-                  value={newEmail}
-                  error={newEmail === '' ? false : newEmailError}
-                  helperText={
-                    isEmail(newEmail) && newEmailError
-                      ? intl.formatMessage(messages.emailAlreadyExists)
-                      : null
-                  }
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') createEmail();
-                  }}
-                  InputProps={{
-                    className: classes.input,
-                  }}
-                  style={{ width: '100%', textAlign: 'center' }}
-                />
-              </Grid>
-              <Grid item xs={2}>
-                <IconButton onClick={createEmail}>
-                  <AddIcon />
-                </IconButton>
-              </Grid>
-            </Grid>
-          </CardContent>
-          <CardActions style={{ marginTop: 10 }}>
-            <Grid
-              container
-              direction='row'
-              justify='flex-end'
-              alignItems='center'
-            >
-              <Grid item>
-                <Button
-                  variant='contained'
-                  className={classes.button}
-                  onClick={submit}
-                  disabled={addedEmails.length === 0}
-                >
-                  {intl.formatMessage(messages.add)}
-                </Button>
-              </Grid>
-            </Grid>
-          </CardActions>
-        </Card>
-      </div>
-    );
-  }
-
   const [loading, setLoading] = useState(true);
   const [loadingSendEmails, setLoadingSendEmails] = useState(false);
   const [loadingAdd, setLoadingAdd] = useState(false);
@@ -395,6 +121,7 @@ function Poll({ intl }) {
   const dispatch = useDispatch();
 
   const router = useHistory();
+  const languageContext = useContext(LocaleContext);
 
   const { uid } = useRouteMatch().params;
 
@@ -448,17 +175,20 @@ function Poll({ intl }) {
 
   const finishPoll = useCallback(async () => {
     try {
-      await axios.put(`/api/polls/update/${poll.id}`, {
-        deadline: (new Date()).toJSON().slice(0, 10)
-      }, {
-        headers: {
-          Authorization: `JWT ${token}`
+      await axios.put(
+        `/api/polls/update/${poll.id}`,
+        {
+          deadline: new Date().toJSON().slice(0, 10),
+        },
+        {
+          headers: {
+            Authorization: `JWT ${token}`,
+          },
         }
-      })
+      );
 
       window.location.reload();
-    }
-    catch (err) {
+    } catch (err) {
       notify(err.response.message, 'error');
     }
   }, [poll, token]);
@@ -578,14 +308,22 @@ function Poll({ intl }) {
         <Divider style={{ marginBottom: 10, marginTop: 10 }} />
         <Typography variant='overline' display='block' gutterBottom>
           {intl.formatMessage(messages.deadline)} <br />{' '}
-          {poll.deadline.toLocaleDateString()}
+          {format(
+            poll.deadline,
+            languageContext.locale === 'pt-BR' ||
+              languageContext.locale === 'es-ES'
+              ? 'dd/MM/yyyy'
+              : 'MM/dd/yyyy'
+          )}
         </Typography>
 
-        {poll.deadline > new Date() ? <>
-          <Button onClick={finishPoll}>
-            {intl.formatMessage(messages.finish)}
-          </Button>
-        </> : null}
+        {poll.deadline > new Date() ? (
+          <>
+            <Button onClick={finishPoll}>
+              {intl.formatMessage(messages.finish)}
+            </Button>
+          </>
+        ) : null}
 
         <Typography variant='overline' display='block' gutterBottom>
           {intl.formatMessage(messages.secretVote)}
@@ -644,7 +382,6 @@ function Poll({ intl }) {
                 disabled={group === ''}
                 size='large'
               >
-                {' '}
                 {loadingAdd ? (
                   <CircularProgress size={22} />
                 ) : (
@@ -691,12 +428,25 @@ function Poll({ intl }) {
                 aria-labelledby='simple-dialog-title'
                 open={emailsAddOpen}
               >
-                <AddInvidualEmails />
+                <AddInvidualEmails
+                  groups={groups}
+                  emails={emails}
+                  setEmails={setEmails}
+                  pollId={poll.id}
+                  setOpened={setEmailsAddOpen}
+                />
               </Dialog>
             </Grid>
 
             {emails.map((email, index) => (
-              <EmailItem email={email} key={index} />
+              <EmailItem
+                email={email}
+                token={token}
+                emails={emails}
+                poll={poll}
+                setEmails={setEmails}
+                key={index}
+              />
             ))}
           </>
         ) : (

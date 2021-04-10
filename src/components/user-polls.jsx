@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useContext } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import {
   Paper,
@@ -18,9 +18,11 @@ import { Link } from 'react-router-dom';
 
 import { fetchUserPolls } from '@/store/actions/items';
 import { useSelector, useDispatch } from 'react-redux';
+import { LocaleContext } from './language-wrapper';
 
 import { useTheme, useMediaQuery } from '@material-ui/core';
 import { defineMessages, injectIntl } from 'react-intl';
+import { format } from 'date-fns';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -90,6 +92,7 @@ function UserPolls({ intl }) {
   }, []);
 
   const polls = useSelector((state) => state.items.polls);
+  const languageContext = useContext(LocaleContext);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -141,13 +144,19 @@ function UserPolls({ intl }) {
                 color: twoDaysLeft ? 'red' : undefined,
               }}
             >
-              {deadline.toLocaleDateString()}
+              {format(
+                deadline,
+                languageContext.locale === 'pt-BR' ||
+                  languageContext.locale === 'es-ES'
+                  ? 'dd/MM/yyyy'
+                  : 'MM/dd/yyyy'
+              )}
             </Typography>
           </Grid>
         </>
       );
     },
-    [classes, tooltip, isDesktop]
+    [classes, tooltip, isDesktop, languageContext]
   );
 
   return (
