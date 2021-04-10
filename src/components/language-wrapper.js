@@ -23,7 +23,8 @@ const useStyles = makeStyles(() => ({
 
 export const LocaleContext = createContext();
 
-const local = navigator.language;
+const localStorageLanguage = localStorage.getItem('safepoll-language');
+const local = localStorageLanguage ?? navigator.language;
 
 function selectLanguage(local) {
   let language;
@@ -101,6 +102,7 @@ const LanguageWrapper = (props) => {
   const [dateLocale, setDateLocale] = useState(selectDateLocale(local));
 
   function changeLanguage(local) {
+    localStorage.setItem('safepoll-language', local);
     setLocale(local);
     setMessages(selectLanguage(local));
     setDateLocale(selectDateLocale(local));
