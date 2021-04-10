@@ -54,7 +54,7 @@
   "manage.poll.some-emails-couldnot-be-sent": "Algunos correos electrónicos tuvieron problemas para enviar",
   "manage.delete": "Eliminar",
   "manage.back": "Volver",
-  "manage.poll.emails-successfully-sent": "Envió correos electrónicos!",
+  "manage.poll.emails-successfully-sent": "¡Envió correos electrónicos!",
   "manage.poll.result": "Resultado de la elección",
   "manage.poll.votes": "votos",
   "manage.poll.send-links": "Envíe enlaces de votación a todos los inscritos",
@@ -79,5 +79,7 @@
   "error.group-same-name": "¡El grupo con este nombre ya existe!",
   "success-message.group-deleted": "¡Grupo eliminado correctamente!",
   "error.group-not-found": "Grupo no encontrado",
-  "success-message.group-updated": "Grupo actualizado correctamente"
+  "success-message.group-updated": "Grupo actualizado correctamente",
+  "error.election-not-finished": "La elección aún no ha terminado",
+  "success-message.delete-election": "¡Elección eliminada con éxito!"
 }

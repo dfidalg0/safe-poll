@@ -108,6 +108,21 @@ const messages = defineMessages({
   no: {
     id: 'manage.no',
   },
+  electionNotFinishedError: {
+    id: 'error.election-not-finished',
+  },
+  internalServerError: {
+    id: 'error.internal-server',
+  },
+  genericError: {
+    id: 'error.generic',
+  },
+  invalidFormError: {
+    id: 'error.invalid-form',
+  },
+  successDeletePoll: {
+    id: 'success-message.delete-election',
+  },
 });
 
 function Poll({ intl }) {
@@ -165,13 +180,17 @@ function Poll({ intl }) {
         );
         setResult(result);
       }
-    } catch ({ response: { data } }) {
-      dispatch(notify(data.message, 'error'));
+    } catch ({ response: { status } }) {
+      let info;
+      if (status === 404) info = messages.electionNotFinishedError;
+      else if (status === 500) info = messages.internalServerError;
+      else info = messages.genericError;
+      dispatch(notify(intl.formatMessage(info), 'error'));
       router.replace('/manage');
     } finally {
       setLoading(false);
     }
-  }, [uid, user, dispatch, router, token]);
+  }, [uid, user, dispatch, router, token, intl]);
 
   const finishPoll = useCallback(async () => {
     try {
@@ -188,10 +207,14 @@ function Poll({ intl }) {
       );
 
       window.location.reload();
-    } catch (err) {
-      notify(err.response.message, 'error');
+    } catch ({ response: { status } }) {
+      let info;
+      if (status === 422) info = messages.invalidFormError;
+      else if (status === 500) info = messages.internalServerError;
+      else info = messages.genericError;
+      notify(intl.formatMessage(info), 'error');
     }
-  }, [poll, token]);
+  }, [poll, token, intl]);
 
   useEffect(() => {
     fetchData();
@@ -207,33 +230,39 @@ function Poll({ intl }) {
     setLoadingAdd(true);
     const group_id = groups[group - 1].id;
 
-    const { data } = await axios.post(
-      '/api/tokens/create-from-group',
-      {
-        poll_id: poll.id,
-        group_id,
-      },
-      {
-        headers: {
-          Authorization: `JWT ${token}`,
+    try {
+      const { data } = await axios.post(
+        '/api/tokens/create-from-group',
+        {
+          poll_id: poll.id,
+          group_id,
         },
-      }
-    );
-
-    var new_emails = data.added_emails.filter(
-      (email) => !emails.includes(email) && !poll.emails_voted.includes(email)
-    );
-
-    if (new_emails.length === 0) {
-      dispatch(
-        notify(intl.formatMessage(messages.emailsAlreadyAdded), 'warning')
+        {
+          headers: {
+            Authorization: `JWT ${token}`,
+          },
+        }
       );
-    } else {
-      setEmails(emails.concat(new_emails));
-      dispatch(notify(intl.formatMessage(messages.addGroupSuccess), 'success'));
-    }
 
-    setLoadingAdd(false);
+      var new_emails = data.added_emails.filter(
+        (email) => !emails.includes(email) && !poll.emails_voted.includes(email)
+      );
+
+      if (new_emails.length === 0) {
+        dispatch(
+          notify(intl.formatMessage(messages.emailsAlreadyAdded), 'warning')
+        );
+      } else {
+        setEmails(emails.concat(new_emails));
+        dispatch(
+          notify(intl.formatMessage(messages.addGroupSuccess), 'success')
+        );
+      }
+
+      setLoadingAdd(false);
+    } catch {
+      dispatch(notify(intl.formatMessage(messages.genericError), 'error'));
+    }
   }, [poll, groups, token, group, dispatch, emails, intl]);
 
   const confirm = useConfirm();
@@ -245,14 +274,20 @@ function Poll({ intl }) {
       return;
     }
 
-    const res = await axios.delete(`/api/polls/delete/${poll.id}/`, {
-      headers: {
-        Authorization: `JWT ${token}`,
-      },
-    });
-    dispatch(notify(res.data.message, 'success'));
-    dispatch(deletePoll(poll.id));
-    router.replace('/manage');
+    try {
+      await axios.delete(`/api/polls/delete/${poll.id}/`, {
+        headers: {
+          Authorization: `JWT ${token}`,
+        },
+      });
+      dispatch(
+        notify(intl.formatMessage(messages.successDeletePoll), 'success')
+      );
+      dispatch(deletePoll(poll.id));
+      router.replace('/manage');
+    } catch {
+      dispatch(notify(intl.formatMessage(messages.genericError), 'error'));
+    }
   }, [poll, token, dispatch, confirm, router, intl]);
 
   const send_email_to_everyone = useCallback(async () => {
@@ -282,9 +317,14 @@ function Poll({ intl }) {
           notify(intl.formatMessage(messages.emailsSuccessfullySent), 'success')
         );
       }
-    } catch ({ response: { data } }) {
+    } catch ({ response: { status } }) {
       setLoadingSendEmails(false);
-      dispatch(notify(data.message, 'warning'));
+      let info;
+      if (status === 404) info = messages.pollNotFoundError;
+      else if (status === 422) info = messages.invalidFormError;
+      else if (status === 400) info = messages.pollDeadlineError;
+      else info = messages.errorGeneric;
+      dispatch(notify(intl.formatMessage(info), 'warning'));
     }
   }, [poll, setLoadingSendEmails, dispatch, token, intl]);
 

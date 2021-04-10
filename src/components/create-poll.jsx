@@ -242,7 +242,7 @@ function CreatePoll({ open, onClose, intl }) {
       } else if (status === 422) {
         info = messages.invalidFormError;
       } else {
-        info = messages.internalServerError;
+        info = messages.genericError;
       }
       dispatch(notify(intl.formatMessage(info), 'error'));
     }

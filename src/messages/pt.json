@@ -79,5 +79,7 @@
   "error.group-same-name": "Grupo com este nome já existe!",
   "success-message.group-deleted": "Grupo deletado com sucesso!",
   "error.group-not-found": "Grupo não encontrado",
-  "success-message.group-updated": "Grupo atualizado com sucesso"
+  "success-message.group-updated": "Grupo atualizado com sucesso",
+  "error.election-not-finished": "A eleição ainda não finalizou",
+  "success-message.delete-election": "Eleição deletada com sucesso!"
 }
