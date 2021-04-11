@@ -327,7 +327,14 @@ function Poll({ intl }) {
       else info = messages.errorGeneric;
       dispatch(notify(intl.formatMessage(info), 'warning'));
     }
-  }, [poll, setLoadingSendEmails, dispatch, token, intl]);
+  }, [
+    poll,
+    setLoadingSendEmails,
+    dispatch,
+    token,
+    intl,
+    languageContext.locale,
+  ]);
 
   useEffect(() => {
     if (!groups) {
