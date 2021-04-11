@@ -297,6 +297,7 @@ function Poll({ intl }) {
         '/api/emails/send',
         {
           poll_id: poll.id,
+          language: languageContext.locale,
         },
         {
           headers: {

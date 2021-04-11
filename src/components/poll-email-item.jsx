@@ -17,9 +17,10 @@ import { notify } from '@/store/actions/ui';
 
 import axios from 'axios';
 
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { defineMessages, injectIntl } from 'react-intl';
+import { LocaleContext } from './language-wrapper';
 
 const messages = defineMessages({
   individualEmailSent: {
@@ -96,6 +97,8 @@ function EmailItem({ email, token, emails, poll, intl, setEmails }) {
     }
   };
 
+  const languageContext = useContext(LocaleContext);
+
   const send_email = async (email) => {
     setLoadingSend(true);
     try {
@@ -104,6 +107,7 @@ function EmailItem({ email, token, emails, poll, intl, setEmails }) {
         {
           poll_id: poll.id,
           users_emails_list: [email],
+          language: languageContext.locale,
         },
         {
           headers: {
