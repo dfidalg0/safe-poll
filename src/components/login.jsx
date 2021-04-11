@@ -7,15 +7,16 @@ import {
   Typography,
   Container,
 } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
 import { login } from '@/store/actions/auth';
-import DisplayAlert from './displayAlert';
 
 import { Link } from 'react-router-dom';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { useState, useCallback } from 'react';
 import { useStyles } from '@/styles/form';
 import { defineMessages, injectIntl } from 'react-intl';
+import { useFormik } from 'formik';
+import { loginSchema } from '@/utils/auth';
 
 const messages = defineMessages({
   forgotPassword: {
@@ -27,46 +28,47 @@ const messages = defineMessages({
   password: {
     id: 'home-page.password',
   },
+  invalidCredentials: {
+    id: 'home-page.login-credentials-error',
+  },
 });
 
 function Login({ intl }) {
   const classes = useStyles();
-  const [data, setData] = useState({
-    email: '',
-    password: '',
-  });
-
-  const { email, password } = data;
-  const onChange = useCallback(
-    (e) =>
-      setData((data) => ({
-        ...data,
-        [e.target.name]: e.target.value,
-      })),
-    []
-  );
-
   const dispatch = useDispatch();
 
-  const onSubmit = useCallback(
-    (e) => {
-      e.preventDefault();
-      dispatch(login(email, password));
+  const formik = useFormik({
+    initialValues: {
+      email: '',
+      password: '',
     },
-    [email, password, dispatch]
-  );
+    validationSchema: loginSchema,
+    onSubmit: async (values) => {
+      dispatch(login(values.email, values.password));
+    },
+    enableReinitialize: true,
+  });
 
-  const error = useSelector((state) => state.auth.error);
+  const getErrorMessage = (message) => {
+    return intl.formatMessage({
+      id: `home-page.error.${message}`,
+    });
+  };
 
+  const error = useSelector((state) => state.auth.error?.login);
   return (
     <Container className={classes.app} maxWidth='xs'>
       <div className={classes.paper}>
-        {DisplayAlert(error)}
+        {error ? (
+          <Alert className={classes.alert} severity='error'>
+            {intl.formatMessage(messages.invalidCredentials)}
+          </Alert>
+        ) : null}
         <Avatar className={classes.avatar} />
         <Typography component='h1' variant='h5' className={classes.typography}>
           {intl.formatMessage(messages.entrar)}
         </Typography>
-        <form className={classes.form} noValidate onSubmit={(e) => onSubmit(e)}>
+        <form className={classes.form}>
           <TextField
             variant='outlined'
             margin='normal'
@@ -78,7 +80,15 @@ function Login({ intl }) {
             name='email'
             autoComplete='email'
             autoFocus
-            onChange={(e) => onChange(e)}
+            value={formik.values.email}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.email && formik.errors.email ? true : false}
+            helperText={
+              formik.touched.email && formik.errors.email
+                ? getErrorMessage(formik.errors.email)
+                : null
+            }
           />
           <TextField
             variant='outlined'
@@ -90,15 +100,25 @@ function Login({ intl }) {
             type='password'
             id='password'
             autoComplete='current-password'
-            onChange={(e) => onChange(e)}
+            value={formik.values.password}
+            error={
+              formik.touched.password && formik.errors.password ? true : false
+            }
+            helperText={
+              formik.touched.password && formik.errors.password
+                ? getErrorMessage(formik.errors.password)
+                : null
+            }
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
           />
 
           <Button
-            type='submit'
             fullWidth
             variant='contained'
             color='primary'
             className={classes.submit}
+            onClick={formik.handleSubmit}
           >
             {intl.formatMessage(messages.entrar)}
           </Button>

@@ -53,19 +53,16 @@ export const signup = (name, email, password, re_password) => async (
   const body = { name, email, password, re_password };
 
   try {
-    dispatch(setLoading(true));
-
     const res = await axios.post('/auth/users/', body);
-
     dispatch(login(email, password));
     await dispatch(load_user(res.data.access));
   } catch (err) {
     dispatch({
       type: SIGNUP_FAIL,
-      payload: err.response?.data,
+      payload: {
+        signUp: err.response?.data,
+      },
     });
-  } finally {
-    dispatch(setLoading(false));
   }
 };
 
@@ -134,7 +131,9 @@ export const login = (email, password) => async (dispatch) => {
   } catch (err) {
     dispatch({
       type: LOGIN_FAIL,
-      payload: err.response.data,
+      payload: {
+        login: err.response.data,
+      },
     });
   } finally {
     dispatch(setLoading(false));

@@ -83,5 +83,11 @@
   "error.group-not-found": "Grupo não encontrado",
   "success-message.group-updated": "Grupo atualizado com sucesso",
   "error.election-not-finished": "A eleição ainda não finalizou",
-  "success-message.delete-election": "Eleição deletada com sucesso!"
+  "success-message.delete-election": "Eleição deletada com sucesso!",
+  "home-page.error.required": "Campo requerido",
+  "home-page.error.email": "Email inválido",
+  "home-page.error.minimum-length": "Insira pelo menos {count} caracteres",
+  "home-page.login-credentials-error": "Usuário ou senha inválidos",
+  "home-page.passwords-do-not-match": "As senhas não conferem",
+  "home-page.error.email-already-in-use": "Este email já está cadastrado"
 }
