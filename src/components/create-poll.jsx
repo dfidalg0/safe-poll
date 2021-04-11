@@ -30,11 +30,6 @@ import {
   KeyboardDatePicker,
   MuiPickersUtilsProvider,
 } from '@material-ui/pickers';
-import {
-  ptBR as pt_brLocale,
-  es as es_Locale,
-  enUS as en_usLocale,
-} from 'date-fns/locale';
 
 // Constantes
 import { POLL_TYPES } from '@/utils/constants';
@@ -93,6 +88,15 @@ const messages = defineMessages({
   secretVote: {
     id: 'manage.create-poll.secretVote',
   },
+  internalServerError: {
+    id: 'error.internal-server',
+  },
+  invalidFormError: {
+    id: 'error.invalid-form',
+  },
+  genericError: {
+    id: 'error.generic',
+  },
 });
 
 /**
@@ -131,20 +135,6 @@ function CreatePoll({ open, onClose, intl }) {
   const [newOptionError, setNewOptionError] = useState(false);
 
   const languageContext = useContext(LocaleContext);
-  const [dateLocale, setDateLocale] = useState(pt_brLocale);
-
-  useEffect(() => {
-    switch (languageContext.locale) {
-      case 'pt-BR':
-        setDateLocale(pt_brLocale);
-        break;
-      case 'es-ES':
-        setDateLocale(es_Locale);
-        break;
-      default:
-        setDateLocale(en_usLocale);
-    }
-  }, [languageContext]);
 
   // Estado de erro de preenchimento da deadline
   const deadlineError = useMemo(() => {
@@ -245,8 +235,16 @@ function CreatePoll({ open, onClose, intl }) {
       );
 
       dispatch(pushPoll(res.data));
-    } catch ({ response: { data } }) {
-      dispatch(notify(data.message, 'error'));
+    } catch ({ response: { status } }) {
+      let info;
+      if (status === 500) {
+        info = messages.internalServerError;
+      } else if (status === 422) {
+        info = messages.invalidFormError;
+      } else {
+        info = messages.genericError;
+      }
+      dispatch(notify(intl.formatMessage(info), 'error'));
     }
 
     // Fim do estado de carregamento do envio
@@ -384,7 +382,10 @@ function CreatePoll({ open, onClose, intl }) {
                   ))}
                 </Select>
               </Grid>
-              <MuiPickersUtilsProvider utils={DateFnsUtils} locale={dateLocale}>
+              <MuiPickersUtilsProvider
+                utils={DateFnsUtils}
+                locale={languageContext.dateLocale}
+              >
                 <Grid item xs={12}>
                   <InputLabel htmlFor='deadline'>
                     {intl.formatMessage(messages.deadline)}
@@ -408,7 +409,7 @@ function CreatePoll({ open, onClose, intl }) {
                       languageContext.locale === 'pt-BR' ||
                       languageContext.locale === 'es-ES'
                         ? 'dd/MM/yyyy'
-                        : 'yyyy/MM/dd'
+                        : 'MM/dd/yyyy'
                     }
                   />
                 </Grid>

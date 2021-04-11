@@ -40,6 +40,18 @@ const messages = defineMessages({
   candidateChoosen: {
     id: 'vote-form.candidate-choosen',
   },
+  invalidOptionError: {
+    id: 'error.option-not-found',
+  },
+  invalidCredentialsError: {
+    id: 'error.invalid-credentials',
+  },
+  invalidFormError: {
+    id: 'error.invalid-form',
+  },
+  genericError: {
+    id: 'error.generic',
+  },
 });
 
 function Vote({ location, intl }) {
@@ -72,8 +84,18 @@ function Vote({ location, intl }) {
       await axios.post('/api/votes/compute', data);
       dispatch(notify(intl.formatMessage(messages.confirm), 'success'));
       router.replace('/');
-    } catch ({ response }) {
-      dispatch(notify(response.data.message, 'error'));
+    } catch ({ response: {status} }) {
+      let info;
+      if (status === 404) {
+        info = messages.invalidOptionError;
+      } else if (status === 422) {
+        info = messages.invalidFormError;
+      } else if (status === 401) {
+        info = messages.invalidCredentialsError;
+      } else {
+        info = messages.genericError;
+      }
+      dispatch(notify(intl.formatMessage(info), 'error'));
       setLoading(false);
     }
   }, [poll, mark, token, dispatch, router, intl]);

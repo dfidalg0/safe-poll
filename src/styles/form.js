@@ -24,9 +24,6 @@ export const useStyles = makeStyles((theme) => ({
   breadcrumb: {
     marginTop: '20px',
   },
-  alert: {
-    marginTop: '30px',
-  },
   root: {
     backgroundColor: theme.palette.background.paper,
     color: 'black',
@@ -37,5 +34,9 @@ export const useStyles = makeStyles((theme) => ({
   language: {
     display: 'flex',
     float: 'right',
+  },
+  alert: {
+    marginBottom: '30px',
+    marginTop: '-20px',
   },
 }));

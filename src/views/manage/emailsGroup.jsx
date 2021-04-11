@@ -101,6 +101,18 @@ const messages = defineMessages({
   name: {
     id: 'common-messages.name',
   },
+  invalidFormError: {
+    id: 'error.invalid-form',
+  },
+  groupSameNameError: {
+    id: 'error.group-same-name',
+  },
+  internalServerError: {
+    id: 'error.internal-server',
+  },
+  genericError: {
+    id: 'error.generic',
+  },
 });
 
 function EmailsGroup({ intl }) {
@@ -181,8 +193,13 @@ function EmailsGroup({ intl }) {
       );
       dispatch(notify(intl.formatMessage(messages.createSuccess), 'success'));
       router.replace(`/manage/groups/${id}`);
-    } catch ({ response }) {
-      dispatch(notify(response.data.message, 'error'));
+    } catch ({ response: { status } }) {
+      let info;
+      if (status === 422) info = messages.invalidFormError;
+      else if (status === 500) info = messages.internalServerError;
+      else if (status === 400) info = messages.groupSameNameError;
+      else info = messages.genericError;
+      dispatch(notify(intl.formatMessage(info), 'error'));
     }
   }, [name, emails, token, router, dispatch, intl]);
 

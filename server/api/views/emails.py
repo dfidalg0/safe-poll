@@ -8,7 +8,8 @@ BASE_URL = os.environ.get('HEROKU_URL', 'localhost:3000')
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @with_rules({
-    'poll_id': is_unsigned_int
+    'poll_id': is_unsigned_int,
+    'language': lambda v : type(v) == str,
 })
 def send_poll_emails(request: CleanRequest) -> Response:
     '''
@@ -16,6 +17,7 @@ def send_poll_emails(request: CleanRequest) -> Response:
     '''
     data = request.clean_data
     admin = request.user
+
     #Get the desired poll.
     try:
         poll = Poll.objects.get(pk=data['poll_id'] , admin=admin)
@@ -54,25 +56,11 @@ def send_poll_emails(request: CleanRequest) -> Response:
         user_email = user.ref
 
         user_token = token.token
-        # Construct an email message that uses the connection
-        #email = EmailMultiAlternatives(
-        #    'Link para a eleicao {}'.format(poll.title),
-        #    'Link: www.safe-polls.com/{}'.format(user_token),
-        #    'contato.safepoll@gmail.com',
-        #    [user_email],
-        #    connection=connection
-        #    )
 
-        subject = f'Convite para participar da eleição: {poll.title}'
-        html_message = (
-            f'<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{poll.title}</strong>' +
-            f', criada por {poll.admin.get_full_name()}. </p> <p> Por favor, clique' +
-            f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> aqui </a>' +
-            ' para votar.</p> <p>Obrigado!</p> <p>Equipe SafePoll</p>'
-        )
+        emailContent = getEmailMessage(data['language'], poll, user_token)
 
-        msg = EmailMultiAlternatives(subject, '', 'contato.safepoll@gmail.com', [user_email])
-        msg.attach_alternative(html_message, "text/html")
+        msg = EmailMultiAlternatives(emailContent[0], '', 'contato.safepoll@gmail.com', [user_email])
+        msg.attach_alternative(emailContent[1], "text/html")
 
         try:
             msg.send() # Send the email
@@ -99,7 +87,8 @@ def send_poll_emails(request: CleanRequest) -> Response:
     'poll_id': is_unsigned_int,
     'users_emails_list': lambda v : (
         is_unique_list(v)
-    )
+    ),
+    'language': lambda v : type(v) == str,
 })
 def send_list_emails(request: CleanRequest) -> Response:
     '''
@@ -155,16 +144,10 @@ def send_list_emails(request: CleanRequest) -> Response:
         user_token = token.token
         # Construct an email message that uses the connection
 
-        subject = f'Convite para participar da eleição: {poll.title}'
-        html_message = (
-            f'<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{poll.title}</strong>' +
-            f', criada por {poll.admin.get_full_name()}. </p> <p> Por favor, clique' +
-            f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> aqui </a>' +
-            ' para votar.</p> <p>Obrigado!</p> <p>Equipe SafePoll</p>'
-        )
+        emailContent = getEmailMessage(data['language'], poll, user_token)
 
-        msg = EmailMultiAlternatives(subject, '', 'contato.safepoll@gmail.com', [user_email])
-        msg.attach_alternative(html_message, "text/html")
+        msg = EmailMultiAlternatives(emailContent[0], '', 'contato.safepoll@gmail.com', [user_email])
+        msg.attach_alternative(emailContent[1], "text/html")
 
         try:
             msg.send() # Send the email
@@ -175,10 +158,38 @@ def send_list_emails(request: CleanRequest) -> Response:
 
     if any(map(len, failed_emails.values())) is False: #If both failed_emails.values are 0.
         return Response({
-            'message':'Convites para votação enviado com sucesso!'
+            'message':'Convites para votação enviados com sucesso!'
             }, status=HTTP_200_OK)
     else:
         return Response(data={
             'message': 'Falha no envio de emails',
             'failed_emails': failed_emails
-        }, status=HTTP_400_BAD_REQUEST)
+        }, status=HTTP_202_ACCEPTED)
+
+
+def getEmailMessage(language, poll, user_token):
+    if language == 'pt-BR':
+        subject = f'Convite para participar da eleição: {poll.title}'
+        html_message = (
+            f'<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{poll.title}</strong>' +
+            f', criada por {poll.admin.get_full_name()}. </p> <p> Por favor, clique' +
+            f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> aqui </a>' +
+            ' para votar.</p> <p>Obrigado!</p> <p>Equipe SafePoll</p>'
+            )
+    elif language == 'es-ES':
+        subject = f'Invitación a participar en la elección: {poll.title}'
+        html_message = (
+            f'<p>Hola!</p> <p>Usted has sido invitado a participar en la elección <strong>{poll.title}</strong>' +
+            f', creado por {poll.admin.get_full_name()}. </p> <p> Por favor haz click' +
+            f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> aquí </a>' +
+            ' para votar.</p> <p>¡Gracias!</p> <p>Equipo SafePoll</p>'
+            )
+    else:
+        subject = f'Invitation to participate in the election: {poll.title}'
+        html_message = (
+            f'<p>Hello!</p> <p>You have been invited to participate in the election <strong>{poll.title}</strong>' +
+            f', created by {poll.admin.get_full_name()}. </p> <p> Please click' +
+            f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> here </a>' +
+            ' to vote.</p> <p>Thank you!</p> <p>SafePoll Team</p>'
+            )
+    return [subject, html_message]

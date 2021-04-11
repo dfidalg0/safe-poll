@@ -4,6 +4,12 @@ import { Menu, MenuItem, makeStyles, IconButton } from '@material-ui/core';
 import Portuguese from './../messages/pt.json';
 import English from './../messages/en.json';
 import Spanish from './../messages/es.json';
+import {
+  ptBR as pt_brLocale,
+  es as es_Locale,
+  enUS as en_usLocale,
+} from 'date-fns/locale';
+
 import { Language as LanguageIcon } from '@material-ui/icons';
 
 const useStyles = makeStyles(() => ({
@@ -17,7 +23,8 @@ const useStyles = makeStyles(() => ({
 
 export const LocaleContext = createContext();
 
-const local = navigator.language;
+const localStorageLanguage = localStorage.getItem('safepoll-language');
+const local = localStorageLanguage ?? navigator.language;
 
 function selectLanguage(local) {
   let language;
@@ -32,6 +39,21 @@ function selectLanguage(local) {
       language = English;
   }
   return language;
+}
+
+function selectDateLocale(locale) {
+  let dateLocale;
+  switch (locale) {
+    case 'pt-BR':
+      dateLocale = pt_brLocale;
+      break;
+    case 'es-ES':
+      dateLocale = es_Locale;
+      break;
+    default:
+      dateLocale = en_usLocale;
+  }
+  return dateLocale;
 }
 
 export function LocaleSelector({ black }) {
@@ -77,14 +99,17 @@ export function LocaleSelector({ black }) {
 const LanguageWrapper = (props) => {
   const [locale, setLocale] = useState(local);
   const [messages, setMessages] = useState(selectLanguage(local));
+  const [dateLocale, setDateLocale] = useState(selectDateLocale(local));
 
   function changeLanguage(local) {
+    localStorage.setItem('safepoll-language', local);
     setLocale(local);
     setMessages(selectLanguage(local));
+    setDateLocale(selectDateLocale(local));
   }
 
   return (
-    <LocaleContext.Provider value={{ locale, changeLanguage }}>
+    <LocaleContext.Provider value={{ locale, changeLanguage, dateLocale }}>
       <IntlProvider messages={messages} locale={locale}>
         {props.children}
       </IntlProvider>

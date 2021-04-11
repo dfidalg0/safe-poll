@@ -105,17 +105,20 @@ def delete_email_from_poll(request: CleanRequest) -> Response:
     
     except Poll.DoesNotExist:
         return Response({
-            'message': 'Eleição não encontrada'
+            'message': 'Eleição não encontrada',
+            'type': 'poll',
         }, status=HTTP_404_NOT_FOUND)
     
     except UserAccount.DoesNotExist:
         return Response({
-            'message': 'Email não encontrado'
+            'message': 'Email não encontrado',
+            'type': 'email',
         }, status=HTTP_404_NOT_FOUND)
 
     except Token.DoesNotExist:
         return Response({
-            'message': 'Email não encontrado'
+            'message': 'Email não encontrado',
+            'type': 'email'
         }, status=HTTP_404_NOT_FOUND)
     except:
         return Response({

@@ -15,6 +15,7 @@
     "@testing-library/user-event": "^12.1.10",
     "axios": "^0.21.1",
     "date-fns": "^2.16.1",
+    "formik": "^2.2.6",
     "jsonwebtoken": "^8.5.1",
     "lodash.isequal": "^4.5.0",
     "lodash.reduce": "^4.6.0",
@@ -31,7 +32,8 @@
     "redux-devtools-extension": "^2.13.8",
     "redux-thunk": "^2.3.0",
     "validator": "^13.1.17",
-    "web-vitals": "^0.2.4"
+    "web-vitals": "^0.2.4",
+    "yup": "^0.32.9"
   },
   "scripts": {
     "start": "craco start",
