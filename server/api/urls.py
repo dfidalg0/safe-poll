@@ -27,4 +27,7 @@ urlpatterns = [
     path('tokens/create-from-group', register_emails_from_group),
 
     path('votes/compute', compute_vote),
+
+    path('users/reset_password', CustomResetPasswordView.as_view({'post': 'reset_password'})),
+    path('users/reset_password_confirm', CustomResetPasswordView.as_view({'post': 'reset_password_confirm'})),
 ]

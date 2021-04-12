@@ -15,10 +15,13 @@ import { Link } from 'react-router-dom';
 import { reset_password } from '@/store/actions/auth';
 
 import { useDispatch } from 'react-redux';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useContext } from 'react';
 import { useStyles } from '@/styles/form';
 import { defineMessages, injectIntl } from 'react-intl';
-import { LocaleSelector } from './../components/language-wrapper';
+import {
+  LocaleSelector,
+  LocaleContext,
+} from './../components/language-wrapper';
 
 const messages = defineMessages({
   homepage: {
@@ -43,27 +46,31 @@ function ResetPassword({ intl }) {
   const onChange = (e) => setEmail(e.target.value);
 
   const dispatch = useDispatch();
+  const languageContext = useContext(LocaleContext);
 
   const onSubmit = useCallback(
     (e) => {
       e.preventDefault();
-      dispatch(reset_password(email));
+      dispatch(reset_password(email, languageContext.locale));
       setSent(true);
     },
-    [dispatch, email]
+    [dispatch, email, languageContext.locale]
   );
 
   const displayMessage = useCallback(() => {
     if (sent) {
       return (
-        <Alert className={classes.alert} severity='info'>
+        <Alert
+          style={{ marginBottom: '20px', marginTop: '20px' }}
+          severity='info'
+        >
           {intl.formatMessage(messages.resetPasswordConfirm)}
         </Alert>
       );
     } else {
       return null;
     }
-  }, [sent, classes, intl]);
+  }, [sent, intl]);
 
   return (
     <Grid container direction='column'>

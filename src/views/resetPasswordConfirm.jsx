@@ -19,10 +19,15 @@ import { notify } from '@/store/actions/ui';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouteMatch, useHistory } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useContext } from 'react';
 import { useStyles } from '@/styles/form';
 import { defineMessages, injectIntl } from 'react-intl';
-import { LocaleSelector } from './../components/language-wrapper';
+import {
+  LocaleSelector,
+  LocaleContext,
+} from './../components/language-wrapper';
+import { useFormik } from 'formik';
+import { passwordResetSchema } from './../utils/auth';
 
 const messages = defineMessages({
   passwordsDontMatch: {
@@ -61,34 +66,23 @@ function ResetPasswordConfirm({ intl }) {
 
   const [passwordReset, setPasswordReset] = useState(false);
 
-  const [data, setData] = useState({
-    new_password: '',
-    re_new_password: '',
-  });
-
-  const { new_password, re_new_password } = data;
-  const onChange = useCallback(
-    (e) =>
-      setData((data) => ({
-        ...data,
-        [e.target.name]: e.target.value,
-      })),
-    []
-  );
-
-  const { uid, token } = useRouteMatch().params;
-
-  const dispatch = useDispatch();
-
-  const router = useHistory();
-
-  const onSubmit = useCallback(
-    async (e) => {
-      e.preventDefault();
-      if (new_password === re_new_password) {
+  const formik = useFormik({
+    initialValues: {
+      new_password: '',
+      re_new_password: '',
+    },
+    validationSchema: passwordResetSchema,
+    onSubmit: async (values) => {
+      if (values.new_password === values.re_new_password) {
         setLoading(true);
         await dispatch(
-          reset_password_confirm(uid, token, new_password, re_new_password)
+          reset_password_confirm(
+            uid,
+            token,
+            values.new_password,
+            values.re_new_password,
+            languageContext.locale
+          )
         );
         setPasswordReset(true);
         setLoading(false);
@@ -98,10 +92,34 @@ function ResetPasswordConfirm({ intl }) {
         );
       }
     },
-    [new_password, re_new_password, dispatch, uid, token, intl]
-  );
+    enableReinitialize: true,
+  });
 
-  const error = useSelector((state) => state.auth.error);
+  const { uid, token } = useRouteMatch().params;
+
+  const dispatch = useDispatch();
+
+  const router = useHistory();
+  const languageContext = useContext(LocaleContext);
+
+  const error = useSelector((state) => state.auth.error?.resetPassword);
+
+  const getErrorMessage = (message) => {
+    let split = message.split('.');
+    if (split.length === 1) {
+      return intl.formatMessage({
+        id: `home-page.error.${message}`,
+      });
+    }
+    return intl.formatMessage(
+      {
+        id: `home-page.error.${split[0]}`,
+      },
+      {
+        count: split[1],
+      }
+    );
+  };
 
   useEffect(() => {
     if (passwordReset && !error)
@@ -165,11 +183,7 @@ function ResetPasswordConfirm({ intl }) {
             >
               {intl.formatMessage(messages.changePassword)}
             </Typography>
-            <form
-              className={classes.form}
-              noValidate
-              onSubmit={(e) => onSubmit(e)}
-            >
+            <form className={classes.form}>
               <TextField
                 variant='outlined'
                 margin='normal'
@@ -180,7 +194,18 @@ function ResetPasswordConfirm({ intl }) {
                 type='password'
                 id='new_password'
                 autoComplete='current-password'
-                onChange={(e) => onChange(e)}
+                error={
+                  formik.touched.new_password && formik.errors.new_password
+                    ? true
+                    : false
+                }
+                helperText={
+                  formik.touched.new_password && formik.errors.new_password
+                    ? getErrorMessage(formik.errors.new_password)
+                    : null
+                }
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 disabled={loading}
               />
               <TextField
@@ -193,7 +218,20 @@ function ResetPasswordConfirm({ intl }) {
                 type='password'
                 id='re_new_password'
                 autoComplete='current-password'
-                onChange={(e) => onChange(e)}
+                error={
+                  formik.touched.re_new_password &&
+                  formik.errors.re_new_password
+                    ? true
+                    : false
+                }
+                helperText={
+                  formik.touched.re_new_password &&
+                  formik.errors.re_new_password
+                    ? getErrorMessage(formik.errors.re_new_password)
+                    : null
+                }
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 disabled={loading}
               />
 
@@ -204,6 +242,7 @@ function ResetPasswordConfirm({ intl }) {
                 color='primary'
                 className={classes.submit}
                 disabled={loading}
+                onClick={formik.handleSubmit}
               >
                 {intl.formatMessage(messages.confirm)}
               </Button>
