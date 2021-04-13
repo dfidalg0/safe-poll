@@ -29,6 +29,8 @@
   "vote-form.send-vote": "Enviar voto",
   "vote-form.confirm": "Voto registrado com sucesso",
   "vote-form.candidate-choosen": "Um candidato foi marcado.",
+  "vote-form.nonSecretVote": "Atente! A votação não é secreta.",
+  "vote-form.secretVote": "Esta é uma votação secreta, sua escolha não será visto por outros.",
   "reset-password.password-match": "As senhas não coincidem",
   "reset-password.success": "Senha alterada com succeso",
   "reset-password.success.user": "Sua senha foi alterada com sucesso!",

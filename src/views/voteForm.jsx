@@ -25,6 +25,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import { useStyles } from '@/styles/form';
 import { defineMessages, injectIntl } from 'react-intl';
+import { Alert } from "@material-ui/lab";
 import { LocaleSelector } from './../components/language-wrapper';
 
 const messages = defineMessages({
@@ -51,6 +52,12 @@ const messages = defineMessages({
   },
   genericError: {
     id: 'error.generic',
+  },
+  nonSecretVoteReminder: {
+    id: 'vote-form.nonSecretVote',
+  },
+  secretVoteReminder: {
+    id: 'vote-form.secretVote',
   },
 });
 
@@ -125,6 +132,10 @@ function Vote({ location, intl }) {
       <Grid item>
         <LocaleSelector />
       </Grid>
+      {poll.secret_vote
+          ? <Alert severity="info">{intl.formatMessage(messages.secretVoteReminder)}</Alert>
+          : <Alert severity="info">{intl.formatMessage(messages.nonSecretVoteReminder)}</Alert>
+      }
       <Grid item>
         <Container className={classes.root} maxWidth='xs'>
           <div className={classes.paper}>
