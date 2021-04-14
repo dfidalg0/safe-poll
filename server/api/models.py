@@ -168,10 +168,10 @@ class Poll (models.Model):
 
     #Computar os resultados da eleicao:
     def compute_result(self):
-        if self.type.id == 1:
-            return self._compute_result_first_past_the_post_voting()
+        if self.type.id == 1 or self.type.id == 2:
+            return self._compute_result_unranked_voting()
 
-    def _compute_result_first_past_the_post_voting(self):
+    def _compute_result_unranked_voting(self):
         options = Option.objects.filter(poll_id=self.id)
         votes   = Vote.objects.filter(poll_id=self.id)
         counting_votes = {}
@@ -190,6 +190,7 @@ class Poll (models.Model):
             'counting_votes':counting_votes
         }
         return final_result
+
 
 class Vote (models.Model):
     poll = models.ForeignKey('Poll', on_delete=models.CASCADE)
