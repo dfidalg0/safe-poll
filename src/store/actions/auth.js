@@ -140,6 +140,33 @@ export const login = (email, password) => async (dispatch) => {
   }
 };
 
+export const googleLogin = googleUser => async dispatch => {
+  const { id_token: token } = googleUser.getAuthResponse();
+
+  try {
+    dispatch(setLoading(true));
+    const res = await axios.post('/auth/google', { token });
+
+    dispatch({
+      type: LOGIN_SUCESS,
+      payload: res.data,
+    });
+
+    await dispatch(load_user(res.data.access));
+  }
+  catch (err){
+    dispatch({
+      type: LOGIN_FAIL,
+      payload: {
+        login: err.response.data,
+      },
+    });
+  }
+  finally {
+    dispatch(setLoading(false));
+  }
+}
+
 export const reset_password = (email, locale) => async (dispatch) => {
   const config = {
     headers: {
