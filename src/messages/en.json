@@ -91,5 +91,6 @@
   "home-page.error.minimum-length": "Enter at least {count} characters",
   "home-page.login-credentials-error": "Username or password is invalid",
   "home-page.passwords-do-not-match": "Passwords do not match",
-  "home-page.error.email-already-in-use": "This email is already registered"
+  "home-page.error.email-already-in-use": "This email is already registered",
+  "home-page.google.login": "Continue with Google"
 }

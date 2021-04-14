@@ -91,5 +91,6 @@
   "home-page.error.minimum-length": "Ingresa al menos {count} caracteres",
   "home-page.login-credentials-error": "El nombre de usuario o la contraseña no son válidos",
   "home-page.passwords-do-not-match": "Las contraseñas no coinciden",
-  "home-page.error.email-already-in-use": "Este correo electrónico ya está registrado"
+  "home-page.error.email-already-in-use": "Este correo electrónico ya está registrado",
+  "home-page.google.login": "Continuar con Google"
 }

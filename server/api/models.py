@@ -26,7 +26,8 @@ class UserAccountManager(BaseUserManager):
         else:
             user = self.model(email=email, ref=email, name=name)
 
-        user.set_password(password)
+        if password is not None:
+            user.set_password(password)
         return user
 
     def create_user(self, email, name, password=None):
@@ -132,7 +133,7 @@ class PollManager(models.Manager):
 
         # Linha comentada por razões de "não consigo fazer isso funcionar"
 
-        kill_poll_tokens.apply_async((poll.id,), countdown=delay)
+        # kill_poll_tokens.apply_async((poll.id,), countdown=delay)
         return poll
 
 class Poll (models.Model):

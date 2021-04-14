@@ -5,13 +5,18 @@ import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Box from '@material-ui/core/Box';
+import Grid from '@material-ui/core/Grid';
 import Login from './login';
 import SignUp from './signup';
+
+import GoogleLogin from 'react-google-login';
+
 import { defineMessages, injectIntl } from 'react-intl';
 
-function TabPanel(props) {
-  const { children, value, index } = props;
+import { useDispatch } from 'react-redux';
+import { googleLogin } from '@/store/actions/auth';
 
+function TabPanel({ children, value, index }) {
   return <div>{value === index && <Box p={1}>{children}</Box>}</div>;
 }
 
@@ -22,6 +27,9 @@ const messages = defineMessages({
   signUp: {
     id: 'home-page.signup',
   },
+  google: {
+    id: 'home-page.google.login'
+  }
 });
 
 const useStyles = makeStyles((theme) => ({
@@ -31,12 +39,17 @@ const useStyles = makeStyles((theme) => ({
     maxWidth: '90vw',
     color: 'black',
   },
+  container: {
+    width: '100%'
+  }
 }));
 
 function LoginSignUp({ intl }) {
   const classes = useStyles();
   const theme = useTheme();
   const [value, setValue] = useState(0);
+
+  const dispatch = useDispatch();
 
   const handleChange = useCallback((event, newValue) => {
     setValue(newValue);
@@ -68,6 +81,17 @@ function LoginSignUp({ intl }) {
           <SignUp />
         </TabPanel>
       </SwipeableViews>
+      <Grid container className={classes.container} alignContent="center" alignItems="center">
+        <Grid item xs={3}/>
+        <Grid item style={{ marginBottom: '10px', marginTop: '-20px' }}>
+          <GoogleLogin
+            clientId="109753109659-lafbr7ekvdg3o245rq4a2bjbkag0j6tr.apps.googleusercontent.com"
+            buttonText={intl.formatMessage(messages.google)}
+            onSuccess={(...args) => dispatch(googleLogin(...args))}
+            onFailure={console.error}
+          />
+        </Grid>
+      </Grid>
     </div>
   );
 }
