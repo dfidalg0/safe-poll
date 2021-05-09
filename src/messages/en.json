@@ -92,5 +92,9 @@
   "home-page.login-credentials-error": "Username or password is invalid",
   "home-page.passwords-do-not-match": "Passwords do not match",
   "home-page.error.email-already-in-use": "This email is already registered",
-  "home-page.google.login": "Continue with Google"
+  "home-page.google.login": "Continue with Google",
+  "manage.poll.results.search-email": "Search Email",
+  "manage.poll.results.candidate": "Candidate",
+  "manage.poll.results.filter.apply": "Apply",
+  "manage.email": "Email"
 }

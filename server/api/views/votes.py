@@ -79,16 +79,9 @@ def compute_vote(request: CleanRequest) -> Response:
     return Response(conclusion)
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
-@with_rules({
-    'page': is_unsigned_int,
-    'per_page': is_unsigned_int,
-    'option_filter': lambda v: type(v) == str or v == None,
-    'email_filter': lambda v: type(v) == str or v == None,
-    'order_by': lambda v: type(v) == str or v == None
-})
-def get_poll_votes(request: CleanRequest, pk: int) -> Response:
+def get_poll_votes(request: Request, pk: int) -> Response:
     try:
         admin = request.user
         poll = Poll.objects.get(pk=pk, admin=admin)
@@ -100,33 +93,35 @@ def get_poll_votes(request: CleanRequest, pk: int) -> Response:
     
     votes_all = Vote.objects.filter(poll=poll)
 
-    data = request.clean_data
-    page = data['page']
-    per_page = data['per_page']
+    page = int(request.GET.get('page', 1))
+    per_page = int(request.GET.get('perPage', 10))
+    email_filter = request.GET.get('emailFilter', None)
+    order_by = request.GET.get('orderBy', None)
 
-    if 'email_filter' in data:
-        users_filter = UserAccount.objects.filter(ref__startswith = data['email_filter'])
+    if email_filter:
+        users_filter = UserAccount.objects.filter(ref__startswith = email_filter)
         votes_all = votes_all.filter(voter__in = users_filter)
 
-
-    if 'option_filter' in data:
-        votes_all = votes_all.filter(option__name__startswith = data['option_filter'])
+    data = request.data
+    if 'optionsFilter' in data:
+        votes_all = votes_all.filter(option__name__in = data['optionsFilter'])
     
-    if 'order_by' in data:
-        order = data['order_by']
-        if order == 'option':
+    if order_by:
+        if order_by == 'option':
             votes_all = votes_all.order_by('option__name')
-        elif order == '-option':
+        elif order_by == '-option':
             votes_all = votes_all.order_by('-option__name')
-        elif order == 'email':
+        elif order_by == 'voter':
             votes_all = votes_all.order_by('voter__ref')
-        elif order == '-email':
+        elif order_by == '-voter':
             votes_all = votes_all.order_by('-voter__ref')
 
+    total = len(votes_all)
     votes = list(map(lambda vote: {
+        'id': vote.pk,
         'option': vote.option.name,
         'voter': vote.voter.ref
     },
-        votes_all[(page-1)*per_page:per_page]
+        votes_all[(page-1)*per_page:(page-1)*per_page+per_page]
     ))    
-    return Response(votes)
+    return Response({"total": total, "votes": votes})
