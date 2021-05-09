@@ -92,5 +92,9 @@
   "home-page.login-credentials-error": "Usuário ou senha inválidos",
   "home-page.passwords-do-not-match": "As senhas não conferem",
   "home-page.error.email-already-in-use": "Este email já está cadastrado",
-  "home-page.google.login": "Continuar com Google"
+  "home-page.google.login": "Continuar com Google",
+  "manage.poll.results.search-email": "Buscar Email",
+  "manage.poll.results.candidate": "Candidato",
+  "manage.poll.results.filter.apply": "Aplicar",
+  "manage.email": "Email"
 }

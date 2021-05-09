@@ -28,6 +28,7 @@ import { fetchUserGroups, deletePoll } from '@/store/actions/items';
 import { notify } from '@/store/actions/ui';
 
 import LoadingScreen from '@/components/loading-screen';
+import VotesTable from '@/components/votes-table';
 
 import axios from 'axios';
 
@@ -347,14 +348,14 @@ function Poll({ intl }) {
   return (
     <Card className={classes.root}>
       <CardContent>
-        <Typography noWrap variant='h5' component='h2'>
+        <Typography noWrap variant="h5" component="h2">
           {poll.title}
         </Typography>
-        <Typography noWrap className={classes.pos} color='textSecondary'>
+        <Typography noWrap className={classes.pos} color="textSecondary">
           {poll.description}
         </Typography>
         <Divider style={{ marginBottom: 10, marginTop: 10 }} />
-        <Typography variant='overline' display='block' gutterBottom>
+        <Typography variant="overline" display="block" gutterBottom>
           {intl.formatMessage(messages.deadline)} <br />{' '}
           {format(
             poll.deadline,
@@ -373,21 +374,21 @@ function Poll({ intl }) {
           </>
         ) : null}
 
-        <Typography variant='overline' display='block' gutterBottom>
+        <Typography variant="overline" display="block" gutterBottom>
           {intl.formatMessage(messages.secretVote)}
           {': '}
           {poll.secret_vote
             ? intl.formatMessage(messages.yes)
             : intl.formatMessage(messages.no)}
         </Typography>
-        <Typography variant='overline' display='block' gutterBottom>
+        <Typography variant="overline" display="block" gutterBottom>
           {intl.formatMessage(messages.candidates)}
         </Typography>
 
         {poll.options.map((option, index) => (
           <Typography
-            variant='overline'
-            display='block'
+            variant="overline"
+            display="block"
             gutterBottom
             key={index}
           >
@@ -400,17 +401,17 @@ function Poll({ intl }) {
         {poll.deadline > new Date() ? (
           <>
             <Grid item xs={12}>
-              <InputLabel htmlFor='type' style={{ padding: 10 }}>
+              <InputLabel htmlFor="type" style={{ padding: 10 }}>
                 {intl.formatMessage(messages.group)}
               </InputLabel>
             </Grid>
             <Grid item xs={12}>
               <Select
-                id='type'
+                id="type"
                 className={classes.field}
                 required
                 value={group}
-                variant='outlined'
+                variant="outlined"
                 onChange={(e) => setGroup(e.target.value)}
               >
                 {!groups
@@ -424,11 +425,11 @@ function Poll({ intl }) {
             </Grid>
             <Grid item style={{ marginTop: 20 }}>
               <Button
-                variant='contained'
+                variant="contained"
                 className={classes.button}
                 onClick={submit}
                 disabled={group === ''}
-                size='large'
+                size="large"
               >
                 {loadingAdd ? (
                   <CircularProgress size={22} />
@@ -444,12 +445,12 @@ function Poll({ intl }) {
               ) : (
                 <Tooltip title={intl.formatMessage(messages.sendLinks)}>
                   <Button
-                    variant='contained'
+                    variant="contained"
                     className={classes.button}
                     onClick={send_email_to_everyone}
                     endIcon={<EmailIcon />}
                     disabled={emails.length === 0}
-                    size='large'
+                    size="large"
                     style={{ width: '50%' }}
                   >
                     {intl.formatMessage(messages.sendEmails)}
@@ -459,11 +460,11 @@ function Poll({ intl }) {
 
               <Tooltip
                 title={intl.formatMessage(messages.addEmails)}
-                aria-label='add'
+                aria-label="add"
               >
                 <Fab
-                  color='primary'
-                  size='small'
+                  color="primary"
+                  size="small"
                   style={{ marginLeft: 20 }}
                   onClick={() => setEmailsAddOpen(true)}
                 >
@@ -473,7 +474,7 @@ function Poll({ intl }) {
 
               <Dialog
                 onClose={() => setEmailsAddOpen(false)}
-                aria-labelledby='simple-dialog-title'
+                aria-labelledby="simple-dialog-title"
                 open={emailsAddOpen}
               >
                 <AddInvidualEmails
@@ -498,51 +499,60 @@ function Poll({ intl }) {
             ))}
           </>
         ) : (
-          <Grid container alignItems='center' alignContent='center'>
-            <Grid item xs={12}>
-              <Typography variant='h6'>
-                {intl.formatMessage(messages.result)}
-              </Typography>
+          <>
+            <Grid container alignItems="center" alignContent="center">
+              <Grid item xs={12}>
+                <Typography variant="h6">
+                  {intl.formatMessage(messages.result)}
+                </Typography>
+              </Grid>
+              {poll.options.map((o, i) => (
+                <Fragment key={i}>
+                  <Grid item xs={3}>
+                    {result.winners.includes(o.id) ? (
+                      <strong>{o.name}</strong>
+                    ) : (
+                      o.name
+                    )}
+                  </Grid>
+                  <Grid item xs={6}>
+                    <LinearProgress
+                      variant="determinate"
+                      value={
+                        (100 * (result.counting_votes[o.id] || 0)) /
+                        (result.total || 1)
+                      }
+                    />
+                  </Grid>
+                  <Grid item xs={3}>
+                    <Typography variant="caption">
+                      {result.counting_votes[o.id] || 0}{' '}
+                      {intl.formatMessage(messages.votes)} (
+                      {(
+                        (100 * (result.counting_votes[o.id] || 0)) /
+                        (result.total || 1)
+                      ).toFixed(2)}
+                      %)
+                    </Typography>
+                  </Grid>
+                </Fragment>
+              ))}
             </Grid>
-            {poll.options.map((o, i) => (
-              <Fragment key={i}>
-                <Grid item xs={3}>
-                  {result.winners.includes(o.id) ? (
-                    <strong>{o.name}</strong>
-                  ) : (
-                    o.name
-                  )}
-                </Grid>
-                <Grid item xs={6}>
-                  <LinearProgress
-                    variant='determinate'
-                    value={
-                      (100 * (result.counting_votes[o.id] || 0)) /
-                      (result.total || 1)
-                    }
-                  />
-                </Grid>
-                <Grid item xs={3}>
-                  <Typography variant='caption'>
-                    {result.counting_votes[o.id] || 0}{' '}
-                    {intl.formatMessage(messages.votes)} (
-                    {(100 * (result.counting_votes[o.id] || 0)) /
-                      (result.total || 1)}
-                    %)
-                  </Typography>
-                </Grid>
-              </Fragment>
-            ))}
-          </Grid>
+            {!poll.secret_vote && (
+              <div style={{ marginTop: '20px' }}>
+                <VotesTable poll_id={poll.id} pollOptions={poll.options} />
+              </div>
+            )}
+          </>
         )}
       </CardContent>
       <CardActions>
-        <Button size='small'>
-          <Link to='/manage' className={classes.link}>
+        <Button size="small">
+          <Link to="/manage" className={classes.link}>
             {intl.formatMessage(messages.back)}
           </Link>
         </Button>
-        <Grid container justify='flex-end'>
+        <Grid container justify="flex-end">
           <Button
             className={classes.button}
             onClick={delete_poll}
