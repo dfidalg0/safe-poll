@@ -93,6 +93,11 @@ def get_poll_votes(request: Request, pk: int) -> Response:
             'message': 'Eleição não encontrada'
         }, status=HTTP_404_NOT_FOUND)
     
+    if poll.secret_vote:
+        return Response({
+            'message': 'Eleição secreta!'
+        }, status=HTTP_400_BAD_REQUEST)
+
     votes_all = Vote.objects.filter(poll=poll)
 
     page = int(request.GET.get('page', 1))
@@ -119,6 +124,7 @@ def get_poll_votes(request: Request, pk: int) -> Response:
             votes_all = votes_all.order_by('-voter__ref')
 
     total = len(votes_all)
+
     votes = list(map(lambda vote: {
         'id': vote.pk,
         'option': vote.option.name,
@@ -141,6 +147,11 @@ def export_votes(request: Request, pk: int) -> HttpResponse:
             'message': 'Eleição não encontrada'
         }, status=HTTP_404_NOT_FOUND)
     
+    if poll.secret_vote:
+        return Response({
+            'message': 'Eleição secreta!'
+        }, status=HTTP_400_BAD_REQUEST)
+
     votes_all = Vote.objects.filter(poll=poll)
 
     response = HttpResponse(content_type='application/ms-excel')
