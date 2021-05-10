@@ -539,14 +539,17 @@ function Poll({ intl }) {
               ))}
             </Grid>
             {!poll.secret_vote && (
-              <div style={{ marginTop: '20px' }}>
-                <VotesTable poll_id={poll.id} pollOptions={poll.options} />
-              </div>
+              <>
+                <div style={{ marginTop: '20px' }}>
+                  <VotesTable poll={poll} />
+                </div>
+                <Divider style={{ marginTop: '43px' }} />
+              </>
             )}
           </>
         )}
       </CardContent>
-      <CardActions>
+      <CardActions style={{ marginTop: '-17px' }}>
         <Button size="small">
           <Link to="/manage" className={classes.link}>
             {intl.formatMessage(messages.back)}
