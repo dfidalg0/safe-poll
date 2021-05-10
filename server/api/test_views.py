@@ -54,11 +54,12 @@ class EmailViewsTest(TestCase):
         poll = Poll.objects.get(id=self.poll_id)
         user = poll.admin
         client.force_authenticate(user=user) #Do not check authentication
-        response = client.post('/api/emails/send', {'poll_id':poll.id}, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = client.post('/api/emails/send', {'poll_id':poll.id, 'language': 'pt-BR'}, format='json')
+        # status 202 because users have already voted
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
         self.assertEqual(len(mail.outbox), 5)
         for i in range(5):
-            self.assertEqual(mail.outbox[i].subject, 'Link para a eleicao {}'.format(poll.title))
+            self.assertEqual(mail.outbox[i].subject, 'Convite para participar da eleição: {}'.format(poll.title))
 
     #'send_emails' test
     def test_send_list_emails__http_response(self):
@@ -80,13 +81,13 @@ class EmailViewsTest(TestCase):
         Token.objects.create_token(poll_id=poll.id, email=new_user2.ref)
         Token.objects.create_token(poll_id=poll.id, email=new_user3.ref)
 
-        response = client.post('/api/emails/send-list', {'poll_id':poll.id, 'users_id_list':[new_user1.id, new_user2.id]}, format='json')
+        response = client.post('/api/emails/send-list', {'poll_id':poll.id, 'users_emails_list':[new_user1.ref, new_user2.ref], 'language': 'pt-BR'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(mail.outbox), 2)
-        self.assertEqual(mail.outbox[0].subject, 'Link para a eleicao {}'.format(poll.title))
-        self.assertEqual(mail.outbox[1].subject, 'Link para a eleicao {}'.format(poll.title))
+        self.assertEqual(mail.outbox[0].subject, 'Convite para participar da eleição: {}'.format(poll.title))
+        self.assertEqual(mail.outbox[1].subject, 'Convite para participar da eleição: {}'.format(poll.title))
 
-        response = client.post('/api/emails/send-list', {'poll_id':poll.id, 'users_id_list':[new_user3.id]}, format='json')
+        response = client.post('/api/emails/send-list', {'poll_id':poll.id, 'users_emails_list':[new_user3.ref], 'language': 'pt-BR'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(mail.outbox), 3)
-        self.assertEqual(mail.outbox[2].subject, 'Link para a eleicao {}'.format(poll.title))
+        self.assertEqual(mail.outbox[2].subject, 'Convite para participar da eleição: {}'.format(poll.title))
