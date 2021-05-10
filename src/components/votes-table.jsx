@@ -16,10 +16,12 @@ import {
   Divider,
   IconButton,
   Grid,
+  Button,
 } from '@material-ui/core';
 
 import SearchIcon from '@material-ui/icons/Search';
 import ClearIcon from '@material-ui/icons/Clear';
+import GetAppIcon from '@material-ui/icons/GetApp';
 
 import { useSelector } from 'react-redux';
 import axios from 'axios';
@@ -48,6 +50,9 @@ const messages = defineMessages({
   },
   email: {
     id: 'manage.email',
+  },
+  download: {
+    id: 'manage.poll.results.download',
   },
 });
 
@@ -82,7 +87,7 @@ function CustomizedTableHead(props) {
   );
 }
 
-function VotesTable({ poll_id, pollOptions, intl }) {
+function VotesTable({ poll, intl }) {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('voter');
   const [page, setPage] = useState(0);
@@ -93,7 +98,7 @@ function VotesTable({ poll_id, pollOptions, intl }) {
   const [emailFilterSearch, setEmailFilterSearch] = useState('');
   const [emailFilter, setEmailFilter] = useState('');
   const [optionsFilter, setOptionsFilter] = useState(
-    new Set(pollOptions.map((op) => op.name))
+    new Set(poll.options.map((op) => op.name))
   );
 
   const token = useSelector((state) => state.auth.access);
@@ -117,12 +122,38 @@ function VotesTable({ poll_id, pollOptions, intl }) {
   let emptyRows = Math.min(rowsPerPage - rows.length, total - rows.length);
   if (total === rows.length && total < 5) emptyRows = 5 - total;
 
+  function startDownload(file, fileName) {
+    const url = window.URL.createObjectURL(new Blob([file]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode.removeChild(link);
+  }
+
+  async function exportTable() {
+    try {
+      const res = await axios.get(`/api/votes/export/${poll.id}`, {
+        responseType: 'arraybuffer',
+        headers: {
+          Authorization: `JWT ${token}`,
+        },
+      });
+      console.log(res);
+
+      startDownload(res.data, poll.title + '.xlsx');
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   useEffect(() => {
     async function fetchRows() {
       try {
         const order_by = (order === 'asc' ? '' : '-') + orderBy;
         const result = await axios.post(
-          `/api/votes/get/${poll_id}`,
+          `/api/votes/get/${poll.id}`,
           {
             optionsFilter: [...optionsFilter],
           },
@@ -150,7 +181,7 @@ function VotesTable({ poll_id, pollOptions, intl }) {
   }, [
     page,
     rowsPerPage,
-    poll_id,
+    poll,
     token,
     order,
     orderBy,
@@ -159,102 +190,112 @@ function VotesTable({ poll_id, pollOptions, intl }) {
   ]);
 
   return (
-    <div>
-      <Divider style={{ marginTop: '20px', marginBottom: '20px' }} />
-      <Grid container>
-        <Grid item xs={8}>
-          <FormControl variant="outlined">
-            <InputLabel htmlFor="search" size="small" margin="dense">
-              {intl.formatMessage(messages.searchEmail)}
-            </InputLabel>
-            <OutlinedInput
-              id="search"
-              endAdornment={
-                <>
-                  <IconButton
-                    onClick={() => {
-                      setEmailFilter('');
-                      setEmailFilterSearch('');
-                    }}
-                    size="small"
-                  >
-                    <ClearIcon />
-                  </IconButton>
-                  <IconButton
-                    onClick={() => {
-                      setEmailFilter(emailFilterSearch);
-                      setOptionsFilter(
-                        new Set(pollOptions.map((op) => op.name))
-                      );
-                      setPage(0);
-                    }}
-                    size="small"
-                  >
-                    <SearchIcon />
-                  </IconButton>
-                </>
-              }
-              labelWidth={languageContext.locale === 'es-ES' ? 190 : 100}
-              value={emailFilterSearch}
-              onChange={(event) => setEmailFilterSearch(event.target.value)}
-              margin="dense"
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={4}>
-          <VotesTableFilter
-            pollOptions={pollOptions}
-            optionsFilter={optionsFilter}
-            setOptionsFilter={setOptionsFilter}
-            setPage={setPage}
-          />
-        </Grid>
-      </Grid>
-      <Paper>
-        {loading ? (
-          <CircularProgress size={18} />
-        ) : (
-          <>
-            <TableContainer>
-              <Table size="medium">
-                <CustomizedTableHead
-                  order={order}
-                  orderBy={orderBy}
-                  onRequestSort={handleRequestSort}
-                  rowCount={rows.length}
-                  intl={intl}
-                />
+    <>
+      <div style={{ marginBottom: '40px' }}>
+        <Divider style={{ marginTop: '20px', marginBottom: '20px' }} />
 
-                <TableBody>
-                  {rows.map((row, index) => {
-                    return (
-                      <TableRow hover key={index}>
-                        <TableCell>{row.voter}</TableCell>
-                        <TableCell align="right">{row.option}</TableCell>
-                      </TableRow>
-                    );
-                  })}
-                  {emptyRows > 0 && (
-                    <TableRow style={{ height: 53 * emptyRows }}>
-                      <TableCell colSpan={6} />
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={total}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onChangePage={handleChangePage}
-              onChangeRowsPerPage={handleChangeRowsPerPage}
+        <Grid container>
+          <Grid item xs={8}>
+            <FormControl variant="outlined">
+              <InputLabel htmlFor="search" size="small" margin="dense">
+                {intl.formatMessage(messages.searchEmail)}
+              </InputLabel>
+              <OutlinedInput
+                id="search"
+                endAdornment={
+                  <>
+                    <IconButton
+                      onClick={() => {
+                        setEmailFilter('');
+                        setEmailFilterSearch('');
+                      }}
+                      size="small"
+                    >
+                      <ClearIcon />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => {
+                        setEmailFilter(emailFilterSearch);
+                        setOptionsFilter(
+                          new Set(poll.options.map((op) => op.name))
+                        );
+                        setPage(0);
+                      }}
+                      size="small"
+                    >
+                      <SearchIcon />
+                    </IconButton>
+                  </>
+                }
+                labelWidth={languageContext.locale === 'es-ES' ? 190 : 100}
+                value={emailFilterSearch}
+                onChange={(event) => setEmailFilterSearch(event.target.value)}
+                margin="dense"
+              />
+            </FormControl>
+          </Grid>
+          <Grid item xs={4}>
+            <VotesTableFilter
+              pollOptions={poll.options}
+              optionsFilter={optionsFilter}
+              setOptionsFilter={setOptionsFilter}
+              setPage={setPage}
             />
-          </>
-        )}
-      </Paper>
-    </div>
+          </Grid>
+        </Grid>
+        <Paper>
+          {loading ? (
+            <CircularProgress size={18} />
+          ) : (
+            <>
+              <TableContainer>
+                <Table size="medium">
+                  <CustomizedTableHead
+                    order={order}
+                    orderBy={orderBy}
+                    onRequestSort={handleRequestSort}
+                    rowCount={rows.length}
+                    intl={intl}
+                  />
+
+                  <TableBody>
+                    {rows.map((row, index) => {
+                      return (
+                        <TableRow hover key={index}>
+                          <TableCell>{row.voter}</TableCell>
+                          <TableCell align="right">{row.option}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    {emptyRows > 0 && (
+                      <TableRow style={{ height: 53 * emptyRows }}>
+                        <TableCell colSpan={6} />
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={total}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onChangePage={handleChangePage}
+                onChangeRowsPerPage={handleChangeRowsPerPage}
+              />
+            </>
+          )}
+        </Paper>
+        <Button
+          style={{ float: 'right', marginTop: '5px' }}
+          onClick={exportTable}
+          endIcon={<GetAppIcon />}
+        >
+          {intl.formatMessage(messages.download)}
+        </Button>
+      </div>
+    </>
   );
 }
 

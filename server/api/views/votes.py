@@ -1,4 +1,6 @@
 from .context import *
+import xlwt
+from django.http import HttpResponse
 
 @api_view(['POST'])
 @with_rules({
@@ -125,3 +127,36 @@ def get_poll_votes(request: Request, pk: int) -> Response:
         votes_all[(page-1)*per_page:(page-1)*per_page+per_page]
     ))    
     return Response({"total": total, "votes": votes})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def export_votes(request: Request, pk: int) -> HttpResponse:
+    try:
+        admin = request.user
+        poll = Poll.objects.get(pk=pk, admin=admin)
+
+    except Poll.DoesNotExist:
+        return Response({
+            'message': 'Eleição não encontrada'
+        }, status=HTTP_404_NOT_FOUND)
+    
+    votes_all = Vote.objects.filter(poll=poll)
+
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename=' + poll.title
+
+    wb = xlwt.Workbook(encoding='utf-8')
+    ws = wb.add_sheet(poll.title)
+
+    row_num = -1
+    font_style = xlwt.XFStyle()
+
+    rows = votes_all.values_list('voter__ref', 'option__name')
+    for row in rows:
+        row_num += 1
+        for col_num in range(len(row)):
+            ws.write(row_num, col_num, row[col_num], font_style)
+
+    wb.save(response)
+    return response

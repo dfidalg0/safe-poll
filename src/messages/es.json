@@ -96,5 +96,6 @@
   "manage.poll.results.search-email": "Buscar correo electrónico",
   "manage.poll.results.candidate": "Candidato",
   "manage.poll.results.filter.apply": "Aplicar",
-  "manage.email": "Correo electrónico"
+  "manage.email": "Correo electrónico",
+  "manage.poll.results.download": "Descargar"
 }
