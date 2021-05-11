@@ -33,36 +33,43 @@ def compute_vote(request: CleanRequest) -> Response:
     user = token.user
 
     try:
-       # with transaction.atomic():
+        
+        with transaction.atomic():
 
-        if  poll.type.id == 1 : 
-            
-            if len(options) > 1:
-                return Response({
-                'message': 'Número incorreto de opções selecionadas'
-                })  ## status = 
-
-
-            vote = Vote(poll=poll, option=options[0])
-            vote.ranking = 1
-            if not poll.secret_vote:
-                vote.voter = user
-
-            vote.save()
-
-
-        elif poll.type.id == 2 :
-            for option in options :
+            if  poll.type.id == 1 : 
                 
-                vote = Vote(poll=poll, option=option)
+                if len(options) > 1:
+                    return Response({
+                    'message': 'Número incorreto de opções selecionadas'
+                    }, status = HTTP_422_UNPROCESSABLE_ENTITY)
+
+
+                vote = Vote(poll=poll, option=options[0])
                 vote.ranking = 1
                 if not poll.secret_vote:
                     vote.voter = user
+
                 vote.save()
 
-        poll.emails_voted.add(user)
-        poll.save()
-        token.delete()
+
+            elif poll.type.id == 2 :
+
+                if len(options) == 0:
+                    return Response({
+                    'message': 'Número incorreto de opções selecionadas'
+                    } , status = HTTP_422_UNPROCESSABLE_ENTITY)
+
+                for option in options :
+                    
+                    vote = Vote(poll=poll, option=option)
+                    vote.ranking = 1
+                    if not poll.secret_vote:
+                        vote.voter = user
+                    vote.save()
+
+            poll.emails_voted.add(user)
+            poll.save()
+            token.delete()
     except:
         return Response({
             'message': 'Erro Interno do Servidor'
