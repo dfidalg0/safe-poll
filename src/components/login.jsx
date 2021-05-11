@@ -47,6 +47,7 @@ function Login({ intl }) {
       dispatch(login(values.email, values.password));
     },
     enableReinitialize: true,
+    validateOnBlur: false,
   });
 
   const getErrorMessage = (message) => {
@@ -57,28 +58,28 @@ function Login({ intl }) {
 
   const error = useSelector((state) => state.auth.error?.login);
   return (
-    <Container className={classes.app} maxWidth='xs'>
+    <Container className={classes.app} maxWidth="xs">
       <div className={classes.paper}>
         {error ? (
-          <Alert className={classes.alert} severity='error'>
+          <Alert className={classes.alert} severity="error">
             {intl.formatMessage(messages.invalidCredentials)}
           </Alert>
         ) : null}
         <Avatar className={classes.avatar} />
-        <Typography component='h1' variant='h5' className={classes.typography}>
+        <Typography component="h1" variant="h5" className={classes.typography}>
           {intl.formatMessage(messages.entrar)}
         </Typography>
         <form className={classes.form}>
           <TextField
-            variant='outlined'
-            margin='normal'
+            variant="outlined"
+            margin="normal"
             required
             fullWidth
-            id='email'
-            type='email'
-            label='Email'
-            name='email'
-            autoComplete='email'
+            id="email"
+            type="email"
+            label="Email"
+            name="email"
+            autoComplete="email"
             autoFocus
             value={formik.values.email}
             onChange={formik.handleChange}
@@ -91,15 +92,15 @@ function Login({ intl }) {
             }
           />
           <TextField
-            variant='outlined'
-            margin='normal'
+            variant="outlined"
+            margin="normal"
             required
             fullWidth
-            name='password'
+            name="password"
             label={intl.formatMessage(messages.password)}
-            type='password'
-            id='password'
-            autoComplete='current-password'
+            type="password"
+            id="password"
+            autoComplete="current-password"
             value={formik.values.password}
             error={
               formik.touched.password && formik.errors.password ? true : false
@@ -115,8 +116,8 @@ function Login({ intl }) {
 
           <Button
             fullWidth
-            variant='contained'
-            color='primary'
+            variant="contained"
+            color="primary"
             className={classes.submit}
             onClick={formik.handleSubmit}
           >
@@ -124,7 +125,7 @@ function Login({ intl }) {
           </Button>
           <Grid container>
             <Grid item xs>
-              <StyledLink to='/resetar-senha' variant='body2' component={Link}>
+              <StyledLink to="/resetar-senha" variant="body2" component={Link}>
                 {intl.formatMessage(messages.forgotPassword)}
               </StyledLink>
             </Grid>
