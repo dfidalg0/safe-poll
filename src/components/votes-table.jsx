@@ -142,7 +142,7 @@ function VotesTable({ poll, intl }) {
       });
       console.log(res);
 
-      startDownload(res.data, poll.title + '.xlsx');
+      startDownload(res.data, 'SafePoll.xls');
     } catch (err) {
       console.log(err);
     }
