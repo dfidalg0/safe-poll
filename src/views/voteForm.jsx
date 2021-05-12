@@ -11,6 +11,8 @@ import {
   CircularProgress,
   Typography,
   Grid,
+  Checkbox,
+  MenuItem,
 } from '@material-ui/core';
 
 import LoadingScreen from '@/components/loading-screen';
@@ -69,23 +71,37 @@ function Vote({ location, intl }) {
     [candidates, setCandidates] = useState(null),
     [loading, setLoading] = useState(true),
     dispatch = useDispatch(),
-    router = useHistory();
+    router = useHistory(),
+    [selected, setSelected] = useState(new Set());
 
   const handleChange = useCallback((event) => {
     setMark(event.target.value);
     setError(false);
   }, []);
 
+  const handleCheckboxChange = (op) => {
+    let newSet = selected;
+    if (selected.has(op)) {
+      newSet.delete(op);
+    } else {
+      newSet.add(op);
+    }
+    setSelected(new Set([...newSet]));
+  };
+
   const result = queryString.parse(location.search),
     id = useParams().id,
     token = result.token;
 
   const submit = useCallback(async () => {
+    
     const data = {
       poll_id: poll.id,
-      option_id: Number(mark.slice(3)),
+      option_id: (Array.from(selected)) ,
       token,
     };
+    if(poll.type === 1)
+      data["option_id"] = [Number(mark.slice(3))];
     try {
       setLoading(true);
       await axios.post('/api/votes/compute', data);
@@ -105,7 +121,7 @@ function Vote({ location, intl }) {
       dispatch(notify(intl.formatMessage(info), 'error'));
       setLoading(false);
     }
-  }, [poll, mark, token, dispatch, router, intl]);
+  }, [poll, mark, selected, token, dispatch, router, intl]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -127,6 +143,8 @@ function Vote({ location, intl }) {
 
   if (!poll || !candidates) return <LoadingScreen />;
 
+
+  if (poll.type === 1) 
   return (
     <Grid container direction='column'>
       <Grid item>
@@ -159,7 +177,7 @@ function Vote({ location, intl }) {
                   color='primary'
                   value={mark}
                   onChange={handleChange}
-                >
+                > 
                   {candidates.map((candidate, i) => (
                     <FormControlLabel
                       key={i}
@@ -167,7 +185,7 @@ function Vote({ location, intl }) {
                       control={<Radio />}
                       label={candidate.name}
                     />
-                  ))}
+                  ))}      
                 </RadioGroup>
                 <FormHelperText>
                   {mark !== ''
@@ -193,6 +211,72 @@ function Vote({ location, intl }) {
       </Grid>
     </Grid>
   );
+
+  if (poll.type === 2) 
+  return (
+    <Grid container direction='column'>
+      <Grid item>
+        <LocaleSelector />
+      </Grid>
+      {poll.secret_vote
+          ? <Alert severity="info">{intl.formatMessage(messages.secretVoteReminder)}</Alert>
+          : <Alert severity="info">{intl.formatMessage(messages.nonSecretVoteReminder)}</Alert>
+      }
+      <Grid item>
+        <Container className={classes.root} maxWidth='xs'>
+          <div className={classes.paper}>
+            <Avatar className={classes.avatar} />
+            {loading && (
+              <CircularProgress style={{ marginTop: '-51px' }} size={45} />
+            )}
+            <Typography variant='h6'>{poll.title}</Typography>
+            <Typography variant='body1'>{poll.description}</Typography>
+            <form className={classes.form} noValidate>
+              <FormControl
+                error={error}
+                component='fieldset'
+                className={classes.formControl}
+                disabled={loading}
+              >
+                <FormLabel component='legend'>
+                  {intl.formatMessage(messages.chooseCandidate)}
+                </FormLabel>
+                {candidates.map((candidate) => (
+                <MenuItem key={candidate.id}>
+                  <Grid container alignContent="center" alignItems="center">
+                    <Grid item>
+                      <Checkbox
+                        checked={selected.has(candidate.id)}
+                        onChange={() => handleCheckboxChange(candidate.id)}
+                        value={candidate.id}
+                      />
+                    </Grid>
+                    <Grid item>{candidate.name}</Grid>
+                  </Grid>
+                </MenuItem>
+          ))}
+              
+              </FormControl>
+
+              <Button
+                fullWidth
+                variant='contained'
+                color='primary'
+                className={classes.submit}
+                disabled={loading || !selected}
+                onClick={submit}
+              >
+                {intl.formatMessage(messages.sendVote)}
+              </Button>
+            </form>
+            <p></p>
+          </div>
+        </Container>
+      </Grid>
+    </Grid>
+  );
+
+
 }
 
 export default injectIntl(Vote);
