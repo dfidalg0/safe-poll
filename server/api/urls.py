@@ -13,6 +13,9 @@ urlpatterns = [
     path('polls/get/<int:pk>/result', get_poll_result),
     path('polls/emails/<int:pk>', get_emails_from_poll),
     path('polls/emails/delete', delete_email_from_poll),
+    path('polls/<int:pk>/permanent-token/get', get_permanent_token),
+    path('polls/<int:pk>/permanent-token/set', gen_permanent_token),
+    path('polls/<int:pk>/permanent-token/delete', delete_permanent_token),
 
     path('emails/send', send_poll_emails),
     path('emails/send-list', send_list_emails),

@@ -91,17 +91,18 @@ function Vote({ location, intl }) {
 
   const result = queryString.parse(location.search),
     id = useParams().id,
-    token = result.token;
+    token = result.token,
+    perm = result.perm === 'true' ? true : false;
 
   const submit = useCallback(async () => {
-    
+
     const data = {
       poll_id: poll.id,
       option_id: (Array.from(selected)) ,
-      token,
+      token, perm
     };
     if(poll.type === 1)
-      data["option_id"] = [Number(mark.slice(3))];
+      data.option_id = [Number(mark.slice(3))];
     try {
       setLoading(true);
       await axios.post('/api/votes/compute', data);
@@ -121,7 +122,7 @@ function Vote({ location, intl }) {
       dispatch(notify(intl.formatMessage(info), 'error'));
       setLoading(false);
     }
-  }, [poll, mark, selected, token, dispatch, router, intl]);
+  }, [poll, mark, selected, token, dispatch, router, intl, perm]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -144,7 +145,7 @@ function Vote({ location, intl }) {
   if (!poll || !candidates) return <LoadingScreen />;
 
 
-  if (poll.type === 1) 
+  if (poll.type === 1)
   return (
     <Grid container direction='column'>
       <Grid item>
@@ -177,7 +178,7 @@ function Vote({ location, intl }) {
                   color='primary'
                   value={mark}
                   onChange={handleChange}
-                > 
+                >
                   {candidates.map((candidate, i) => (
                     <FormControlLabel
                       key={i}
@@ -185,7 +186,7 @@ function Vote({ location, intl }) {
                       control={<Radio />}
                       label={candidate.name}
                     />
-                  ))}      
+                  ))}
                 </RadioGroup>
                 <FormHelperText>
                   {mark !== ''
@@ -212,7 +213,7 @@ function Vote({ location, intl }) {
     </Grid>
   );
 
-  if (poll.type === 2) 
+  if (poll.type === 2)
   return (
     <Grid container direction='column'>
       <Grid item>
@@ -255,7 +256,7 @@ function Vote({ location, intl }) {
                   </Grid>
                 </MenuItem>
           ))}
-              
+
               </FormControl>
 
               <Button
@@ -275,8 +276,6 @@ function Vote({ location, intl }) {
       </Grid>
     </Grid>
   );
-
-
 }
 
 export default injectIntl(Vote);

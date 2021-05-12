@@ -14,6 +14,8 @@ import {
   Fab,
   Dialog,
   LinearProgress,
+  TextField,
+  InputAdornment
 } from '@material-ui/core';
 
 import { Fragment } from 'react';
@@ -21,7 +23,7 @@ import { Fragment } from 'react';
 // Ícones
 import AddIcon from '@material-ui/icons/Add';
 import EmailIcon from '@material-ui/icons/Email';
-import { DeleteOutline as DeleteIcon } from '@material-ui/icons';
+import { DeleteOutline as DeleteIcon, FileCopyOutlined as CopyIcon } from '@material-ui/icons';
 
 import { Link } from 'react-router-dom';
 import { fetchUserGroups, deletePoll } from '@/store/actions/items';
@@ -44,6 +46,8 @@ import { defineMessages, injectIntl } from 'react-intl';
 import EmailItem from './../../components/poll-email-item';
 import AddInvidualEmails from './../../components/poll-add-invidual-email';
 import { LocaleContext } from './../../components/language-wrapper';
+
+import copy from 'copy-to-clipboard';
 
 const messages = defineMessages({
   finish: {
@@ -148,7 +152,11 @@ function Poll({ intl }) {
 
   const fetchData = useCallback(async () => {
     try {
-      const { data: poll } = await axios.get(`/api/polls/get/${uid}/`);
+      const { data: poll } = await axios.get(`/api/polls/get/${uid}/`, {
+        headers: {
+          Authorization: `JWT ${token}`
+        }
+      });
 
       poll.deadline = new Date(Number(new Date(poll.deadline)) + 10800000);
 
@@ -399,7 +407,69 @@ function Poll({ intl }) {
         <Divider style={{ marginBottom: 10, marginTop: 10 }} />
 
         {poll.deadline > new Date() ? (
+          poll.permanent_token? <>
+            <Grid item xs={12} style={{ marginBottom: '10px' }}>
+              Convide pessoas para votar através do link
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                InputProps={{
+                  readOnly: true,
+                  endAdornment: <InputAdornment position="end" >
+                    <CopyIcon
+                      onClick={() => copy(`https://safe-poll.herokuapp.com/polls/${poll.id}/vote?token=${poll.permanent_token}&perm=true`)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </InputAdornment>
+                }}
+                defaultValue={`https://safe-poll.herokuapp.com/polls/${poll.id}/vote?token=${poll.permanent_token}&perm=true`}
+              />
+            </Grid>
+            <Grid item xs={12} style={{ marginBottom: '10px' }}>
+              <Button onClick={async () => {
+                try {
+                  await axios.delete(`/api/polls/${poll.id}/permanent-token/delete`, {
+                    headers: {
+                      Authorization: `JWT ${token}`
+                    }
+                  });
+
+                  setPoll({
+                    ...poll,
+                    permanent_token: null
+                  });
+                }
+                catch (err) {
+                  dispatch(notify(err.response.data.message, 'error'));
+                }
+              }}>
+                Destruir link
+              </Button>
+            </Grid>
+          </> :
           <>
+            {poll.secret_vote ? <Grid item xs={12}>
+              <Button onClick={async () => {
+                try {
+                  const { data } = await axios.put(`/api/polls/${poll.id}/permanent-token/set`, null, {
+                    headers: {
+                      Authorization: `JWT ${token}`
+                    }
+                  });
+
+                  setPoll({
+                    ...poll,
+                    permanent_token: data.token
+                  });
+                }
+                catch (err) {
+                  console.log(err.response);
+                  dispatch(notify(err.response.data.message, 'error'));
+                }
+              }}>
+                Mudar para link de acesso
+              </Button>
+            </Grid> : null}
             <Grid item xs={12}>
               <InputLabel htmlFor="type" style={{ padding: 10 }}>
                 {intl.formatMessage(messages.group)}

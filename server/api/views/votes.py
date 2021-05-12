@@ -5,50 +5,76 @@ from django.http import HttpResponse
 @api_view(['POST'])
 @with_rules({
     'token': lambda v: type(v) == str,
-    'option_id': lambda v: is_unique_list(v),
+    'perm': lambda v: type(v) == bool,
+    'option_id': is_unique_list,
     'poll_id': is_unsigned_int
 })
 def compute_vote(request: CleanRequest) -> Response:
     data = request.clean_data
+
+    permanent = data['perm']
+
+    poll = None
+    token = None
+    user = None
+    options = None
+
     option_ids = data['option_id']
-    del data["option_id"]
+    del data['option_id']
+
+    if not permanent:
+        try:
+            token = Token.objects.get(token=data['token'], poll_id=data['poll_id'])
+
+            options = []
+            for option_id in option_ids:
+                options.append( Option.objects.get(pk=option_id, poll_id=data['poll_id']) )
+
+        except Option.DoesNotExist:
+            return Response({
+                'message': 'Opção não encontrada'
+            }, status=HTTP_404_NOT_FOUND)
+
+        except Token.DoesNotExist:
+            return Response({
+                'message': 'Credenciais inválidas'
+            }, status=HTTP_401_UNAUTHORIZED)
+
+        poll = token.poll
+        user = token.user
+    else:
+        try:
+            poll = Poll.objects.get(pk=data['poll_id'], permanent_token=data['token'])
+            options = []
+            for option_id in option_ids:
+                options.append( Option.objects.get(pk=option_id, poll_id=data['poll_id']) )
+
+        except Poll.DoesNotExist:
+            return Response({
+                'message': 'Eleição não encontrada'
+            }, status=HTTP_404_NOT_FOUND)
+
+        except Option.DoesNotExist:
+            return Response({
+                'message': 'Opção não encontrada'
+            }, status=HTTP_404_NOT_FOUND)
 
     try:
-        token = Token.objects.get(token=data['token'], poll_id=data['poll_id'])
-
-        options = []
-        for option_id in option_ids:
-            options.append( Option.objects.get(pk=option_id, poll_id=data['poll_id']) )
-
-
-    except Option.DoesNotExist:
-        return Response({
-            'message': 'Opção não encontrada'
-        }, status=HTTP_404_NOT_FOUND)
-
-    except Token.DoesNotExist:
-        return Response({
-            'message': 'Credenciais inválidas'
-        }, status=HTTP_401_UNAUTHORIZED)
-
-    poll = token.poll
-    user = token.user
-
-    try:
-        
         with transaction.atomic():
+            if user:
+                poll.emails_voted.add(user)
 
-            if  poll.type.id == 1 : 
-                
+            if  poll.type.id == 1 :
+
                 if len(options) > 1:
                     return Response({
-                    'message': 'Número incorreto de opções selecionadas'
+                        'message': 'Número incorreto de opções selecionadas'
                     }, status = HTTP_422_UNPROCESSABLE_ENTITY)
 
 
                 vote = Vote(poll=poll, option=options[0])
                 vote.ranking = 1
-                if not poll.secret_vote:
+                if user and not poll.secret_vote:
                     vote.voter = user
 
                 vote.save()
@@ -58,20 +84,20 @@ def compute_vote(request: CleanRequest) -> Response:
 
                 if len(options) == 0:
                     return Response({
-                    'message': 'Número incorreto de opções selecionadas'
+                        'message': 'Número incorreto de opções selecionadas'
                     } , status = HTTP_422_UNPROCESSABLE_ENTITY)
 
                 for option in options :
-                    
+
                     vote = Vote(poll=poll, option=option)
                     vote.ranking = 1
-                    if not poll.secret_vote:
+                    if user and not poll.secret_vote:
                         vote.voter = user
                     vote.save()
 
-            poll.emails_voted.add(user)
             poll.save()
-            token.delete()
+            if token:
+                token.delete()
     except:
         return Response({
             'message': 'Erro Interno do Servidor'
@@ -92,7 +118,7 @@ def get_poll_votes(request: Request, pk: int) -> Response:
         return Response({
             'message': 'Eleição não encontrada'
         }, status=HTTP_404_NOT_FOUND)
-    
+
     if poll.secret_vote:
         return Response({
             'message': 'Eleição secreta!'
@@ -112,7 +138,7 @@ def get_poll_votes(request: Request, pk: int) -> Response:
     data = request.data
     if 'optionsFilter' in data:
         votes_all = votes_all.filter(option__name__in = data['optionsFilter'])
-    
+
     if order_by:
         if order_by == 'option':
             votes_all = votes_all.order_by('option__name')
@@ -131,7 +157,7 @@ def get_poll_votes(request: Request, pk: int) -> Response:
         'voter': vote.voter.ref
     },
         votes_all[(page-1)*per_page:(page-1)*per_page+per_page]
-    ))    
+    ))
     return Response({"total": total, "votes": votes})
 
 
@@ -146,7 +172,7 @@ def export_votes(request: Request, pk: int) -> HttpResponse:
         return Response({
             'message': 'Eleição não encontrada'
         }, status=HTTP_404_NOT_FOUND)
-    
+
     if poll.secret_vote:
         return Response({
             'message': 'Eleição secreta!'

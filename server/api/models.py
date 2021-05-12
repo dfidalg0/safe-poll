@@ -163,6 +163,8 @@ class Poll (models.Model):
         blank=True, related_name='polls_voted'
     )
 
+    permanent_token = models.CharField(max_length=20, null=True)
+
     #Define the new manager:
     objects = PollManager()
 

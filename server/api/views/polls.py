@@ -1,8 +1,10 @@
 from .context import *
-
+import secrets
 
 @api_view(['GET'])
 def get_poll(request, pk):
+    admin = request.user
+
     try:
         with transaction.atomic():
             poll = Poll.objects.get(pk=pk)
@@ -12,11 +14,15 @@ def get_poll(request, pk):
             poll['options'] = options
             poll['emails_voted'] = emails_voted
 
+            if not admin or admin.pk != poll['admin']:
+                del poll['permanent_token']
+
     except Poll.DoesNotExist:
         return Response({
             'message': 'Eleição não encontrada'
         }, status=HTTP_404_NOT_FOUND)
-    except:
+    except Exception as e:
+        print(e)
         return Response({
             'message': 'Erro interno do servidor'
         }, status=HTTP_500_INTERNAL_SERVER_ERROR)
@@ -169,3 +175,68 @@ def get_emails_from_poll(request: CleanRequest, pk: int) -> Response:
     emails.extend(emails_voted)
     conclusion = {'emails': emails}
     return Response(conclusion)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_permanent_token(request, pk):
+    try:
+        admin = request.user
+        poll = Poll.objects.get(pk=pk, admin=admin)
+
+        return Response({
+            'token': poll.permanent_token
+        })
+
+    except Poll.DoesNotExist:
+        return Response({
+            'message': 'Eleição não encontrada'
+        }, status=HTTP_404_NOT_FOUND)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def gen_permanent_token(request, pk):
+    token = secrets.token_urlsafe(15)
+
+    try:
+        with transaction.atomic():
+            admin = request.user
+            poll = Poll.objects.get(pk=pk, admin=admin)
+
+            if poll.secret_vote:
+                poll.permanent_token = token
+
+                poll.save()
+
+                return Response({
+                    'token': token
+                })
+            else:
+                return Response({
+                    'message': 'A eleição deve possuir voto secreto'
+                }, status=HTTP_401_UNAUTHORIZED)
+
+    except Poll.DoesNotExist:
+        return Response({
+            'message': 'Eleição não encontrada'
+        }, status=HTTP_404_NOT_FOUND)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_permanent_token(request, pk):
+    try:
+        with transaction.atomic():
+            admin = request.user
+            poll = Poll.objects.get(pk=pk, admin=admin)
+
+            poll.permanent_token = None
+
+            poll.save()
+
+            return Response({
+                'token': None
+            })
+
+    except Poll.DoesNotExist:
+        return Response({
+            'message': 'Eleição não encontrada'
+        }, status=HTTP_404_NOT_FOUND)
