@@ -100,7 +100,7 @@ function Vote({ location, intl }) {
       option_id: (Array.from(selected)) ,
       token,
     };
-    if(poll.id === 1)
+    if(poll.type === 1)
       data["option_id"] = [Number(mark.slice(3))];
     try {
       setLoading(true);
@@ -255,11 +255,7 @@ function Vote({ location, intl }) {
                   </Grid>
                 </MenuItem>
           ))}
-                <FormHelperText>
-                  {selected.size === 0
-                    ? intl.formatMessage(messages.candidateChoosen)
-                    : null}
-                </FormHelperText>
+              
               </FormControl>
 
               <Button
