@@ -133,7 +133,7 @@ class PollManager(models.Manager):
 
         # Linha comentada por razões de "não consigo fazer isso funcionar"
 
-       kill_poll_tokens.apply_async((poll.id,), countdown=delay)
+        # kill_poll_tokens.apply_async((poll.id,), countdown=delay)
         return poll
 
 class Poll (models.Model):
