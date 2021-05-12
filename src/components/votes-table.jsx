@@ -77,7 +77,7 @@ function CustomizedTableHead(props) {
               onClick={createSortHandler(column.id)}
             >
               {intl.formatMessage(
-                columns.id === 'voter' ? messages.email : messages.candidate
+                column.id === 'voter' ? messages.email : messages.candidate
               )}
             </TableSortLabel>
           </TableCell>
