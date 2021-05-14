@@ -23,6 +23,8 @@ import {
   LocaleContext,
 } from './../components/language-wrapper';
 
+import { getPath } from '@/utils/routes';
+
 const messages = defineMessages({
   homepage: {
     id: 'reset-page.homepage',
@@ -80,7 +82,7 @@ function ResetPassword({ intl }) {
       <Grid item>
         <Container className={classes.app} maxWidth='xs'>
           <Breadcrumbs className={classes.breadcrumb}>
-            <StyledLink color='inherit' to='/' component={Link}>
+            <StyledLink color='inherit' to={getPath('home')} component={Link}>
               {intl.formatMessage(messages.homepage)}
             </StyledLink>
             <Typography color='textPrimary'>

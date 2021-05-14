@@ -41,6 +41,8 @@ import axios from 'axios';
 import { useHistory } from 'react-router-dom';
 import { defineMessages, injectIntl } from 'react-intl';
 
+import { getPath } from '@/utils/routes';
+
 const useStyles = makeStyles((theme) => ({
   root: {
     width: '500px',
@@ -192,7 +194,7 @@ function EmailsGroup({ intl }) {
         })
       );
       dispatch(notify(intl.formatMessage(messages.createSuccess), 'success'));
-      router.replace(`/manage/groups/${id}`);
+      router.replace(getPath('group', { uid: id }));
     } catch ({ response: { status } }) {
       let info;
       if (status === 422) info = messages.invalidFormError;
@@ -314,7 +316,7 @@ function EmailsGroup({ intl }) {
           >
             <Grid item>
               <Button>
-                <Link to='/manage' className={classes.link}>
+                <Link to={getPath('manage')} className={classes.link}>
                   {intl.formatMessage(messages.back)}
                 </Link>
               </Button>

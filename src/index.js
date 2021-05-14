@@ -11,18 +11,24 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
-ReactDOM.render(
-  <LanguageWrapper>
-    <Provider store={store}>
-      <SnackbarProvider>
-        <ConfirmationProvider>
-          <App />
-        </ConfirmationProvider>
-      </SnackbarProvider>
-    </Provider>
-  </LanguageWrapper>,
-  document.getElementById('root')
-);
+const Website = <LanguageWrapper>
+  <Provider store={store}>
+    <SnackbarProvider>
+      <ConfirmationProvider>
+        <App />
+      </ConfirmationProvider>
+    </SnackbarProvider>
+  </Provider>
+</LanguageWrapper>;
+
+const root = document.getElementById('root');
+
+if (root.hasChildNodes()) {
+  ReactDOM.hydrate(Website, root);
+}
+else {
+  ReactDOM.render(Website, root);
+}
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

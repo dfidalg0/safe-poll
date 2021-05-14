@@ -7,6 +7,7 @@ import { useSnackbar } from 'notistack';
 import ConditionRoute from '@/components/condition-route';
 
 import Home from '@/views/home';
+import Login from '@/views/login';
 import ResetPassword from '@/views/resetPassword';
 import ResetPasswordConfirm from '@/views/resetPasswordConfirm';
 import Dashboard from '@/views/manage';
@@ -22,6 +23,8 @@ import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import { ptBR, esES, enUS } from '@material-ui/core/locale';
 import { useContext, useEffect, useState } from 'react';
 import { LocaleContext } from './components/language-wrapper';
+
+import { getPath } from '@/utils/routes';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -91,38 +94,46 @@ export default function App() {
       ) : (
         <Router>
           <Switch>
-            {/* Nesse caso, não usamos o exact, pois essa rota servirá
-                    para dar match em /manage/polls/*, /manage/groups/*, etc..
-                    Como especificado em views/manage/index.jsx
-                */}
-            <ConditionRoute
-              path='/manage'
-              component={Dashboard}
-              condition={isAuthenticated}
-              redirect='/'
-            />
             <ConditionRoute
               exact
-              path='/'
+              path={getPath('home')}
               component={Home}
               condition={!isAuthenticated}
-              redirect='/manage'
+              redirect={getPath('manage')}
+            />
+            <ConditionRoute
+              path={getPath('manage')}
+              component={Dashboard}
+              condition={isAuthenticated}
+              redirect={getPath('login')}
+              /*
+               * Nesse caso, não usamos o exact, pois essa rota servirá
+               * para dar match em /manage/polls/*, /manage/groups/*, etc..
+               * Como especificado em views/manage/index.jsx
+               */
             />
             <ConditionRoute
               exact
-              path='/resetar-senha'
+              path={getPath('login')}
+              component={Login}
+              condition={!isAuthenticated}
+              redirect={getPath('manage')}
+            />
+            <ConditionRoute
+              exact
+              path={getPath('resetPassword')}
               component={ResetPassword}
               condition={!isAuthenticated}
-              redirect='/manage'
+              redirect={getPath('manage')}
             />
             <ConditionRoute
               exact
-              path='/password/reset/confirm/:uid/:token'
+              path={getPath('confirmResetPassword')}
               component={ResetPasswordConfirm}
               condition={!isAuthenticated}
-              redirect='/manage'
+              redirect={getPath('manage')}
             />
-            <Route exact path='/polls/:id/vote' component={Vote} />
+            <Route exact path={getPath('vote')} component={Vote} />
           </Switch>
         </Router>
       )}

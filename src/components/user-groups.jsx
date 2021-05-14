@@ -16,6 +16,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { injectIntl, defineMessages } from 'react-intl';
 
+import { getPath } from '@/utils/routes';
+
 const useStyles = makeStyles((theme) => ({
   root: {
     width: '90%',
@@ -89,7 +91,7 @@ function UserGroups({ intl }) {
       return (
         <Grid item xs={12}>
           <Typography noWrap className={classes.paper}>
-            <Link to={'/manage/groups/' + group.id} className={classes.link}>
+            <Link to={getPath('group', { uid: group.id })} className={classes.link}>
               {group.name}
             </Link>
           </Typography>

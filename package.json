@@ -29,6 +29,7 @@
     "react-redux": "^7.2.2",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.0",
+    "react-snap": "^1.23.0",
     "react-swipeable-views": "^0.13.9",
     "redux": "^4.0.5",
     "redux-devtools-extension": "^2.13.8",
@@ -41,6 +42,7 @@
     "start": "craco start",
     "api:dev": "cd server && pipenv run python manage.py runserver",
     "build": "craco build",
+    "postbuild": "react-snap",
     "test": "craco test",
     "eject": "react-scripts eject"
   },

@@ -36,7 +36,7 @@ import axios from 'axios';
 
 import { useRouteMatch, useHistory } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { useEffect, useState, useCallback, useContext } from 'react';
+import { useEffect, useState, useCallback, useContext, useMemo } from 'react';
 import { useStyles } from '@/styles/poll-view';
 import { useConfirm } from '@/utils/confirm-dialog';
 
@@ -46,6 +46,9 @@ import { defineMessages, injectIntl } from 'react-intl';
 import EmailItem from './../../components/poll-email-item';
 import AddInvidualEmails from './../../components/poll-add-invidual-email';
 import { LocaleContext } from './../../components/language-wrapper';
+
+import { join } from 'path';
+import { getPath } from '@/utils/routes';
 
 import copy from 'copy-to-clipboard';
 
@@ -160,7 +163,7 @@ function Poll({ intl }) {
 
       poll.deadline = new Date(Number(new Date(poll.deadline)) + 10800000);
 
-      if (user.id !== poll.admin) router.replace('/manage');
+      if (user.id !== poll.admin) router.replace(getPath('manage'));
       else {
         poll.deadline = new Date(poll.deadline);
         setPoll(poll);
@@ -195,7 +198,7 @@ function Poll({ intl }) {
       else if (status === 500) info = messages.internalServerError;
       else info = messages.genericError;
       dispatch(notify(intl.formatMessage(info), 'error'));
-      router.replace('/manage');
+      router.replace(getPath('manage'));
     } finally {
       setLoading(false);
     }
@@ -293,7 +296,7 @@ function Poll({ intl }) {
         notify(intl.formatMessage(messages.successDeletePoll), 'success')
       );
       dispatch(deletePoll(poll.id));
-      router.replace('/manage');
+      router.replace(getPath('manage'));
     } catch {
       dispatch(notify(intl.formatMessage(messages.genericError), 'error'));
     }
@@ -350,6 +353,11 @@ function Poll({ intl }) {
       dispatch(fetchUserGroups());
     }
   }, [groups, dispatch]);
+
+  const voteUrl = useMemo(() => poll?.permanent_token ?
+    `${join(window.origin, getPath('vote', { uid: poll.id }))}?token=${poll.permanent_token}&perm=true` : null,
+    [poll]
+  );
 
   if (loading) return <LoadingScreen />;
 
@@ -417,12 +425,12 @@ function Poll({ intl }) {
                   readOnly: true,
                   endAdornment: <InputAdornment position="end" >
                     <CopyIcon
-                      onClick={() => copy(`https://safe-poll.herokuapp.com/polls/${poll.id}/vote?token=${poll.permanent_token}&perm=true`)}
+                      onClick={() => copy(voteUrl)}
                       style={{ cursor: 'pointer' }}
                     />
                   </InputAdornment>
                 }}
-                defaultValue={`https://safe-poll.herokuapp.com/polls/${poll.id}/vote?token=${poll.permanent_token}&perm=true`}
+                defaultValue={voteUrl}
               />
             </Grid>
             <Grid item xs={12} style={{ marginBottom: '10px' }}>
@@ -621,7 +629,7 @@ function Poll({ intl }) {
       </CardContent>
       <CardActions style={{ marginTop: '-17px' }}>
         <Button size="small">
-          <Link to="/manage" className={classes.link}>
+          <Link to={getPath('manage')} className={classes.link}>
             {intl.formatMessage(messages.back)}
           </Link>
         </Button>

@@ -41,6 +41,8 @@ import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useRouteMatch, useHistory } from 'react-router-dom';
 import { defineMessages, injectIntl } from 'react-intl';
 
+import { getPath } from '@/utils/routes';
+
 const useStyles = makeStyles((theme) => ({
   root: {
     width: '500px',
@@ -144,7 +146,7 @@ function Group({ intl }) {
         else if (status === 404) info = messages.groupNotFound;
         else info = messages.genericError;
         dispatch(notify(intl.formatMessage(info), 'error'));
-        router.replace('/manage');
+        router.replace(getPath('manage'));
       }
     };
 
@@ -203,7 +205,7 @@ function Group({ intl }) {
         notify(intl.formatMessage(messages.deleteGroupSuccess), 'success')
       );
 
-      router.replace('/manage');
+      router.replace(getPath('manage'));
     } catch ({ response: { status } }) {
       let info;
       if (status === 500) info = messages.internalServerError;
@@ -342,7 +344,7 @@ function Group({ intl }) {
           >
             <Grid item>
               <Button>
-                <Link to='/manage' className={classes.link}>
+                <Link to={getPath('manage')} className={classes.link}>
                   {intl.formatMessage(messages.back)}
                 </Link>
               </Button>

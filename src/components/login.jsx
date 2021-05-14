@@ -18,6 +18,8 @@ import { defineMessages, injectIntl } from 'react-intl';
 import { useFormik } from 'formik';
 import { loginSchema } from '@/utils/auth';
 
+import { getPath } from '@/utils/routes';
+
 const messages = defineMessages({
   forgotPassword: {
     id: 'home-page.forgot-password-question',
@@ -125,7 +127,7 @@ function Login({ intl }) {
           </Button>
           <Grid container>
             <Grid item xs>
-              <StyledLink to="/resetar-senha" variant="body2" component={Link}>
+              <StyledLink to={getPath('resetPassword')} variant="body2" component={Link}>
                 {intl.formatMessage(messages.forgotPassword)}
               </StyledLink>
             </Grid>

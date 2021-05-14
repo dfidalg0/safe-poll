@@ -29,6 +29,8 @@ import {
 import { useFormik } from 'formik';
 import { passwordResetSchema } from './../utils/auth';
 
+import { getPath } from '@/utils/routes';
+
 const messages = defineMessages({
   passwordsDontMatch: {
     id: 'reset-password.password-match',
@@ -127,7 +129,7 @@ function ResetPasswordConfirm({ intl }) {
         dispatch(
           notify(intl.formatMessage(messages.resetPasswordSuccess), 'success')
         );
-        router.replace('/');
+        router.replace(getPath('login'));
       }, 2000);
   }, [router, passwordReset, error, dispatch, intl]);
 
@@ -162,7 +164,7 @@ function ResetPasswordConfirm({ intl }) {
         <Container className={classes.app} maxWidth='xs'>
           <CssBaseline />
           <Breadcrumbs className={classes.breadcrumb}>
-            <Link color='inherit' to='/' href='/'>
+            <Link color='inherit' to={getPath('login')}>
               {intl.formatMessage(messages.initialPage)}
             </Link>
             <Typography color='textPrimary'>

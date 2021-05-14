@@ -19,6 +19,8 @@ import { useEffect } from 'react';
 import { useRouteMatch, useLocation } from 'react-router-dom';
 import { defineMessages, injectIntl } from 'react-intl';
 
+import { getPath } from '@/utils/routes';
+
 const useStyles = makeStyles({
   app: {
     textAlign: 'center',
@@ -77,7 +79,7 @@ function Main({ intl }) {
       <AppBar className={classes.appBar} position='fixed'>
         <Toolbar>
           <Link
-            to={url}
+            to={getPath('manage')}
             className={classes.logo}
             onClick={(e) => (path === url ? e.preventDefault() : null)}
           >
@@ -91,10 +93,10 @@ function Main({ intl }) {
       </AppBar>
       <Grid container justify='center' className={classes.panel}>
         <Switch>
-          <Route exact path={url} component={Dashboard} />
-          <Route exact path={`${url}/groups/new`} component={EmailsGroup} />
-          <Route exact path={`${url}/polls/:uid`} component={Poll} />
-          <Route exact path={`${url}/groups/:uid`} component={Group} />
+          <Route exact path={getPath('manage')} component={Dashboard} />
+          <Route exact path={getPath('newGroup')} component={EmailsGroup} />
+          <Route exact path={getPath('poll')} component={Poll} />
+          <Route exact path={getPath('group')} component={Group} />
         </Switch>
       </Grid>
     </>

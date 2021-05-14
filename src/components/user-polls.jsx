@@ -24,6 +24,8 @@ import { useTheme, useMediaQuery } from '@material-ui/core';
 import { defineMessages, injectIntl } from 'react-intl';
 import { format } from 'date-fns';
 
+import { getPath } from '@/utils/routes';
+
 const useStyles = makeStyles((theme) => ({
   root: {
     width: '90%',
@@ -119,7 +121,7 @@ function UserPolls({ intl }) {
         <>
           <Grid item xs={5} sm={6}>
             <Typography noWrap className={classes.paper}>
-              <Link to={'/manage/polls/' + poll.id} className={classes.link}>
+              <Link to={getPath('poll', { uid: poll.id })} className={classes.link}>
                 {poll.title}
               </Link>
             </Typography>

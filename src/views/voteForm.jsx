@@ -30,6 +30,8 @@ import { defineMessages, injectIntl } from 'react-intl';
 import { Alert } from "@material-ui/lab";
 import { LocaleSelector } from './../components/language-wrapper';
 
+import { getPath } from '@/utils/routes';
+
 const messages = defineMessages({
   chooseCandidate: {
     id: 'vote-form.choose-candidate',
@@ -90,7 +92,7 @@ function Vote({ location, intl }) {
   };
 
   const result = queryString.parse(location.search),
-    id = useParams().id,
+    uid = useParams().uid,
     token = result.token,
     perm = result.perm === 'true' ? true : false;
 
@@ -107,7 +109,7 @@ function Vote({ location, intl }) {
       setLoading(true);
       await axios.post('/api/votes/compute', data);
       dispatch(notify(intl.formatMessage(messages.confirm), 'success'));
-      router.replace('/');
+      router.replace(getPath('home'));
     } catch ({ response: {status} }) {
       let info;
       if (status === 404) {
@@ -128,19 +130,19 @@ function Vote({ location, intl }) {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const { data: poll } = await axios.get(`/api/polls/get/${id}/`);
+        const { data: poll } = await axios.get(`/api/polls/get/${uid}/`);
         setPoll(poll);
         setCandidates(poll.options);
       } catch ({ response: { data } }) {
         dispatch(notify(data.message, 'error'));
-        router.replace('/manage');
+        router.replace(getPath('manage'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [dispatch, router, id]);
+  }, [dispatch, router, uid]);
 
   if (!poll || !candidates) return <LoadingScreen />;
 
