@@ -103,7 +103,7 @@ function SignUp({ intl }) {
         <Typography component='h1' variant='h5'>
           {intl.formatMessage(messages.signup)}
         </Typography>
-        <form className={classes.form}>
+        <form className={classes.form} onSubmit={formik.handleSubmit}>
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
@@ -210,7 +210,6 @@ function SignUp({ intl }) {
               variant='contained'
               color='primary'
               className={classes.submit}
-              onClick={formik.handleSubmit}
             >
               {intl.formatMessage(messages.signup)}
             </Button>

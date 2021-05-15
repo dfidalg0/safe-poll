@@ -143,7 +143,7 @@ function UserGroups({ intl }) {
           <Grid container justify='flex-end'>
             <Button
               component={Link}
-              to='/manage/groups/new'
+              to={getPath('newGroup')}
               className={classes.createButton}
               endIcon={<AddIcon />}
             >

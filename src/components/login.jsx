@@ -71,7 +71,7 @@ function Login({ intl }) {
         <Typography component="h1" variant="h5" className={classes.typography}>
           {intl.formatMessage(messages.entrar)}
         </Typography>
-        <form className={classes.form}>
+        <form className={classes.form} onSubmit={formik.handleSubmit}>
           <TextField
             variant="outlined"
             margin="normal"
@@ -121,7 +121,7 @@ function Login({ intl }) {
             variant="contained"
             color="primary"
             className={classes.submit}
-            onClick={formik.handleSubmit}
+            type="submit"
           >
             {intl.formatMessage(messages.entrar)}
           </Button>
