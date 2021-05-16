@@ -43,7 +43,6 @@
     "start": "craco start",
     "api:dev": "cd server && pipenv run python manage.py runserver",
     "build": "craco build",
-    "postbuild": "react-snap",
     "test": "craco test",
     "eject": "react-scripts eject"
   },
