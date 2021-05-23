@@ -27,6 +27,7 @@
   "manage.create-poll.secretVote": "Voto Secreto",
   "reset-password-confirm": "Se o email inserido corresponder a alguma conta, instruções de recuperação serão enviadas.",
   "vote-form.choose-candidate": "Escolha seu candidato:",
+  "vote-form.choose-candidate-type-3": "Escolha até {nOptions} candidatos:",
   "vote-form.send-vote": "Enviar voto",
   "vote-form.confirm": "Voto registrado com sucesso",
   "vote-form.candidate-choosen": "Um candidato foi marcado.",

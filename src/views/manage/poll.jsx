@@ -20,6 +20,9 @@ import {
 
 import { Fragment } from 'react';
 
+// Constantes
+import { POLL_TYPES } from '@/utils/constants';
+
 // Ícones
 import AddIcon from '@material-ui/icons/Add';
 import EmailIcon from '@material-ui/icons/Email';
@@ -82,6 +85,12 @@ const messages = defineMessages({
   },
   secretVote: {
     id: 'manage.create-poll.secretVote',
+  },
+  type: {
+    id: 'manage.create-poll.type',
+  },
+  votes_number: {
+    id: 'manage.create-poll.votes_number',
   },
   candidates: {
     id: 'manage.create-poll.candidates',
@@ -397,6 +406,20 @@ function Poll({ intl }) {
             ? intl.formatMessage(messages.yes)
             : intl.formatMessage(messages.no)}
         </Typography>
+        <Typography variant="overline" display="block" gutterBottom>
+          {intl.formatMessage(messages.type)}
+          {': '}
+          {POLL_TYPES[poll.type - 1]}
+        </Typography>
+        
+          {poll.type === 3 && ( 
+            <Typography variant="overline" display="block" gutterBottom>
+              {intl.formatMessage(messages.votes_number)}
+              {' : '}
+              {poll.votes_number}
+            </Typography>
+          )}
+        
         <Typography variant="overline" display="block" gutterBottom>
           {intl.formatMessage(messages.candidates)}
         </Typography>
