@@ -36,6 +36,9 @@ const messages = defineMessages({
   chooseCandidate: {
     id: 'vote-form.choose-candidate',
   },
+  chooseCandidate3: {
+    id: 'vote-form.choose-candidate-type-3',
+  },
   sendVote: {
     id: 'vote-form.send-vote',
   },
@@ -241,9 +244,12 @@ function Vote({ location, intl }) {
                 className={classes.formControl}
                 disabled={loading}
               >
-                <FormLabel component='legend'>
-                  {intl.formatMessage(messages.chooseCandidate)}
-                </FormLabel>
+                {poll.type === 3 && (
+                  <FormLabel component='legend'> 
+                    {intl.formatMessage(messages.chooseCandidate3, { nOptions: poll.votes_number })} 
+                  </FormLabel>
+                )}
+                
                 {candidates.map((candidate) => (
                 <MenuItem key={candidate.id}>
                   <Grid container alignContent="center" alignItems="center">
