@@ -66,7 +66,7 @@ def compute_vote(request: CleanRequest) -> Response:
 
             if  poll.type.id == 1 :
 
-                if len(options) > 1:
+                if len(options) > 1 :
                     return Response({
                         'message': 'Número incorreto de opções selecionadas'
                     }, status = HTTP_422_UNPROCESSABLE_ENTITY)
@@ -93,7 +93,22 @@ def compute_vote(request: CleanRequest) -> Response:
                     vote.ranking = 1
                     if user and not poll.secret_vote:
                         vote.voter = user
-                    vote.save()
+                    vote.save() 
+            
+            elif poll.type.id == 3 :
+                
+                if len(options) == 0 or len(options) > poll.votes_number:
+                    return Response({
+                        'message': 'Número incorreto de opções selecionadas'
+                    } , status = HTTP_422_UNPROCESSABLE_ENTITY)
+                
+                for option in options :
+
+                    vote = Vote(poll=poll, option=option)
+                    vote.ranking = 1
+                    if user and not poll.secret_vote:
+                        vote.voter = user
+                    vote.save() 
 
             poll.save()
             if token:

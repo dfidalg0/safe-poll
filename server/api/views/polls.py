@@ -42,7 +42,8 @@ def get_poll(request, pk):
         all(item and type(item) == str for item in v)
     ),
     'secret_vote': lambda v: type(v) == bool,
-    'type_id': lambda v: v in VALID_POLL_TYPES
+    'type_id': lambda v: v in VALID_POLL_TYPES,
+    'votes_number' : lambda v: v and type(v) == int and v > 0
 })
 def create_poll(request: CleanRequest) -> Response:
     data = request.clean_data
@@ -55,6 +56,7 @@ def create_poll(request: CleanRequest) -> Response:
     try:
         with transaction.atomic():
             poll = Poll.objects.create(**data)
+
             objects = []
 
             for option in options:

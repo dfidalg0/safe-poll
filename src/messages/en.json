@@ -20,6 +20,7 @@
   "manage.create-poll.success": "Poll successfully created",
   "manage.create-poll.create-button": "Create poll",
   "manage.create-poll.type": "Type",
+  "manage.create-poll.votes_number": "Maximum number of candidates chosen by voter",
   "manage.create-poll.deadline": "Voting deadline",
   "manage.create-poll.invalid-deadline": "Invalid date format",
   "manage.create-poll.candidates": "Candidates",

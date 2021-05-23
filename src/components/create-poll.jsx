@@ -73,6 +73,9 @@ const messages = defineMessages({
   type: {
     id: 'manage.create-poll.type',
   },
+  votes_number: {
+    id: 'manage.create-poll.votes_number',
+  },
   deadline: {
     id: 'manage.create-poll.deadline',
   },
@@ -123,6 +126,7 @@ function CreatePoll({ open, onClose, intl }) {
   const [title, setTitle] = useState('');
   const [description, setDesc] = useState('');
   const [type_id, setType] = useState(1);
+  const [votes_number, setVotesNumber] = useState('');
   const [deadline, setDeadline] = useState(null);
   const [options, setOptions] = useState([]);
   const [secret_vote, setSecretVote] = useState(true);
@@ -152,6 +156,7 @@ function CreatePoll({ open, onClose, intl }) {
     setTitle('');
     setDesc('');
     setType(1);
+    setVotesNumber('');
     setDeadline(null);
     setOptions([]);
     setSecretVote(true);
@@ -212,10 +217,15 @@ function CreatePoll({ open, onClose, intl }) {
       title,
       description,
       type_id,
+      votes_number,
       deadline: deadline.toJSON().slice(0, 10),
       options,
       secret_vote,
     };
+    if( data.type_id === 3 )
+      data.votes_number = Number(data.votes_number);
+    else
+      data.votes_number = 1;
 
     // Estado de carregamento do envio
     setLoading(true);
@@ -253,6 +263,7 @@ function CreatePoll({ open, onClose, intl }) {
     title,
     description,
     type_id,
+    votes_number,
     deadline,
     options,
     secret_vote,
@@ -382,6 +393,29 @@ function CreatePoll({ open, onClose, intl }) {
                   ))}
                 </Select>
               </Grid>
+              { type_id === 3 && (
+                <Grid item xs={12}>
+                <InputLabel htmlFor='votes_number'>
+                  {intl.formatMessage(messages.votes_number)}
+                </InputLabel>
+                <TextField
+                  id='votes_number'
+                  autoComplete='off'
+                  className={classes.field}
+                  multiline
+                  required
+                  variant='outlined'
+                  value={votes_number}
+                  onChange={(e) => setVotesNumber(e.target.value)}
+                  InputProps={{
+                    className: classes.input,
+                  }}
+                />
+              </Grid>
+              )}
+                
+
+              
               <MuiPickersUtilsProvider
                 utils={DateFnsUtils}
                 locale={languageContext.dateLocale}

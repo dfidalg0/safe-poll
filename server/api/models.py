@@ -157,6 +157,9 @@ class Poll (models.Model):
     # Soma máxima dos rankings (para os modelos Instant-runoff e Cumulative)
     rankings_sum = models.PositiveIntegerField(null=True)
 
+    # Número de opções máximas que o eleitor pode escolher
+    votes_number = models.PositiveIntegerField(default=1)
+
     # Relação dos emails que votaram
     emails_voted = models.ManyToManyField(
         UserAccount,
@@ -171,7 +174,7 @@ class Poll (models.Model):
 
     #Computar os resultados da eleicao:
     def compute_result(self):
-        if self.type.id == 1 or self.type.id == 2:
+        if self.type.id == 1 or self.type.id == 2 or self.type.id == 3:
             return self._compute_result_unranked_voting()
 
     def _compute_result_unranked_voting(self):

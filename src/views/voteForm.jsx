@@ -215,7 +215,7 @@ function Vote({ location, intl }) {
     </Grid>
   );
 
-  if (poll.type === 2)
+  if (poll.type === 2 || poll.type === 3)
   return (
     <Grid container direction='column'>
       <Grid item>
