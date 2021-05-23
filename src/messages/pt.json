@@ -20,7 +20,7 @@
   "manage.create-poll.success": "Eleição criada com sucesso",
   "manage.create-poll.create-button": "Criar Eleição",
   "manage.create-poll.type": "Modalidade",
-  "manage.create-poll.votes_number": "Número máximo de candidatos escolhidos por eleitor",
+  "manage.create-poll.votes_number": "Máximo de candidatos por eleitor",
   "manage.create-poll.deadline": "Prazo final da votação",
   "manage.create-poll.invalid-deadline": "Formato de data inválido",
   "manage.create-poll.candidates": "Candidatos",
