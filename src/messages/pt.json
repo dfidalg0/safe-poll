@@ -106,5 +106,8 @@
   "manage.poll.email.info.update-success": "Mensagem atualizada com sucesso",
   "manage.poll.link.invite": "Convide pessoas para votar através do link",
   "manage.poll.link.change": "Mudar para link de acesso",
-  "manage.poll.link.destroy": "Destruir link"
+  "manage.poll.link.destroy": "Destruir link",
+  "manage.poll.type.description.1": "O eleitor pode votar em apenas um candidato e o vencedor será quem possui mais votos.",
+  "manage.poll.type.description.2": "O eleitor escolhe uma quantidade qualquer de candidatos e o vencedor será quem possui mais votos.",
+  "manage.poll.type.description.3": "O eleitor pode votar em até uma certa quantidade de candidatos e o vencedor será quem possui mais votos."
 }

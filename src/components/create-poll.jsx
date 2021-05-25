@@ -33,7 +33,7 @@ import {
 } from '@material-ui/pickers';
 
 // Constantes
-import {POLL_TYPES, POLL_TYPE_DESCRIPTIONS} from '@/utils/constants';
+import { POLL_TYPES } from '@/utils/constants';
 
 // Hooks
 import {
@@ -100,6 +100,15 @@ const messages = defineMessages({
   },
   genericError: {
     id: 'error.generic',
+  },
+  pollDescriptionType1: {
+    id: 'manage.poll.type.description.1',
+  },
+  pollDescriptionType2: {
+    id: 'manage.poll.type.description.2',
+  },
+  pollDescriptionType3: {
+    id: 'manage.poll.type.description.3',
   },
 });
 
@@ -224,10 +233,8 @@ function CreatePoll({ open, onClose, intl }) {
       options,
       secret_vote,
     };
-    if( data.type_id === 3 )
-      data.votes_number = Number(data.votes_number);
-    else
-      data.votes_number = 1;
+    if (data.type_id === 3) data.votes_number = Number(data.votes_number);
+    else data.votes_number = 1;
 
     // Estado de carregamento do envio
     setLoading(true);
@@ -323,7 +330,7 @@ function CreatePoll({ open, onClose, intl }) {
         if (onClose) onClose();
       }}
     >
-      <Grid container className={classes.root} justify='center'>
+      <Grid container className={classes.root} justify="center">
         <Grid item xs={12}>
           <DialogTitle>
             {intl.formatMessage(messages.creteElection)}
@@ -340,17 +347,17 @@ function CreatePoll({ open, onClose, intl }) {
           <DialogContent>
             <Grid container>
               <Grid item xs={12}>
-                <InputLabel htmlFor='title'>
+                <InputLabel htmlFor="title">
                   {intl.formatMessage(messages.title)}
                 </InputLabel>
                 <TextField
-                  id='title'
-                  autoComplete='off'
+                  id="title"
+                  autoComplete="off"
                   className={classes.field}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  variant='outlined'
-                  margin='normal'
+                  variant="outlined"
+                  margin="normal"
                   required
                   autoFocus
                   InputProps={{
@@ -359,16 +366,16 @@ function CreatePoll({ open, onClose, intl }) {
                 />
               </Grid>
               <Grid item xs={12}>
-                <InputLabel htmlFor='description'>
+                <InputLabel htmlFor="description">
                   {intl.formatMessage(messages.description)}
                 </InputLabel>
                 <TextField
-                  id='description'
-                  autoComplete='off'
+                  id="description"
+                  autoComplete="off"
                   className={classes.field}
                   multiline
                   required
-                  variant='outlined'
+                  variant="outlined"
                   value={description}
                   onChange={(e) => setDesc(e.target.value)}
                   InputProps={{
@@ -377,68 +384,69 @@ function CreatePoll({ open, onClose, intl }) {
                 />
               </Grid>
               <Grid item xs={12}>
-                <InputLabel htmlFor='type'>
+                <InputLabel htmlFor="type">
                   {intl.formatMessage(messages.type)}
                 </InputLabel>
                 <Select
-                  id='type'
+                  id="type"
                   className={classes.field}
                   required
                   value={type_id}
-                  variant='outlined'
+                  variant="outlined"
                   onChange={(e) => setType(e.target.value)}
                 >
                   {POLL_TYPES.map((type, index) => (
                     <MenuItem value={index + 1} key={index}>
-                      <Tooltip title={POLL_TYPE_DESCRIPTIONS[index]} placement="right-start">
-                        <div>
-                          {type}
-                        </div>
+                      <Tooltip
+                        title={intl.formatMessage({
+                          id: 'manage.poll.type.description.' + (index + 1),
+                        })}
+                        placement="right-start"
+                      >
+                        <div>{type}</div>
                       </Tooltip>
                     </MenuItem>
                   ))}
                 </Select>
               </Grid>
-              { type_id === 3 && (
+              {type_id === 3 && (
                 <Grid item xs={12}>
-                <InputLabel htmlFor='votes_number'>
-                  {intl.formatMessage(messages.votes_number)}
-                </InputLabel>
-                <TextField
-                  id='votes_number'
-                  autoComplete='off'
-                  className={classes.field}
-                  multiline
-                  required
-                  variant='outlined'
-                  value={votes_number}
-                  onChange={(e) => setVotesNumber(e.target.value)}
-                  InputProps={{
-                    className: classes.input,
-                  }}
-                />
-              </Grid>
+                  <InputLabel htmlFor="votes_number">
+                    {intl.formatMessage(messages.votes_number)}
+                  </InputLabel>
+                  <TextField
+                    id="votes_number"
+                    autoComplete="off"
+                    className={classes.field}
+                    multiline
+                    required
+                    variant="outlined"
+                    value={votes_number}
+                    onChange={(e) => setVotesNumber(e.target.value)}
+                    InputProps={{
+                      className: classes.input,
+                    }}
+                  />
+                </Grid>
               )}
-                
 
-              
               <MuiPickersUtilsProvider
                 utils={DateFnsUtils}
                 locale={languageContext.dateLocale}
               >
                 <Grid item xs={12}>
-                  <InputLabel htmlFor='deadline'>
+                  <InputLabel htmlFor="deadline">
                     {intl.formatMessage(messages.deadline)}
                   </InputLabel>
                   <KeyboardDatePicker
-                    id='deadline'
+                    id="deadline"
                     error={deadlineError}
-                    autoComplete='off'
+                    autoComplete="off"
                     value={deadline}
                     className={classes.field}
                     variant={isDesktop ? 'inline' : 'dialog'}
                     onChange={(date) => setDeadline(date)}
-                    inputVariant='outlined'
+                    inputVariant="outlined"
                     InputProps={{
                       className: classes.input,
                     }}
@@ -462,9 +470,9 @@ function CreatePoll({ open, onClose, intl }) {
                   <Grid container key={index}>
                     <Grid item xs={10}>
                       <TextField
-                        autoComplete='off'
+                        autoComplete="off"
                         className={classes.option}
-                        variant='outlined'
+                        variant="outlined"
                         value={option}
                         error={optionErrors[index]}
                         onChange={(e) => updateOption(index, e.target.value)}
@@ -483,10 +491,10 @@ function CreatePoll({ open, onClose, intl }) {
                 <Grid container>
                   <Grid item xs={10}>
                     <TextField
-                      autoComplete='off'
+                      autoComplete="off"
                       inputRef={newOptionRef}
                       className={classes.option}
-                      variant='outlined'
+                      variant="outlined"
                       value={newOption}
                       error={newOptionError}
                       onChange={(e) => setNewOption(e.target.value)}
@@ -509,18 +517,18 @@ function CreatePoll({ open, onClose, intl }) {
           </DialogContent>
 
           <DialogActions>
-            <Grid container alignItems='center'>
+            <Grid container alignItems="center">
               <Switch
-                id='secret'
+                id="secret"
                 checked={secret_vote}
                 onChange={(e) => setSecretVote(e.target.checked)}
-                color='primary'
+                color="primary"
               />
-              <InputLabel htmlFor='secret'>
+              <InputLabel htmlFor="secret">
                 {intl.formatMessage(messages.secretVote)}
               </InputLabel>
             </Grid>
-            <Grid container justify='flex-end'>
+            <Grid container justify="flex-end">
               {loading ? (
                 <Button className={classes.loadingButton} disabled={true}>
                   <CircularProgress size={20} />
