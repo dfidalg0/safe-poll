@@ -4,6 +4,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Tooltip,
   Divider,
   TextField,
   InputLabel,
@@ -32,7 +33,7 @@ import {
 } from '@material-ui/pickers';
 
 // Constantes
-import { POLL_TYPES } from '@/utils/constants';
+import {POLL_TYPES, POLL_TYPE_DESCRIPTIONS} from '@/utils/constants';
 
 // Hooks
 import {
@@ -108,6 +109,7 @@ const messages = defineMessages({
  *   onClose: () => void;
  * }}
  */
+
 function CreatePoll({ open, onClose, intl }) {
   // Styles
   const theme = useTheme();
@@ -388,7 +390,11 @@ function CreatePoll({ open, onClose, intl }) {
                 >
                   {POLL_TYPES.map((type, index) => (
                     <MenuItem value={index + 1} key={index}>
-                      {type}
+                      <Tooltip title={POLL_TYPE_DESCRIPTIONS[index]} placement="right-start">
+                        <div>
+                          {type}
+                        </div>
+                      </Tooltip>
                     </MenuItem>
                   ))}
                 </Select>
