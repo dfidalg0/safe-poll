@@ -15,7 +15,7 @@ import {
   Dialog,
   LinearProgress,
   TextField,
-  InputAdornment
+  InputAdornment,
 } from '@material-ui/core';
 
 import { Fragment } from 'react';
@@ -26,7 +26,10 @@ import { POLL_TYPES } from '@/utils/constants';
 // Ícones
 import AddIcon from '@material-ui/icons/Add';
 import EmailIcon from '@material-ui/icons/Email';
-import { DeleteOutline as DeleteIcon, FileCopyOutlined as CopyIcon } from '@material-ui/icons';
+import {
+  DeleteOutline as DeleteIcon,
+  FileCopyOutlined as CopyIcon,
+} from '@material-ui/icons';
 
 import { Link } from 'react-router-dom';
 import { fetchUserGroups, deletePoll } from '@/store/actions/items';
@@ -48,6 +51,7 @@ import { format } from 'date-fns';
 import { defineMessages, injectIntl } from 'react-intl';
 import EmailItem from './../../components/poll-email-item';
 import AddInvidualEmails from './../../components/poll-add-invidual-email';
+import PollEmailInfo from './../../components/poll-email-info';
 import { LocaleContext } from './../../components/language-wrapper';
 
 import { join } from 'path';
@@ -140,6 +144,18 @@ const messages = defineMessages({
   successDeletePoll: {
     id: 'success-message.delete-election',
   },
+  emailInfoPersonalize: {
+    id: 'manage.poll.email.info.personalize',
+  },
+  linkInvite: {
+    id: 'manage.poll.link.invite',
+  },
+  linkChange: {
+    id: 'manage.poll.link.change',
+  },
+  linkDestroy: {
+    id: 'manage.poll.link.destroy',
+  },
 });
 
 function Poll({ intl }) {
@@ -149,6 +165,7 @@ function Poll({ intl }) {
   const [poll, setPoll] = useState(null);
   const [emails, setEmails] = useState(null);
   const [emailsAddOpen, setEmailsAddOpen] = useState(false);
+  const [emailInfoOpen, setEmailInfoOpen] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -166,8 +183,8 @@ function Poll({ intl }) {
     try {
       const { data: poll } = await axios.get(`/api/polls/get/${uid}/`, {
         headers: {
-          Authorization: `JWT ${token}`
-        }
+          Authorization: `JWT ${token}`,
+        },
       });
 
       poll.deadline = new Date(Number(new Date(poll.deadline)) + 10800000);
@@ -246,6 +263,8 @@ function Poll({ intl }) {
   const classes = useStyles();
 
   const groups = useSelector((state) => state.items.groups);
+
+  console.log(poll);
 
   const submit = useCallback(async () => {
     setLoadingAdd(true);
@@ -363,8 +382,13 @@ function Poll({ intl }) {
     }
   }, [groups, dispatch]);
 
-  const voteUrl = useMemo(() => poll?.permanent_token ?
-    `${join(window.origin, getPath('vote', { uid: poll.id }))}?token=${poll.permanent_token}&perm=true` : null,
+  const voteUrl = useMemo(
+    () =>
+      poll?.permanent_token
+        ? `${join(window.origin, getPath('vote', { uid: poll.id }))}?token=${
+            poll.permanent_token
+          }&perm=true`
+        : null,
     [poll]
   );
 
@@ -411,15 +435,15 @@ function Poll({ intl }) {
           {': '}
           {POLL_TYPES[poll.type - 1]}
         </Typography>
-        
-          {poll.type === 3 && ( 
-            <Typography variant="overline" display="block" gutterBottom>
-              {intl.formatMessage(messages.votes_number)}
-              {' : '}
-              {poll.votes_number}
-            </Typography>
-          )}
-        
+
+        {poll.type === 3 && (
+          <Typography variant="overline" display="block" gutterBottom>
+            {intl.formatMessage(messages.votes_number)}
+            {' : '}
+            {poll.votes_number}
+          </Typography>
+        )}
+
         <Typography variant="overline" display="block" gutterBottom>
           {intl.formatMessage(messages.candidates)}
         </Typography>
@@ -438,167 +462,205 @@ function Poll({ intl }) {
         <Divider style={{ marginBottom: 10, marginTop: 10 }} />
 
         {poll.deadline > new Date() ? (
-          poll.permanent_token? <>
-            <Grid item xs={12} style={{ marginBottom: '10px' }}>
-              Convide pessoas para votar através do link
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                InputProps={{
-                  readOnly: true,
-                  endAdornment: <InputAdornment position="end" >
-                    <CopyIcon
-                      onClick={() => copy(voteUrl)}
-                      style={{ cursor: 'pointer' }}
-                    />
-                  </InputAdornment>
-                }}
-                defaultValue={voteUrl}
-              />
-            </Grid>
-            <Grid item xs={12} style={{ marginBottom: '10px' }}>
-              <Button onClick={async () => {
-                try {
-                  await axios.delete(`/api/polls/${poll.id}/permanent-token/delete`, {
-                    headers: {
-                      Authorization: `JWT ${token}`
-                    }
-                  });
+          poll.permanent_token ? (
+            <>
+              <Grid item xs={12} style={{ marginBottom: '10px' }}>
+                {intl.formatMessage(messages.linkInvite)}
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  InputProps={{
+                    readOnly: true,
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <CopyIcon
+                          onClick={() => copy(voteUrl)}
+                          style={{ cursor: 'pointer' }}
+                        />
+                      </InputAdornment>
+                    ),
+                  }}
+                  defaultValue={voteUrl}
+                />
+              </Grid>
+              <Grid item xs={12} style={{ marginBottom: '10px' }}>
+                <Button
+                  onClick={async () => {
+                    try {
+                      await axios.delete(
+                        `/api/polls/${poll.id}/permanent-token/delete`,
+                        {
+                          headers: {
+                            Authorization: `JWT ${token}`,
+                          },
+                        }
+                      );
 
-                  setPoll({
-                    ...poll,
-                    permanent_token: null
-                  });
-                }
-                catch (err) {
-                  dispatch(notify(err.response.data.message, 'error'));
-                }
-              }}>
-                Destruir link
-              </Button>
-            </Grid>
-          </> :
-          <>
-            {poll.secret_vote ? <Grid item xs={12}>
-              <Button onClick={async () => {
-                try {
-                  const { data } = await axios.put(`/api/polls/${poll.id}/permanent-token/set`, null, {
-                    headers: {
-                      Authorization: `JWT ${token}`
+                      setPoll({
+                        ...poll,
+                        permanent_token: null,
+                      });
+                    } catch (err) {
+                      dispatch(notify(err.response.data.message, 'error'));
                     }
-                  });
+                  }}
+                >
+                  {intl.formatMessage(messages.linkDestroy)}
+                </Button>
+              </Grid>
+            </>
+          ) : (
+            <>
+              {poll.secret_vote ? (
+                <Grid item xs={12}>
+                  <Button
+                    onClick={async () => {
+                      try {
+                        const { data } = await axios.put(
+                          `/api/polls/${poll.id}/permanent-token/set`,
+                          null,
+                          {
+                            headers: {
+                              Authorization: `JWT ${token}`,
+                            },
+                          }
+                        );
 
-                  setPoll({
-                    ...poll,
-                    permanent_token: data.token
-                  });
-                }
-                catch (err) {
-                  console.log(err.response);
-                  dispatch(notify(err.response.data.message, 'error'));
-                }
-              }}>
-                Mudar para link de acesso
-              </Button>
-            </Grid> : null}
-            <Grid item xs={12}>
-              <InputLabel htmlFor="type" style={{ padding: 10 }}>
-                {intl.formatMessage(messages.group)}
-              </InputLabel>
-            </Grid>
-            <Grid item xs={12}>
-              <Select
-                id="type"
-                className={classes.field}
-                required
-                value={group}
-                variant="outlined"
-                onChange={(e) => setGroup(e.target.value)}
-              >
-                {!groups
-                  ? null
-                  : groups.map((group, index) => (
-                      <MenuItem value={index + 1} key={index}>
-                        {group.name}
-                      </MenuItem>
-                    ))}
-              </Select>
-            </Grid>
-            <Grid item style={{ marginTop: 20 }}>
+                        setPoll({
+                          ...poll,
+                          permanent_token: data.token,
+                        });
+                      } catch (err) {
+                        console.log(err.response);
+                        dispatch(notify(err.response.data.message, 'error'));
+                      }
+                    }}
+                  >
+                    {intl.formatMessage(messages.linkChange)}
+                  </Button>
+                </Grid>
+              ) : null}
+              <Grid item xs={12}>
+                <InputLabel htmlFor="type" style={{ padding: 10 }}>
+                  {intl.formatMessage(messages.group)}
+                </InputLabel>
+              </Grid>
+              <Grid item xs={12}>
+                <Select
+                  id="type"
+                  className={classes.field}
+                  required
+                  value={group}
+                  variant="outlined"
+                  onChange={(e) => setGroup(e.target.value)}
+                >
+                  {!groups
+                    ? null
+                    : groups.map((group, index) => (
+                        <MenuItem value={index + 1} key={index}>
+                          {group.name}
+                        </MenuItem>
+                      ))}
+                </Select>
+              </Grid>
+              <Grid item style={{ marginTop: 20 }}>
+                <Button
+                  variant="contained"
+                  className={classes.button}
+                  onClick={submit}
+                  disabled={group === ''}
+                  size="large"
+                >
+                  {loadingAdd ? (
+                    <CircularProgress size={22} />
+                  ) : (
+                    intl.formatMessage(messages.add)
+                  )}
+                </Button>
+              </Grid>
+              <Divider style={{ marginBottom: 20, marginTop: 20 }} />
+              <Grid item style={{ marginTop: 20, marginBottom: 20 }}>
+                {loadingSendEmails ? (
+                  <CircularProgress size={22} />
+                ) : (
+                  <Tooltip title={intl.formatMessage(messages.sendLinks)}>
+                    <Button
+                      variant="contained"
+                      className={classes.button}
+                      onClick={send_email_to_everyone}
+                      endIcon={<EmailIcon />}
+                      disabled={emails.length === 0}
+                      size="large"
+                      style={{ width: '50%' }}
+                    >
+                      {intl.formatMessage(messages.sendEmails)}
+                    </Button>
+                  </Tooltip>
+                )}
+
+                <Tooltip
+                  title={intl.formatMessage(messages.addEmails)}
+                  aria-label="add"
+                >
+                  <Fab
+                    color="primary"
+                    size="small"
+                    style={{ marginLeft: 20 }}
+                    onClick={() => setEmailsAddOpen(true)}
+                  >
+                    <AddIcon style={{ fontSize: 18 }} />
+                  </Fab>
+                </Tooltip>
+
+                <Dialog
+                  onClose={() => setEmailsAddOpen(false)}
+                  aria-labelledby="simple-dialog-title"
+                  open={emailsAddOpen}
+                >
+                  <AddInvidualEmails
+                    groups={groups}
+                    emails={emails}
+                    setEmails={setEmails}
+                    pollId={poll.id}
+                    setOpened={setEmailsAddOpen}
+                  />
+                </Dialog>
+              </Grid>
+
               <Button
                 variant="contained"
                 className={classes.button}
-                onClick={submit}
-                disabled={group === ''}
+                onClick={() => setEmailInfoOpen(true)}
+                endIcon={<EmailIcon />}
                 size="large"
+                style={{ width: '80%', marginBottom: '30px' }}
               >
-                {loadingAdd ? (
-                  <CircularProgress size={22} />
-                ) : (
-                  intl.formatMessage(messages.add)
-                )}
+                {intl.formatMessage(messages.emailInfoPersonalize)}
               </Button>
-            </Grid>
-            <Divider style={{ marginBottom: 20, marginTop: 20 }} />
-            <Grid item style={{ marginTop: 20, marginBottom: 20 }}>
-              {loadingSendEmails ? (
-                <CircularProgress size={22} />
-              ) : (
-                <Tooltip title={intl.formatMessage(messages.sendLinks)}>
-                  <Button
-                    variant="contained"
-                    className={classes.button}
-                    onClick={send_email_to_everyone}
-                    endIcon={<EmailIcon />}
-                    disabled={emails.length === 0}
-                    size="large"
-                    style={{ width: '50%' }}
-                  >
-                    {intl.formatMessage(messages.sendEmails)}
-                  </Button>
-                </Tooltip>
-              )}
-
-              <Tooltip
-                title={intl.formatMessage(messages.addEmails)}
-                aria-label="add"
-              >
-                <Fab
-                  color="primary"
-                  size="small"
-                  style={{ marginLeft: 20 }}
-                  onClick={() => setEmailsAddOpen(true)}
-                >
-                  <AddIcon style={{ fontSize: 18 }} />
-                </Fab>
-              </Tooltip>
-
               <Dialog
-                onClose={() => setEmailsAddOpen(false)}
+                onClose={() => setEmailInfoOpen(false)}
                 aria-labelledby="simple-dialog-title"
-                open={emailsAddOpen}
+                open={emailInfoOpen}
               >
-                <AddInvidualEmails
-                  groups={groups}
-                  emails={emails}
-                  setEmails={setEmails}
-                  pollId={poll.id}
-                  setOpened={setEmailsAddOpen}
+                <PollEmailInfo
+                  poll={poll}
+                  setPoll={setPoll}
+                  setOpened={setEmailInfoOpen}
                 />
               </Dialog>
-            </Grid>
 
-            {emails.map((email, index) => (
-              <EmailItem
-                email={email}
-                token={token}
-                emails={emails}
-                poll={poll}
-                setEmails={setEmails}
-                key={index}
-              />
-            ))}
-          </>
+              {emails.map((email, index) => (
+                <EmailItem
+                  email={email}
+                  token={token}
+                  emails={emails}
+                  poll={poll}
+                  setEmails={setEmails}
+                  key={index}
+                />
+              ))}
+            </>
+          )
         ) : (
           <>
             <Grid container alignItems="center" alignContent="center">

@@ -141,6 +141,7 @@ class Poll (models.Model):
     title = models.CharField(max_length=100)
     type = models.ForeignKey(PollType, on_delete=models.CASCADE)
     description = models.TextField(null=True)
+    email_info = models.TextField(null=True)
 
     # Último dia para votação
     deadline = models.DateField()

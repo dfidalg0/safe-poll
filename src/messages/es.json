@@ -48,7 +48,7 @@
   "manage.poll.individual-email-sent": "Correo electrónico enviado a {email}",
   "manage.poll.send-invidual-email": "Enviar correo electrónico individual",
   "manage.poll.added-emails-success": "{count, plural, =1 {Se agregó un correo electrónico} other {Se agregaron # correos electrónicos}}",
-  "manage.poll.add-emails": "Agregar correos electrónicos:",
+  "manage.poll.add-emails": "Agregar correos electrónicos",
   "manage.poll.email-already-exists": "Correo electrónico ya registrado",
   "manage.add": "Agregar",
   "manage.poll.group-emails-already-added": "Los correos electrónicos de este grupo ya están registrados",
@@ -99,5 +99,12 @@
   "manage.poll.results.candidate": "Candidato",
   "manage.poll.results.filter.apply": "Aplicar",
   "manage.email": "Correo electrónico",
-  "manage.poll.results.download": "Descargar"
+  "manage.poll.results.download": "Descargar",
+  "manage.poll.email.info.personalize": "Personalizar mensaje de correo electrónico",
+  "manage.poll.email.info.placeholder": "Agregar un mensaje al correo electrónico enviado a los votantes",
+  "manage.poll.email.info.update": "Actualizar mensaje",
+  "manage.poll.email.info.update-success": "Mensaje actualizado con éxito",
+  "manage.poll.link.invite": "Invite a la gente a votar a través del enlace de acceso",
+  "manage.poll.link.change": "Cambiar enlace de accesso",
+  "manage.poll.link.destroy": "Destruir enlace"
 }

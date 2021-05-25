@@ -98,6 +98,32 @@ def update_poll(request: CleanRequest, pk: int) -> Response:
         'updated': True
     })
 
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+@with_rules({
+    'email_info': lambda v: type(v) == str,
+})
+def update_poll_email_info(request: CleanRequest, pk: int) -> Response:
+    data = request.clean_data
+    admin = request.user
+
+    try:
+        poll = Poll.objects.get(pk=pk, admin=admin)
+        poll.email_info = data['email_info']
+        poll.save()
+    except Poll.DoesNotExist:
+        return Response({
+            'message': 'Eleição não existe'
+        }, status=HTTP_404_NOT_FOUND)
+    except:
+        return Response({
+            'message': 'Erro interno do servidor'
+        }, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return Response({
+        'updated': True
+    })
+
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])

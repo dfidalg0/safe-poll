@@ -174,22 +174,31 @@ def getEmailMessage(language, poll, user_token):
             f'<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{poll.title}</strong>' +
             f', criada por {poll.admin.get_full_name()}. </p> <p> Por favor, clique' +
             f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> aqui </a>' +
-            ' para votar.</p> <p>Obrigado!</p> <p>Equipe SafePoll</p>'
+            ' para votar.</p>'
             )
+        if poll.email_info and len(poll.email_info) > 0:
+            html_message += f'<p>Mensagem de {poll.admin.get_full_name()}: <p><strong>"{poll.email_info}"</strong></p>'
+        html_message += '<p>Obrigado!</p> <p>Equipe SafePoll</p>'
     elif language == 'es-ES':
         subject = f'Invitación a participar en la elección: {poll.title}'
         html_message = (
             f'<p>Hola!</p> <p>Usted has sido invitado a participar en la elección <strong>{poll.title}</strong>' +
             f', creado por {poll.admin.get_full_name()}. </p> <p> Por favor haz click' +
             f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> aquí </a>' +
-            ' para votar.</p> <p>¡Gracias!</p> <p>Equipo SafePoll</p>'
+            ' para votar.</p>'
             )
+        if poll.email_info and len(poll.email_info) > 0:
+            html_message += f'<p>Mensaje de {poll.admin.get_full_name()}: <p><strong>"{poll.email_info}"</strong></p>'
+        html_message += f'<p>¡Gracias!</p> <p>Equipo SafePoll</p>'
     else:
         subject = f'Invitation to participate in the election: {poll.title}'
         html_message = (
             f'<p>Hello!</p> <p>You have been invited to participate in the election <strong>{poll.title}</strong>' +
             f', created by {poll.admin.get_full_name()}. </p> <p> Please click' +
             f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> here </a>' +
-            ' to vote.</p> <p>Thank you!</p> <p>SafePoll Team</p>'
+            ' to vote.</p>'
             )
+        if poll.email_info and len(poll.email_info) > 0:
+            html_message += f'<p>Message from {poll.admin.get_full_name()}: <p><strong>"{poll.email_info}"</strong></p>'
+        html_message += '<p>Thank you!</p> <p>SafePoll Team</p>'
     return [subject, html_message]

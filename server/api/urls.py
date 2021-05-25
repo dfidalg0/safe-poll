@@ -8,6 +8,7 @@ urlpatterns = [
     path('polls/get/<int:pk>/', get_poll),
     path('polls/create', create_poll),
     path('polls/update/<int:pk>', update_poll),
+    path('polls/update/email/<int:pk>', update_poll_email_info),
     path('polls/delete/<int:pk>/', delete_poll),
     path('polls/mine', get_user_polls),
     path('polls/get/<int:pk>/result', get_poll_result),
