@@ -185,12 +185,22 @@ function Vote({ location, intl }) {
                   onChange={handleChange}
                 >
                   {candidates.map((candidate, i) => (
+                    <>
                     <FormControlLabel
                       key={i}
                       value={'opt' + candidate.id}
                       control={<Radio />}
                       label={candidate.name}
                     />
+
+                    <Typography
+                        variant='caption'
+                        className={classes.description}
+                    >
+                      {candidate.description}
+                    </Typography>
+                    </>
+
                   ))}
                 </RadioGroup>
                 <FormHelperText>
@@ -249,21 +259,29 @@ function Vote({ location, intl }) {
                     {intl.formatMessage(messages.chooseCandidate3, { nOptions: poll.votes_number })} 
                   </FormLabel>
                 )}
-                
-                {candidates.map((candidate) => (
-                <MenuItem key={candidate.id}>
-                  <Grid container alignContent="center" alignItems="center">
-                    <Grid item>
-                      <Checkbox
+
+                {candidates.map((candidate, i) => (
+                    <>
+                    <FormControlLabel
+                      key={i}
+                      value={'opt' + candidate.id}
+                      control={<Checkbox
                         checked={selected.has(candidate.id)}
                         onChange={() => handleCheckboxChange(candidate.id)}
                         value={candidate.id}
-                      />
-                    </Grid>
-                    <Grid item>{candidate.name}</Grid>
-                  </Grid>
-                </MenuItem>
-          ))}
+                      />}
+                      label={candidate.name}
+                    />
+
+                    <Typography
+                        variant='caption'
+                        className={classes.description}
+                    >
+                      {candidate.description}
+                    </Typography>
+                    </>
+
+                  ))}
 
               </FormControl>
 

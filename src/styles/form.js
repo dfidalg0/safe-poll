@@ -39,4 +39,11 @@ export const useStyles = makeStyles((theme) => ({
     marginBottom: '30px',
     marginTop: '-20px',
   },
+  description: {
+    marginTop: '-5px',
+    marginBottom: '10px',
+    marginLeft: '50px',
+    color: '#3e424c',
+    fontSize: '13px',
+  },
 }));
