@@ -16,6 +16,7 @@ import {
 } from '@material-ui/core';
 
 import LoadingScreen from '@/components/loading-screen';
+import BulkEmailAdd from '@/components/bulk-add-email';
 
 // Ícones
 import {
@@ -260,12 +261,12 @@ function Group({ intl }) {
   return !group ? (
     <LoadingScreen />
   ) : (
-    <Grid container className={classes.root} justify='center'>
+    <Grid container className={classes.root} justify="center">
       <Card className={classes.root}>
         <CardContent>
           <Typography
-            variant='h6'
-            display='block'
+            variant="h6"
+            display="block"
             gutterBottom
             style={{ marginTop: 10 }}
           >
@@ -280,13 +281,14 @@ function Group({ intl }) {
 
           <Divider style={{ marginBottom: 20, marginTop: 20 }} />
           <Typography
-            variant='button'
-            display='block'
+            variant="button"
+            display="block"
             gutterBottom
             style={{ marginBottom: 20 }}
           >
             Emails:
           </Typography>
+          <BulkEmailAdd emails={emails} setEmails={setEmails} />
           {emails.map((email, index) => (
             <Grid
               container
@@ -312,10 +314,10 @@ function Group({ intl }) {
           <Grid container style={{ justifyContent: 'center' }}>
             <Grid item xs={10}>
               <TextField
-                autoComplete='off'
+                autoComplete="off"
                 inputRef={newEmailRef}
                 className={classes.option}
-                variant='outlined'
+                variant="outlined"
                 value={newEmail}
                 error={newEmail === '' ? false : newEmailError}
                 onChange={(e) => setNewEmail(e.target.value)}
@@ -338,9 +340,9 @@ function Group({ intl }) {
         <CardActions style={{ marginTop: 10 }}>
           <Grid
             container
-            direction='row'
-            justify='space-between'
-            alignItems='center'
+            direction="row"
+            justify="space-between"
+            alignItems="center"
           >
             <Grid item>
               <Button>
@@ -351,7 +353,7 @@ function Group({ intl }) {
             </Grid>
             <Grid item>
               <Button
-                variant='contained'
+                variant="contained"
                 className={classes.button}
                 onClick={submit}
                 disabled={disabled}

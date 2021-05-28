@@ -264,8 +264,6 @@ function Poll({ intl }) {
 
   const groups = useSelector((state) => state.items.groups);
 
-  console.log(poll);
-
   const submit = useCallback(async () => {
     setLoadingAdd(true);
     const group_id = groups[group - 1].id;

@@ -23,6 +23,7 @@ import {
 } from '@material-ui/core';
 
 import LoadingScreen from '@/components/loading-screen';
+import BulkAddEmails from '@/components/bulk-add-email';
 
 // Ícones
 import {
@@ -208,12 +209,12 @@ function EmailsGroup({ intl }) {
   return !groups ? (
     <LoadingScreen />
   ) : (
-    <Grid container className={classes.root} justify='center'>
+    <Grid container className={classes.root} justify="center">
       <Card className={classes.root}>
         <CardContent>
           <Typography
-            variant='button'
-            display='block'
+            variant="button"
+            display="block"
             gutterBottom
             style={{ marginTop: 10 }}
           >
@@ -227,19 +228,19 @@ function EmailsGroup({ intl }) {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                id='name'
+                id="name"
                 error={nameError}
                 helperText={
                   nameError
                     ? intl.formatMessage(messages.groupAlreadyExists)
                     : null
                 }
-                autoComplete='off'
+                autoComplete="off"
                 className={classes.field}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                variant='outlined'
-                margin='normal'
+                variant="outlined"
+                margin="normal"
                 required
                 autoFocus
                 InputProps={{
@@ -252,13 +253,14 @@ function EmailsGroup({ intl }) {
 
           <Divider style={{ marginBottom: 20, marginTop: 20 }} />
           <Typography
-            variant='button'
-            display='block'
+            variant="button"
+            display="block"
             gutterBottom
             style={{ marginBottom: 20 }}
           >
             Emails:
           </Typography>
+          <BulkAddEmails emails={emails} setEmails={setEmails} />
           {emails.map((email, index) => (
             <Grid
               container
@@ -284,10 +286,10 @@ function EmailsGroup({ intl }) {
           <Grid container style={{ justifyContent: 'center' }}>
             <Grid item xs={10}>
               <TextField
-                autoComplete='off'
+                autoComplete="off"
                 inputRef={newEmailRef}
                 className={classes.option}
-                variant='outlined'
+                variant="outlined"
                 value={newEmail}
                 error={newEmail === '' ? false : newEmailError}
                 onChange={(e) => setNewEmail(e.target.value)}
@@ -310,9 +312,9 @@ function EmailsGroup({ intl }) {
         <CardActions style={{ marginTop: 10 }}>
           <Grid
             container
-            direction='row'
-            justify='space-between'
-            alignItems='center'
+            direction="row"
+            justify="space-between"
+            alignItems="center"
           >
             <Grid item>
               <Button>
@@ -323,7 +325,7 @@ function EmailsGroup({ intl }) {
             </Grid>
             <Grid item>
               <Button
-                variant='contained'
+                variant="contained"
                 className={classes.button}
                 onClick={submit}
                 disabled={disabled}

@@ -109,5 +109,8 @@
   "manage.poll.link.destroy": "Destroy link",
   "manage.poll.type.description.1": "The voter can choose only one candidate and the winner will be the one with the most votes.",
   "manage.poll.type.description.2": "The voter chooses any number of candidates and the winner will be the one with the most votes.",
-  "manage.poll.type.description.3": "The voter can vote for up to a certain number of candidates and the winner will be the one with the most votes."
+  "manage.poll.type.description.3": "The voter can vote for up to a certain number of candidates and the winner will be the one with the most votes.",
+  "manage.poll.bulk-add-email.description": "You can add manually or use the button below to insert from a '.csv' file",
+  "manage.poll.bulk-add-email.button-label": "Add File",
+  "manage.poll.bulk-add-email.success": "Emails were successfully added"
 }

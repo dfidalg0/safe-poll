@@ -109,5 +109,8 @@
   "manage.poll.link.destroy": "Destruir link",
   "manage.poll.type.description.1": "O eleitor pode votar em apenas um candidato e o vencedor será quem possui mais votos.",
   "manage.poll.type.description.2": "O eleitor escolhe uma quantidade qualquer de candidatos e o vencedor será quem possui mais votos.",
-  "manage.poll.type.description.3": "O eleitor pode votar em até uma certa quantidade de candidatos e o vencedor será quem possui mais votos."
+  "manage.poll.type.description.3": "O eleitor pode votar em até uma certa quantidade de candidatos e o vencedor será quem possui mais votos.",
+  "manage.poll.bulk-add-email.description": "Você pode adicionar manualmente ou utilizar o botão abaixo para inserir a partir de um arquivo '.csv'",
+  "manage.poll.bulk-add-email.button-label": "Adicionar Arquivo",
+  "manage.poll.bulk-add-email.success": "Os emails foram adicionados com sucesso"
 }

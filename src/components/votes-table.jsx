@@ -140,8 +140,6 @@ function VotesTable({ poll, intl }) {
           Authorization: `JWT ${token}`,
         },
       });
-      console.log(res);
-
       startDownload(res.data, 'SafePoll.xls');
     } catch (err) {
       console.log(err);
