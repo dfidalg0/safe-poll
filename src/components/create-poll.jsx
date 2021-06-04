@@ -77,6 +77,9 @@ const messages = defineMessages({
   votes_number: {
     id: 'manage.create-poll.votes_number',
   },
+  winners_number: {
+    id: 'manage.create-poll.winners_number',
+  },
   deadline: {
     id: 'manage.create-poll.deadline',
   },
@@ -110,6 +113,12 @@ const messages = defineMessages({
   pollDescriptionType3: {
     id: 'manage.poll.type.description.3',
   },
+  pollDescriptionType4: {
+    id: 'manage.poll.type.description.4',
+  },
+  pollDescriptionType5: {
+    id: 'manage.poll.type.description.5',
+  },
 });
 
 /**
@@ -138,6 +147,7 @@ function CreatePoll({ open, onClose, intl }) {
   const [description, setDesc] = useState('');
   const [type_id, setType] = useState(1);
   const [votes_number, setVotesNumber] = useState('');
+  const [winners_number, setWinnersNumber] = useState('');
   const [deadline, setDeadline] = useState(null);
   const [options, setOptions] = useState([]);
   const [secret_vote, setSecretVote] = useState(true);
@@ -168,6 +178,7 @@ function CreatePoll({ open, onClose, intl }) {
     setDesc('');
     setType(1);
     setVotesNumber('');
+    setWinnersNumber('');
     setDeadline(null);
     setOptions([]);
     setSecretVote(true);
@@ -229,12 +240,18 @@ function CreatePoll({ open, onClose, intl }) {
       description,
       type_id,
       votes_number,
+      winners_number,
       deadline: deadline.toJSON().slice(0, 10),
       options,
       secret_vote,
     };
-    if (data.type_id === 3) data.votes_number = Number(data.votes_number);
-    else data.votes_number = 1;
+    if (data.type_id === 4 || data.type_id === 5 ) data.winners_number = Number(data.winners_number);
+    else data.winners_number = 1;
+
+    if (data.type_id === 3)      data.votes_number = Number(data.votes_number);
+    else if (data.type_id === 5) data.votes_number = data.winners_number;
+    else                         data.votes_number = 1;
+    
 
     // Estado de carregamento do envio
     setLoading(true);
@@ -273,6 +290,7 @@ function CreatePoll({ open, onClose, intl }) {
     description,
     type_id,
     votes_number,
+    winners_number,
     deadline,
     options,
     secret_vote,
@@ -423,6 +441,26 @@ function CreatePoll({ open, onClose, intl }) {
                     variant="outlined"
                     value={votes_number}
                     onChange={(e) => setVotesNumber(e.target.value)}
+                    InputProps={{
+                      className: classes.input,
+                    }}
+                  />
+                </Grid>
+              )}
+              {( type_id === 4 || type_id === 5 ) && (
+                <Grid item xs={12}>
+                  <InputLabel htmlFor="winners_number">
+                    {intl.formatMessage(messages.winners_number)}
+                  </InputLabel>
+                  <TextField
+                    id="winners_number"
+                    autoComplete="off"
+                    className={classes.field}
+                    multiline
+                    required
+                    variant="outlined"
+                    value={winners_number}
+                    onChange={(e) => setWinnersNumber(e.target.value)}
                     InputProps={{
                       className: classes.input,
                     }}

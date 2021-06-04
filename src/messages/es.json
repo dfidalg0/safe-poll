@@ -20,7 +20,8 @@
   "manage.create-poll.success": "Elección creada con éxito",
   "manage.create-poll.create-button": "Crear elección",
   "manage.create-poll.type": "Modalidad",
-  "manage.create-poll.votes_number": "Máximo de candidatos por votante",
+  "manage.create-poll.votes_number": "Número de votos por votante",
+  "manage.create-poll.winners_number": "Número de ganadores",
   "manage.create-poll.deadline": "Fecha límite de votación",
   "manage.create-poll.invalid-deadline": "Formato de fecha no válido",
   "manage.create-poll.candidates": "Candidatos",
@@ -110,6 +111,8 @@
   "manage.poll.type.description.1": "El votante puede votar por un solo candidato y el ganador será el que tenga más votos.",
   "manage.poll.type.description.2": "El votante elige cualquier número de candidatos y el ganador será el que tenga más votos.",
   "manage.poll.type.description.3": "El votante puede votar hasta un cierto número de candidatos y el ganador será el que tenga más votos.",
+  "manage.poll.type.description.4": "El votante puede votar por un solo candidato y los ganadores serán los candidatos con más votos.",
+  "manage.poll.type.description.5": "El votante puede votar hasta x candidatos y los ganadores serán los x candidatos con más votos.",
   "manage.poll.bulk-add-email.description": "Puede agregar manualmente o usar el botón de abajo para insertar desde un archivo '.csv'",
   "manage.poll.bulk-add-email.button-label": "Agregar archivo",
   "manage.poll.bulk-add-email.success": "Los correos electrónicos se agregaron correctamente"

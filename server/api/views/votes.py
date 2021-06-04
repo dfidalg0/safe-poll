@@ -61,54 +61,35 @@ def compute_vote(request: CleanRequest) -> Response:
 
     try:
         with transaction.atomic():
-            if user:
-                poll.emails_voted.add(user)
-
-            if  poll.type.id == 1 :
-
-                if len(options) > 1 :
+            
+            if  poll.type.id == 1 or poll.type.id == 4:
+                if len(options) is not 1 :
                     return Response({
                         'message': 'Número incorreto de opções selecionadas'
                     }, status = HTTP_422_UNPROCESSABLE_ENTITY)
 
-
-                vote = Vote(poll=poll, option=options[0])
-                vote.ranking = 1
-                if user and not poll.secret_vote:
-                    vote.voter = user
-
-                vote.save()
-
-
             elif poll.type.id == 2 :
-
                 if len(options) == 0:
                     return Response({
                         'message': 'Número incorreto de opções selecionadas'
                     } , status = HTTP_422_UNPROCESSABLE_ENTITY)
 
-                for option in options :
-
-                    vote = Vote(poll=poll, option=option)
-                    vote.ranking = 1
-                    if user and not poll.secret_vote:
-                        vote.voter = user
-                    vote.save() 
-            
-            elif poll.type.id == 3 :
-                
+            elif poll.type.id == 3 or poll.type.id == 5:
                 if len(options) == 0 or len(options) > poll.votes_number:
                     return Response({
                         'message': 'Número incorreto de opções selecionadas'
                     } , status = HTTP_422_UNPROCESSABLE_ENTITY)
-                
-                for option in options :
+            
+            if user:
+                poll.emails_voted.add(user)
 
-                    vote = Vote(poll=poll, option=option)
-                    vote.ranking = 1
-                    if user and not poll.secret_vote:
-                        vote.voter = user
-                    vote.save() 
+            for option in options :
+
+                vote = Vote(poll=poll, option=option)
+                vote.ranking = 1
+                if user and not poll.secret_vote:
+                    vote.voter = user
+                vote.save() 
 
             poll.save()
             if token:

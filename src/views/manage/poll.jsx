@@ -96,6 +96,9 @@ const messages = defineMessages({
   votes_number: {
     id: 'manage.create-poll.votes_number',
   },
+  winners_number: {
+    id: 'manage.create-poll.winners_number',
+  },
   candidates: {
     id: 'manage.create-poll.candidates',
   },
@@ -433,8 +436,15 @@ function Poll({ intl }) {
           {': '}
           {POLL_TYPES[poll.type - 1]}
         </Typography>
-
-        {poll.type === 3 && (
+        
+        { (poll.type === 4 || poll.type === 5) && (
+          <Typography variant="overline" display="block" gutterBottom>
+            {intl.formatMessage(messages.winners_number)}
+            {' : '}
+            {poll.winners_number}
+          </Typography>
+        )}
+        { (poll.type === 3 || poll.type === 5) && (
           <Typography variant="overline" display="block" gutterBottom>
             {intl.formatMessage(messages.votes_number)}
             {' : '}
@@ -687,13 +697,27 @@ function Poll({ intl }) {
                   </Grid>
                   <Grid item xs={3}>
                     <Typography variant="caption">
-                      {result.counting_votes[o.id] || 0}{' '}
-                      {intl.formatMessage(messages.votes)} (
-                      {(
-                        (100 * (result.counting_votes[o.id] || 0)) /
-                        (result.total || 1)
-                      ).toFixed(2)}
-                      %)
+                    {result.winners.includes(o.id) ? (
+                       <strong>
+                         {result.counting_votes[o.id] || 0}{' '}
+                          {intl.formatMessage(messages.votes)} (
+                          {(
+                            (100 * (result.counting_votes[o.id] || 0)) /
+                            (result.total || 1)
+                          ).toFixed(2)}
+                          %)
+                       </strong>
+                    ) : (
+                      <>
+                         {result.counting_votes[o.id] || 0}{' '}
+                          {intl.formatMessage(messages.votes)} (
+                          {(
+                            (100 * (result.counting_votes[o.id] || 0)) /
+                            (result.total || 1)
+                          ).toFixed(2)}
+                          %)
+                       </>
+                    )}
                     </Typography>
                   </Grid>
                 </Fragment>

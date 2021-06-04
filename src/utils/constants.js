@@ -1,5 +1,8 @@
 export const POLL_TYPES = [
   'Eleição Simples',
-  'Eleição Composta',
-  'Nome temporário ¯_(ツ)_/¯ ',
+  'Eleição Livre',
+  'Eleição livre com limite de votos',
+  'Voto único não transferível',
+  'Voto múltiplo não transferível',
 ];
+

@@ -20,7 +20,8 @@
   "manage.create-poll.success": "Poll successfully created",
   "manage.create-poll.create-button": "Create poll",
   "manage.create-poll.type": "Type",
-  "manage.create-poll.votes_number": "Maximum number of candidates chosen by voter",
+  "manage.create-poll.votes_number": "Number of votes by voter",
+  "manage.create-poll.winners_number": "Number of winners",
   "manage.create-poll.deadline": "Voting deadline",
   "manage.create-poll.invalid-deadline": "Invalid date format",
   "manage.create-poll.candidates": "Candidates",
@@ -110,6 +111,8 @@
   "manage.poll.type.description.1": "The voter can choose only one candidate and the winner will be the one with the most votes.",
   "manage.poll.type.description.2": "The voter chooses any number of candidates and the winner will be the one with the most votes.",
   "manage.poll.type.description.3": "The voter can vote for up to a certain number of candidates and the winner will be the one with the most votes.",
+  "manage.poll.type.description.4": "The voter can choose only one candidate and the winners will be the ones with the most votes.",
+  "manage.poll.type.description.5": "The voter can vote for up to x candidates and the winners will be the x candidates with the most votes.",
   "manage.poll.bulk-add-email.description": "You can add manually or use the button below to insert from a '.csv' file",
   "manage.poll.bulk-add-email.button-label": "Add File",
   "manage.poll.bulk-add-email.success": "Emails were successfully added"

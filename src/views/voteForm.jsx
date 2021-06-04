@@ -106,7 +106,7 @@ function Vote({ location, intl }) {
       option_id: (Array.from(selected)) ,
       token, perm
     };
-    if(poll.type === 1)
+    if(poll.type === 1 || poll.type === 4)
       data.option_id = [Number(mark.slice(3))];
     try {
       setLoading(true);
@@ -150,7 +150,7 @@ function Vote({ location, intl }) {
   if (!poll || !candidates) return <LoadingScreen />;
 
 
-  if (poll.type === 1)
+  if (poll.type === 1 || poll.type === 4)
   return (
     <Grid container direction='column'>
       <Grid item>
@@ -218,7 +218,7 @@ function Vote({ location, intl }) {
     </Grid>
   );
 
-  if (poll.type === 2 || poll.type === 3)
+  if (poll.type === 2 || poll.type === 3 || poll.type === 5)
   return (
     <Grid container direction='column'>
       <Grid item>
@@ -244,7 +244,7 @@ function Vote({ location, intl }) {
                 className={classes.formControl}
                 disabled={loading}
               >
-                {poll.type === 3 && (
+                { (poll.type === 3 || poll.type === 5) && (
                   <FormLabel component='legend'> 
                     {intl.formatMessage(messages.chooseCandidate3, { nOptions: poll.votes_number })} 
                   </FormLabel>

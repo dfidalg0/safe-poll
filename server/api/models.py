@@ -175,7 +175,7 @@ class Poll (models.Model):
 
     #Computar os resultados da eleicao:
     def compute_result(self):
-        if self.type.id == 1 or self.type.id == 2 or self.type.id == 3:
+        if self.type.id >= 1 and self.type.id <= 5 :
             return self._compute_result_unranked_voting()
 
     def _compute_result_unranked_voting(self):
@@ -187,8 +187,8 @@ class Poll (models.Model):
         for vote in votes:
             counting_votes[vote.option.id] += 1
         if counting_votes:
-            max_votes = max(counting_votes.values())
-            winners = [v for v in counting_votes if counting_votes[v] == max_votes]
+            max_votes = sorted(counting_votes.values()) [ -self.winners_number : ]
+            winners = [v for v in counting_votes if counting_votes[v] in max_votes]
         else:
             winners = []
 
@@ -197,6 +197,7 @@ class Poll (models.Model):
             'counting_votes':counting_votes
         }
         return final_result
+
 
 
 class Vote (models.Model):

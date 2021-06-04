@@ -43,7 +43,8 @@ def get_poll(request, pk):
     ),
     'secret_vote': lambda v: type(v) == bool,
     'type_id': lambda v: v in VALID_POLL_TYPES,
-    'votes_number' : lambda v: v and type(v) == int and v > 0
+    'votes_number' : lambda v: v and type(v) == int and v > 0,
+    'winners_number' : lambda v: v and type(v) == int and v > 0
 })
 def create_poll(request: CleanRequest) -> Response:
     data = request.clean_data
