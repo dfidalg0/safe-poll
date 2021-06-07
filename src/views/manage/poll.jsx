@@ -18,6 +18,8 @@ import {
   InputAdornment,
 } from '@material-ui/core';
 
+import Pagination from '@material-ui/lab/Pagination';
+
 import { Fragment } from 'react';
 
 // Constantes
@@ -169,7 +171,10 @@ function Poll({ intl }) {
   const [emails, setEmails] = useState(null);
   const [emailsAddOpen, setEmailsAddOpen] = useState(false);
   const [emailInfoOpen, setEmailInfoOpen] = useState(false);
-
+  const [page, setPage] = useState(1);
+  const handleChange = (event, value) => {
+    setPage(value);
+  };
   const dispatch = useDispatch();
 
   const router = useHistory();
@@ -656,8 +661,7 @@ function Poll({ intl }) {
                   setOpened={setEmailInfoOpen}
                 />
               </Dialog>
-
-              {emails.map((email, index) => (
+              {emails.slice(5*(page - 1), 5*page).map((email, index) => (
                 <EmailItem
                   email={email}
                   token={token}
@@ -667,6 +671,10 @@ function Poll({ intl }) {
                   key={index}
                 />
               ))}
+              <Pagination
+                  count={emails.length%5===0 ? emails.length/5 : ~~(emails.length/5) + 1}
+                  onChange={handleChange}
+              />
             </>
           )
         ) : (
