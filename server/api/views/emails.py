@@ -189,7 +189,8 @@ def getEmailMessage(language, poll, token):
             "safepollteam_text": "Time SafePoll."
         }
         if poll.email_info and len(poll.email_info) > 0:
-            email_context["creator_msg"] = f"Mensagem de {poll.admin.get_full_name()}: <strong>\"{poll.email_info}\"</strong>"
+            email_context["creator_msg_text"] = f"Mensagem de {poll.admin.get_full_name()}:"
+            email_context["creator_msg"] = f"{poll.email_info}"
     
     elif language == 'es-ES':
         subject = f"Invitación a participar en la elección: {poll.title}"
@@ -209,7 +210,8 @@ def getEmailMessage(language, poll, token):
             "safepollteam_text": "El equipo de Safepoll."
         }
         if poll.email_info and len(poll.email_info) > 0:
-            email_context["creator_msg"] = f"Mensaje de {poll.admin.get_full_name()}: <strong>\"{poll.email_info}\"</strong>"
+            email_context["creator_msg_text"] = f"Mensaje de {poll.admin.get_full_name()}:"
+            email_context["creator_msg"] = f"{poll.email_info}"
     
     else:
         subject = f"Invitation to participate in the election: {poll.title}"
@@ -229,7 +231,8 @@ def getEmailMessage(language, poll, token):
             "safepollteam_text": "The SafePoll team."
         }
         if poll.email_info and len(poll.email_info) > 0:
-            email_context["creator_msg"] = f"Message from {poll.admin.get_full_name()}: <strong>\"{poll.email_info}\"</strong>"
+            email_context["creator_msg_text"] = f"Message from {poll.admin.get_full_name()}:"
+            email_context["creator_msg"] = f"{poll.email_info}"
 
     html_message = render_to_string("email.html", email_context)
 
