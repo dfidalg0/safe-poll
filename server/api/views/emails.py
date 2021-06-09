@@ -1,5 +1,6 @@
 from .context import *
 from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 
 import os
 
@@ -55,9 +56,7 @@ def send_poll_emails(request: CleanRequest) -> Response:
             continue
         user_email = user.ref
 
-        user_token = token.token
-
-        emailContent = getEmailMessage(data['language'], poll, user_token)
+        emailContent = getEmailMessage(data['language'], poll, token)
 
         msg = EmailMultiAlternatives(emailContent[0], '', 'contato.safepoll@gmail.com', [user_email])
         msg.attach_alternative(emailContent[1], "text/html")
@@ -141,10 +140,10 @@ def send_list_emails(request: CleanRequest) -> Response:
         if user in emails_voted_list:
             failed_emails['have_already_voted'].append(user.id)
             continue
-        user_token = token.token
+
         # Construct an email message that uses the connection
 
-        emailContent = getEmailMessage(data['language'], poll, user_token)
+        emailContent = getEmailMessage(data['language'], poll, token)
 
         msg = EmailMultiAlternatives(emailContent[0], '', 'contato.safepoll@gmail.com', [user_email])
         msg.attach_alternative(emailContent[1], "text/html")
@@ -167,38 +166,106 @@ def send_list_emails(request: CleanRequest) -> Response:
         }, status=HTTP_202_ACCEPTED)
 
 
-def getEmailMessage(language, poll, user_token):
-    if language == 'pt-BR':
-        subject = f'Convite para participar da eleição: {poll.title}'
-        html_message = (
-            f'<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{poll.title}</strong>' +
-            f', criada por {poll.admin.get_full_name()}. </p> <p> Por favor, clique' +
-            f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> aqui </a>' +
-            ' para votar.</p>'
-            )
+def getEmailMessage(language, poll, token):
+
+    subject = ""
+    email_context = {}
+
+    if language == "pt-BR":
+        subject = f"Convite para participar da eleição: {poll.title}"
+        email_context = {
+            "html_title": "Nova mensagem",
+            "greeting": f"Olá {token.user.name}!",
+            "invitation_text": "Você foi convidado(a) para participar da eleição:",
+            "poll_title": f"{poll.title}",
+            "createdby_text": "Criada por",
+            "creator_name": f"{poll.admin.get_full_name()}",
+            "vote_prompt": "Por favor clique no link abaixo para votar quando estiver pronto(a). 😉",
+            "vote_link_baseurl": f"{BASE_URL}",
+            "vote_link_electionid": f"{poll.id}",
+            "vote_link_usertoken": f"{token.token}",
+            "vote_button_text": "Votar",
+            "thankyou_text": "Obrigado!",
+            "safepollteam_text": "Time SafePoll."
+        }
         if poll.email_info and len(poll.email_info) > 0:
-            html_message += f'<p>Mensagem de {poll.admin.get_full_name()}: <p><strong>"{poll.email_info}"</strong></p>'
-        html_message += '<p>Obrigado!</p> <p>Equipe SafePoll</p>'
+            email_context["creator_msg"] = f"Mensagem de {poll.admin.get_full_name()}: <strong>\"{poll.email_info}\"</strong>"
+    
     elif language == 'es-ES':
-        subject = f'Invitación a participar en la elección: {poll.title}'
-        html_message = (
-            f'<p>Hola!</p> <p>Usted has sido invitado a participar en la elección <strong>{poll.title}</strong>' +
-            f', creado por {poll.admin.get_full_name()}. </p> <p> Por favor haz click' +
-            f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> aquí </a>' +
-            ' para votar.</p>'
-            )
+        subject = f"Invitación a participar en la elección: {poll.title}"
+        email_context = {
+            "html_title": "Nuevo mensaje",
+            "greeting": f"¡Hola {token.user.name}!",
+            "invitation_text": "Usted has sido invitado a participar en la elección:",
+            "poll_title": f"{poll.title}",
+            "createdby_text": "Creado por",
+            "creator_name": f"{poll.admin.get_full_name()}",
+            "vote_prompt": "Haga clic en el enlace de abajo para votar cuando esté listo. 😉",
+            "vote_link_baseurl": f"{BASE_URL}",
+            "vote_link_electionid": f"{poll.id}",
+            "vote_link_usertoken": f"{token.token}",
+            "vote_button_text": "Votar",
+            "thankyou_text": "¡Gracias!",
+            "safepollteam_text": "El equipo de Safepoll."
+        }
         if poll.email_info and len(poll.email_info) > 0:
-            html_message += f'<p>Mensaje de {poll.admin.get_full_name()}: <p><strong>"{poll.email_info}"</strong></p>'
-        html_message += f'<p>¡Gracias!</p> <p>Equipo SafePoll</p>'
+            email_context["creator_msg"] = f"Mensaje de {poll.admin.get_full_name()}: <strong>\"{poll.email_info}\"</strong>"
+    
     else:
-        subject = f'Invitation to participate in the election: {poll.title}'
-        html_message = (
-            f'<p>Hello!</p> <p>You have been invited to participate in the election <strong>{poll.title}</strong>' +
-            f', created by {poll.admin.get_full_name()}. </p> <p> Please click' +
-            f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> here </a>' +
-            ' to vote.</p>'
-            )
+        subject = f"Invitation to participate in the election: {poll.title}"
+        email_context = {
+            "html_title": "New message",
+            "greeting": f"Hello {token.user.name}!",
+            "invitation_text": "You have been invited to participate in the election:",
+            "poll_title": f"{poll.title}",
+            "createdby_text": "Created by",
+            "creator_name": f"{poll.admin.get_full_name()}",
+            "vote_prompt": "Please click the link below to vote when you're ready. 😉",
+            "vote_link_baseurl": f"{BASE_URL}",
+            "vote_link_electionid": f"{poll.id}",
+            "vote_link_usertoken": f"{token.token}",
+            "vote_button_text": "Vote",
+            "thankyou_text": "Thank you!",
+            "safepollteam_text": "The SafePoll team."
+        }
         if poll.email_info and len(poll.email_info) > 0:
-            html_message += f'<p>Message from {poll.admin.get_full_name()}: <p><strong>"{poll.email_info}"</strong></p>'
-        html_message += '<p>Thank you!</p> <p>SafePoll Team</p>'
+            email_context["creator_msg"] = f"Message from {poll.admin.get_full_name()}: <strong>\"{poll.email_info}\"</strong>"
+
+    html_message = render_to_string("email.html", email_context)
+
+    # Implementação anterior:
+
+    # if language == 'pt-BR':
+    #     subject = f'Convite para participar da eleição: {poll.title}'
+    #     html_message = (
+    #         f'<p>Olá!</p> <p>Você foi convidado para participar da eleição <strong>{poll.title}</strong>' +
+    #         f', criada por {poll.admin.get_full_name()}. </p> <p> Por favor, clique' +
+    #         f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> aqui </a>' +
+    #         ' para votar.</p>'
+    #         )
+    #     if poll.email_info and len(poll.email_info) > 0:
+    #         html_message += f'<p>Mensagem de {poll.admin.get_full_name()}: <p><strong>"{poll.email_info}"</strong></p>'
+    #     html_message += '<p>Obrigado!</p> <p>Equipe SafePoll</p>'
+    # elif language == 'es-ES':
+    #     subject = f'Invitación a participar en la elección: {poll.title}'
+    #     html_message = (
+    #         f'<p>Hola!</p> <p>Usted has sido invitado a participar en la elección <strong>{poll.title}</strong>' +
+    #         f', creado por {poll.admin.get_full_name()}. </p> <p> Por favor haz click' +
+    #         f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> aquí </a>' +
+    #         ' para votar.</p>'
+    #         )
+    #     if poll.email_info and len(poll.email_info) > 0:
+    #         html_message += f'<p>Mensaje de {poll.admin.get_full_name()}: <p><strong>"{poll.email_info}"</strong></p>'
+    #     html_message += f'<p>¡Gracias!</p> <p>Equipo SafePoll</p>'
+    # else:
+    #     subject = f'Invitation to participate in the election: {poll.title}'
+    #     html_message = (
+    #         f'<p>Hello!</p> <p>You have been invited to participate in the election <strong>{poll.title}</strong>' +
+    #         f', created by {poll.admin.get_full_name()}. </p> <p> Please click' +
+    #         f'<a href="{BASE_URL}/polls/{poll.id}/vote?token={user_token}"> here </a>' +
+    #         ' to vote.</p>'
+    #         )
+    #     if poll.email_info and len(poll.email_info) > 0:
+    #         html_message += f'<p>Message from {poll.admin.get_full_name()}: <p><strong>"{poll.email_info}"</strong></p>'
+    #     html_message += '<p>Thank you!</p> <p>SafePoll Team</p>'
     return [subject, html_message]
