@@ -150,6 +150,7 @@ function CreatePoll({ open, onClose, intl }) {
   const [winners_number, setWinnersNumber] = useState('');
   const [deadline, setDeadline] = useState(null);
   const [options, setOptions] = useState([]);
+  const [optdesc, setOptDesc] = useState([]);
   const [secret_vote, setSecretVote] = useState(true);
 
   // Dado da nova opção de voto a ser adicionada
@@ -181,6 +182,7 @@ function CreatePoll({ open, onClose, intl }) {
     setWinnersNumber('');
     setDeadline(null);
     setOptions([]);
+    setOptDesc([]);
     setSecretVote(true);
     // Limpando erros
     setOptionErrors([]);
@@ -243,6 +245,7 @@ function CreatePoll({ open, onClose, intl }) {
       winners_number,
       deadline: deadline.toJSON().slice(0, 10),
       options,
+      optdesc,
       secret_vote,
     };
     if (data.type_id === 4 || data.type_id === 5 ) data.winners_number = Number(data.winners_number);
@@ -293,6 +296,7 @@ function CreatePoll({ open, onClose, intl }) {
     winners_number,
     deadline,
     options,
+    optdesc,
     secret_vote,
     onClose,
     token,
@@ -306,8 +310,10 @@ function CreatePoll({ open, onClose, intl }) {
     // Inserção da nova opção na lista de opções (caso não esteja repetida)
     if (newOption && !newOptionError) {
       setOptions((options) => [...options, newOption]);
+      setOptDesc((optdesc) => [...optdesc, '']);
       setNewOption('');
     }
+
   }, [newOptionError, newOption]);
 
   // Deleção de opções
@@ -316,8 +322,12 @@ function CreatePoll({ open, onClose, intl }) {
       const newOptions = [...options];
       newOptions.splice(index, 1);
       setOptions(newOptions);
+
+      const newOptDesc = [...optdesc];
+      newOptDesc.splice(index, 1);
+      setOptDesc(newOptDesc);
     },
-    [options]
+    [options, optdesc]
   );
 
   // Atualização de uma opção
@@ -339,6 +349,18 @@ function CreatePoll({ open, onClose, intl }) {
       }
     },
     [deleteOption]
+  );
+
+  // Atualização de uma descrição de opção
+  const updateOptDesc = useCallback(
+    (index, value) => {
+      setOptDesc((optdesc) => {
+        const newOptDesc = [...optdesc];
+        newOptDesc[index] = value;
+        return newOptDesc;
+      });
+    },
+      []
   );
 
   return (
@@ -518,6 +540,17 @@ function CreatePoll({ open, onClose, intl }) {
                           className: classes.input,
                         }}
                       />
+                      <TextField
+                        autoComplete='off'
+                        className={classes.description}
+                        variant='outlined'
+                        placeholder='Descrição do candidato (opcional)'
+                        value={optdesc[index]}
+                        onChange={(e) => updateOptDesc(index, e.target.value)}
+                        InputProps={{
+                          className: classes.input,
+                        }}
+                      />
                     </Grid>
                     <Grid item xs={1}>
                       <IconButton onClick={() => deleteOption(index)}>
@@ -551,6 +584,7 @@ function CreatePoll({ open, onClose, intl }) {
                   </Grid>
                 </Grid>
               </Grid>
+
             </Grid>
           </DialogContent>
 

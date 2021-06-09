@@ -41,6 +41,10 @@ def get_poll(request, pk):
         is_unique_list(v) and
         all(item and type(item) == str for item in v)
     ),
+    'optdesc': lambda v: (
+        len(v) > 1 and
+        all(type(item) == str for item in v)
+    ),
     'secret_vote': lambda v: type(v) == bool,
     'type_id': lambda v: v in VALID_POLL_TYPES,
     'votes_number' : lambda v: v and type(v) == int and v > 0,
@@ -52,7 +56,16 @@ def create_poll(request: CleanRequest) -> Response:
     data["admin"] = request.user
 
     options = data["options"]
+    optdesc = data["optdesc"]
+
     del data["options"]
+    del data["optdesc"]
+
+    if len(options) != len(optdesc):
+        return Response({
+            'message': 'Formulário Inválido',
+            'fields': ['options', 'optdesc']
+        }, status=HTTP_422_UNPROCESSABLE_ENTITY)
 
     try:
         with transaction.atomic():
@@ -60,8 +73,8 @@ def create_poll(request: CleanRequest) -> Response:
 
             objects = []
 
-            for option in options:
-                objects.append(Option(name=option, description='', poll=poll))
+            for option, description in zip(options, optdesc):
+                objects.append(Option(name=option, description=description, poll=poll))
 
             Option.objects.bulk_create(objects)
     except Exception as exc:

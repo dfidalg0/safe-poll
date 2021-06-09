@@ -18,6 +18,12 @@ export const useStyles = makeStyles(theme => ({
         height: '40px',
         marginBottom: '20px'
     },
+    description: {
+        width: '87%',
+        height: '40px',
+        marginBottom: '20px',
+        marginLeft: '50px'
+    },
     button: {
         width: '100px',
         marginBottom: '5px',
