@@ -18,7 +18,6 @@ import {
   InputAdornment,
 } from '@material-ui/core';
 
-import Pagination from '@material-ui/lab/Pagination';
 
 import { Fragment } from 'react';
 
@@ -36,6 +35,8 @@ import {
 import { Link } from 'react-router-dom';
 import { fetchUserGroups, deletePoll } from '@/store/actions/items';
 import { notify } from '@/store/actions/ui';
+
+import Pagination from '@material-ui/lab/Pagination';
 
 import LoadingScreen from '@/components/loading-screen';
 import VotesTable from '@/components/votes-table';
@@ -161,6 +162,9 @@ const messages = defineMessages({
   linkDestroy: {
     id: 'manage.poll.link.destroy',
   },
+  searchMessage: {
+    id: 'manage.poll.search-message'
+  },
 });
 
 function Poll({ intl }) {
@@ -172,9 +176,15 @@ function Poll({ intl }) {
   const [emailsAddOpen, setEmailsAddOpen] = useState(false);
   const [emailInfoOpen, setEmailInfoOpen] = useState(false);
   const [page, setPage] = useState(1);
-  const handleChange = (event, value) => {
+  const pageChange = (event, value) => {
     setPage(value);
   };
+  const [searched, setSearched] = useState('');
+  const search = (event) => {
+    setSearched(event.target.value);
+  };
+  const searchedEmail = (emails || []).filter(email => email.includes(searched));
+
   const dispatch = useDispatch();
 
   const router = useHistory();
@@ -661,7 +671,14 @@ function Poll({ intl }) {
                   setOpened={setEmailInfoOpen}
                 />
               </Dialog>
-              {emails.slice(5*(page - 1), 5*page).map((email, index) => (
+
+              <form className={classes.root} noValidate autoComplete="off">
+                <div>
+                  <TextField id="search-input" label={intl.formatMessage(messages.searchMessage)} value={searched} onChange={search} />
+                </div>
+              </form>
+
+              {searchedEmail.slice(5*(page - 1), 5*page).map((email, index) => (
                 <EmailItem
                   email={email}
                   token={token}
@@ -672,8 +689,10 @@ function Poll({ intl }) {
                 />
               ))}
               <Pagination
-                  count={emails.length%5===0 ? emails.length/5 : ~~(emails.length/5) + 1}
-                  onChange={handleChange}
+                  count={searchedEmail.length%5===0
+                      ? searchedEmail.length/5
+                      : ~~(searchedEmail.length/5) + 1}
+                  onChange={pageChange}
               />
             </>
           )

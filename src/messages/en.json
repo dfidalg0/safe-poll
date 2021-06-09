@@ -115,5 +115,6 @@
   "manage.poll.type.description.5": "The voter can vote for up to x candidates and the winners will be the x candidates with the most votes.",
   "manage.poll.bulk-add-email.description": "You can add manually or use the button below to insert from a '.csv' file",
   "manage.poll.bulk-add-email.button-label": "Add File",
-  "manage.poll.bulk-add-email.success": "Emails were successfully added"
+  "manage.poll.bulk-add-email.success": "Emails were successfully added",
+  "manage.poll.search-message": "Search for Email"
 }
