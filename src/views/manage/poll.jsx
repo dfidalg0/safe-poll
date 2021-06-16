@@ -452,14 +452,14 @@ function Poll({ intl }) {
           {POLL_TYPES[poll.type - 1]}
         </Typography>
         
-        { (poll.type === 4 || poll.type === 5) && (
+        { (poll.type === 4 || poll.type === 5 || poll.type === 6) && (
           <Typography variant="overline" display="block" gutterBottom>
             {intl.formatMessage(messages.winners_number)}
             {' : '}
             {poll.winners_number}
           </Typography>
         )}
-        { (poll.type === 3 || poll.type === 5) && (
+        { (poll.type === 3 || poll.type === 5 || poll.type === 6) && (
           <Typography variant="overline" display="block" gutterBottom>
             {intl.formatMessage(messages.votes_number)}
             {' : '}

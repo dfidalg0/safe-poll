@@ -248,12 +248,12 @@ function CreatePoll({ open, onClose, intl }) {
       optdesc,
       secret_vote,
     };
-    if (data.type_id === 4 || data.type_id === 5 ) data.winners_number = Number(data.winners_number);
+    if (data.type_id >= 4 && data.type_id <= 6 ) data.winners_number = Number(data.winners_number);
     else data.winners_number = 1;
 
-    if (data.type_id === 3)      data.votes_number = Number(data.votes_number);
-    else if (data.type_id === 5) data.votes_number = data.winners_number;
-    else                         data.votes_number = 1;
+    if (data.type_id === 3 || data.type_id === 6) data.votes_number = Number(data.votes_number);
+    else if (data.type_id === 5)               data.votes_number = data.winners_number;
+    else                                       data.votes_number = 1;
     
 
     // Estado de carregamento do envio
@@ -449,27 +449,7 @@ function CreatePoll({ open, onClose, intl }) {
                   ))}
                 </Select>
               </Grid>
-              {type_id === 3 && (
-                <Grid item xs={12}>
-                  <InputLabel htmlFor="votes_number">
-                    {intl.formatMessage(messages.votes_number)}
-                  </InputLabel>
-                  <TextField
-                    id="votes_number"
-                    autoComplete="off"
-                    className={classes.field}
-                    multiline
-                    required
-                    variant="outlined"
-                    value={votes_number}
-                    onChange={(e) => setVotesNumber(e.target.value)}
-                    InputProps={{
-                      className: classes.input,
-                    }}
-                  />
-                </Grid>
-              )}
-              {( type_id === 4 || type_id === 5 ) && (
+              {( type_id >= 4 && type_id <= 6 ) && (
                 <Grid item xs={12}>
                   <InputLabel htmlFor="winners_number">
                     {intl.formatMessage(messages.winners_number)}
@@ -489,7 +469,26 @@ function CreatePoll({ open, onClose, intl }) {
                   />
                 </Grid>
               )}
-
+              { (type_id === 3 || type_id === 6) && (
+                <Grid item xs={12}>
+                  <InputLabel htmlFor="votes_number">
+                    {intl.formatMessage(messages.votes_number)}
+                  </InputLabel>
+                  <TextField
+                    id="votes_number"
+                    autoComplete="off"
+                    className={classes.field}
+                    multiline
+                    required
+                    variant="outlined"
+                    value={votes_number}
+                    onChange={(e) => setVotesNumber(e.target.value)}
+                    InputProps={{
+                      className: classes.input,
+                    }}
+                  />
+                </Grid>
+              )}
               <MuiPickersUtilsProvider
                 utils={DateFnsUtils}
                 locale={languageContext.dateLocale}

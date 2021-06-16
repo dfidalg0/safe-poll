@@ -39,6 +39,9 @@ const messages = defineMessages({
   chooseCandidate3: {
     id: 'vote-form.choose-candidate-type-3',
   },
+  chooseCandidate6: {
+    id: 'vote-form.choose-candidate-type-6',
+  },
   sendVote: {
     id: 'vote-form.send-vote',
   },
@@ -77,7 +80,9 @@ function Vote({ location, intl }) {
     [loading, setLoading] = useState(true),
     dispatch = useDispatch(),
     router = useHistory(),
-    [selected, setSelected] = useState(new Set());
+    [selected, setSelected] = useState(new Set()),
+    [counters, setCounters] = useState(new Array());
+
 
   const handleChange = useCallback((event) => {
     setMark(event.target.value);
@@ -93,6 +98,17 @@ function Vote({ location, intl }) {
     }
     setSelected(new Set([...newSet]));
   };
+  
+  const setCount = (index, newCounter) => {
+
+      const newCounters = Object.assign([], counters);
+      newCounters[index] = newCounter;
+      
+    if(newCounters.reduce((a,b) => a + b , 0) <= poll.votes_number && newCounter >= 0)
+      setCounters(newCounters);
+
+  };
+
 
   const result = queryString.parse(location.search),
     uid = useParams().uid,
@@ -108,6 +124,18 @@ function Vote({ location, intl }) {
     };
     if(poll.type === 1 || poll.type === 4)
       data.option_id = [Number(mark.slice(3))];
+    
+
+    if(poll.type === 6)
+    { 
+      var i,j;
+      data.option_id = [];
+      for (i = 0 ; i < counters.length ; i++) 
+        for(j = 0 ; j < counters[i] ; j++ )
+          data.option_id.push(candidates[i].id)
+
+    }
+
     try {
       setLoading(true);
       await axios.post('/api/votes/compute', data);
@@ -127,7 +155,7 @@ function Vote({ location, intl }) {
       dispatch(notify(intl.formatMessage(info), 'error'));
       setLoading(false);
     }
-  }, [poll, mark, selected, token, dispatch, router, intl, perm]);
+  }, [poll, mark, selected, counters, token, dispatch, router, intl, perm]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -136,6 +164,7 @@ function Vote({ location, intl }) {
         const { data: poll } = await axios.get(`/api/polls/get/${uid}/`);
         setPoll(poll);
         setCandidates(poll.options);
+        setCounters(new Array(poll.options.length).fill(0));
       } catch ({ response: { data } }) {
         dispatch(notify(data.message, 'error'));
         router.replace(getPath('manage'));
@@ -143,14 +172,12 @@ function Vote({ location, intl }) {
         setLoading(false);
       }
     };
-
+    
     fetchData();
   }, [dispatch, router, uid]);
 
   if (!poll || !candidates) return <LoadingScreen />;
 
-
-  if (poll.type === 1 || poll.type === 4)
   return (
     <Grid container direction='column'>
       <Grid item>
@@ -176,91 +203,45 @@ function Vote({ location, intl }) {
                 className={classes.formControl}
                 disabled={loading}
               >
-                <FormLabel component='legend'>
-                  {intl.formatMessage(messages.chooseCandidate)}
-                </FormLabel>
-                <RadioGroup
-                  color='primary'
-                  value={mark}
-                  onChange={handleChange}
-                >
-                  {candidates.map((candidate, i) => (
-                    <>
-                    <FormControlLabel
-                      key={i}
-                      value={'opt' + candidate.id}
-                      control={<Radio />}
-                      label={candidate.name}
-                    />
-
-                    <Typography
-                        variant='caption'
-                        className={classes.description}
+                { (poll.type === 1 || poll.type === 4) && (
+                  <div>   
+                    <FormLabel component='legend'>
+                      {intl.formatMessage(messages.chooseCandidate)}
+                    </FormLabel>
+                    
+                    <RadioGroup
+                    color='primary'
+                    value={mark}
+                    onChange={handleChange}
                     >
-                      {candidate.description}
-                    </Typography>
-                    </>
-
-                  ))}
-                </RadioGroup>
-                <FormHelperText>
-                  {mark !== ''
-                    ? intl.formatMessage(messages.candidateChoosen)
-                    : null}
-                </FormHelperText>
-              </FormControl>
-
-              <Button
-                fullWidth
-                variant='contained'
-                color='primary'
-                className={classes.submit}
-                disabled={loading || !mark}
-                onClick={submit}
-              >
-                {intl.formatMessage(messages.sendVote)}
-              </Button>
-            </form>
-            <p></p>
-          </div>
-        </Container>
-      </Grid>
-    </Grid>
-  );
-
-  if (poll.type === 2 || poll.type === 3 || poll.type === 5)
-  return (
-    <Grid container direction='column'>
-      <Grid item>
-        <LocaleSelector />
-      </Grid>
-      {poll.secret_vote
-          ? <Alert severity="info">{intl.formatMessage(messages.secretVoteReminder)}</Alert>
-          : <Alert severity="info">{intl.formatMessage(messages.nonSecretVoteReminder)}</Alert>
-      }
-      <Grid item>
-        <Container className={classes.root} maxWidth='xs'>
-          <div className={classes.paper}>
-            <Avatar className={classes.avatar} />
-            {loading && (
-              <CircularProgress style={{ marginTop: '-51px' }} size={45} />
-            )}
-            <Typography variant='h6'>{poll.title}</Typography>
-            <Typography variant='body1'>{poll.description}</Typography>
-            <form className={classes.form} noValidate>
-              <FormControl
-                error={error}
-                component='fieldset'
-                className={classes.formControl}
-                disabled={loading}
-              >
+                      {candidates.map((candidate, i) => (
+                        <>
+                        <FormControlLabel
+                          key={i}
+                          value={'opt' + candidate.id}
+                          control={<Radio />}
+                          label={candidate.name}
+                        />
+  
+                      <Typography
+                          variant='caption'
+                          className={classes.description}
+                      >
+                        {candidate.description}
+                      </Typography>
+                      </>
+                     ))}
+                    </RadioGroup>
+                 </div>
+                )}
                 { (poll.type === 3 || poll.type === 5) && (
                   <FormLabel component='legend'> 
                     {intl.formatMessage(messages.chooseCandidate3, { nOptions: poll.votes_number })} 
                   </FormLabel>
                 )}
-
-                {candidates.map((candidate, i) => (
+                { (poll.type === 2 || poll.type === 3 || poll.type === 5 ) && (
+                  <>
+                  {candidates.map((candidate, i) => (
                     <>
                     <FormControlLabel
                       key={i}
@@ -279,12 +260,41 @@ function Vote({ location, intl }) {
                     >
                       {candidate.description}
                     </Typography>
-                    </>
-
+                    </>     
                   ))}
+                </>
+                )}
+                { (poll.type === 6) && (
+                  <div>
+                    <FormLabel component='legend'> 
+                      {intl.formatMessage(messages.chooseCandidate6, { nOptions: poll.votes_number })} 
+                    </FormLabel>
+                  {candidates.map((candidate, index) => (
+                    
+                    <>
+                    <div>
 
+                      {candidate.name}
+                      <Button onClick={()=>setCount(index, counters[index] - 1)} >-</Button>
+                        {counters[index]}
+                      <Button onClick={()=>setCount(index, counters[index] + 1)} >+</Button>
+
+                    </div>
+
+                    <Typography
+                        variant='caption'
+                        className={classes.description}
+                    >
+                      {candidate.description}
+                    </Typography>
+
+                    </>
+                  )) }          
+
+
+                 </div>
+                )}
               </FormControl>
-
               <Button
                 fullWidth
                 variant='contained'

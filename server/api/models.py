@@ -175,10 +175,10 @@ class Poll (models.Model):
 
     #Computar os resultados da eleicao:
     def compute_result(self):
-        if self.type.id >= 1 and self.type.id <= 5 :
-            return self._compute_result_unranked_voting()
+        if self.type.id >= 1 and self.type.id <= 6 :
+            return self.compute_result()
 
-    def _compute_result_unranked_voting(self):
+    def compute_result(self):
         options = Option.objects.filter(poll_id=self.id)
         votes   = Vote.objects.filter(poll_id=self.id)
         counting_votes = {}

@@ -29,6 +29,7 @@
   "reset-password-confirm": "If the email entered corresponds to an account, recovery instructions will be sent.",
   "vote-form.choose-candidate": "Choose your candidate:",
   "vote-form.choose-candidate-type-3": "Choose up to {nOptions} candidates:",
+  "vote-form.choose-candidate-type-6": "Distribute up to {nOptions} votes:",
   "vote-form.send-vote": "Submit vote",
   "vote-form.confirm": "Vote successfully registered",
   "vote-form.candidate-choosen": "A candidate has been selected.",

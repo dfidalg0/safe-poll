@@ -6,7 +6,7 @@ from django.http import HttpResponse
 @with_rules({
     'token': lambda v: type(v) == str,
     'perm': lambda v: type(v) == bool,
-    'option_id': is_unique_list,
+    'option_id': lambda v: len(v) > 0 ,
     'poll_id': is_unsigned_int
 })
 def compute_vote(request: CleanRequest) -> Response:
@@ -74,11 +74,12 @@ def compute_vote(request: CleanRequest) -> Response:
                         'message': 'Número incorreto de opções selecionadas'
                     } , status = HTTP_422_UNPROCESSABLE_ENTITY)
 
-            elif poll.type.id == 3 or poll.type.id == 5:
+            elif poll.type.id == 3 or poll.type.id == 5 or poll.type.id == 6:
                 if len(options) == 0 or len(options) > poll.votes_number:
                     return Response({
                         'message': 'Número incorreto de opções selecionadas'
                     } , status = HTTP_422_UNPROCESSABLE_ENTITY)
+
             
             if user:
                 poll.emails_voted.add(user)
