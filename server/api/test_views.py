@@ -127,11 +127,11 @@ class VotesDetailsResultNonSecretPollTest(TestCase):
         client = APIClient()
         # half votes in option 'A'
         for n in range(0, 3):
-            client.post('/api/votes/compute', {'token': tokens[n], 'option_id': option1.pk, 'poll_id': 1}, format='json')
+            client.post('/api/votes/compute', {'token': tokens[n], 'option_id': [option1.pk], 'poll_id': 1, 'perm': False}, format='json')
         
         # half votes in option 'B'
         for n in range(3, 5):
-            client.post('/api/votes/compute', {'token': tokens[n], 'option_id': 2, 'poll_id': 1}, format='json')
+            client.post('/api/votes/compute', {'token': tokens[n], 'option_id': [option2.pk], 'poll_id': 1, 'perm': False}, format='json')
         
 
     #'votes results' test
