@@ -213,3 +213,82 @@ class VotesDetailsResultSecretPollTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data['message'], 'Eleição secreta!')
 
+
+class CreateGroupViewsTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        user = baker.make('api.UserAccount')
+        user.ref = 'admin@safepoll.com'
+        user.save()
+        cls.user = user
+        
+    def test_create_group(self):
+        client = APIClient()
+        client.force_authenticate(user=self.user) #Do not check authentication
+        response = client.post('/api/groups/create', {'name': 'Group Test', 'emails': ['a@safepoll.com', 'b@safepoll.com']},  format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], 'Grupo criado com sucesso')
+    
+    def test_create_group_with_same_name(self):
+        client = APIClient()
+        client.force_authenticate(user=self.user) #Do not check authentication
+        client.post('/api/groups/create', {'name': 'Group Test', 'emails': ['a@safepoll.com', 'b@safepoll.com']},  format='json')
+        response = client.post('/api/groups/create', {'name': 'Group Test', 'emails': ['c@safepoll.com']},  format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['message'], 'Grupo com este nome já existe!')
+
+    def test_create_group_name_not_string(self):
+        client = APIClient()
+        client.force_authenticate(user=self.user) #Do not check authentication
+        response = client.post('/api/groups/create', {'name': 12345, 'emails': ['a@safepoll.com']},  format='json')        
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertEqual(response.data['message'], 'Formulário Inválido')
+        self.assertEqual(response.data['fields'], ['name'])
+
+    def test_create_group_emails_empty(self):
+        client = APIClient()
+        client.force_authenticate(user=self.user) #Do not check authentication
+        response = client.post('/api/groups/create', {'name': 'Group Test', 'emails': []},  format='json')        
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertEqual(response.data['message'], 'Formulário Inválido')
+        self.assertEqual(response.data['fields'], ['emails'])
+
+    def test_create_group_emails_not_in_correct_format(self):
+        client = APIClient()
+        client.force_authenticate(user=self.user) #Do not check authentication
+        response = client.post('/api/groups/create', {'name': 'Group Test', 'emails': ['hello', 'how r u?']},  format='json')  
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertEqual(response.data['message'], 'Formulário Inválido')
+        self.assertEqual(response.data['fields'], ['emails'])
+
+
+class DeleteGroupViewsTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        user = baker.make('api.UserAccount')
+        user.ref = 'admin@safepoll.com'
+        user.save()
+        cls.user = user
+        group = baker.make('api.Group')
+        group.admin = user
+        group.pk = 1
+        group.name = 'Test Group'
+        group.save()
+
+    def test_delete_group(self):
+        client = APIClient()
+        client.force_authenticate(user = self.user)
+        response = client.delete('/api/groups/delete/1')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['deleted'], True)
+        self.assertEqual(response.data['message'], 'Grupo deletado com sucesso')
+
+
+    def test_delete_group_do_not_exist(self):
+        client = APIClient()
+        client.force_authenticate(user = self.user)
+        response = client.delete('/api/groups/delete/2')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['message'], 'Grupo não encontrado')
