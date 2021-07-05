@@ -292,3 +292,96 @@ class DeleteGroupViewsTests(TestCase):
         response = client.delete('/api/groups/delete/2')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data['message'], 'Grupo não encontrado')
+
+
+class GetGroupViewsTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        user = baker.make('api.UserAccount')
+        user.ref = 'admin@safepoll.com'
+        user.save()
+        cls.user = user
+
+        group1 = baker.make('api.Group')
+        group1.admin = user
+        group1.pk = 1
+        group1.name = 'Test Group 1'
+        group1.save()
+
+        group2 = baker.make('api.Group')
+        group2.admin = user
+        group2.pk = 2
+        group2.name = 'Test Group 2'
+        group2.save()
+    
+    def test_get_group(self):
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+        response1 = client.get('/api/groups/get/1',  format='json')  
+        response2 = client.get('/api/groups/get/2',  format='json')  
+        self.assertEqual(response1.data['name'], 'Test Group 1')
+        self.assertEqual(response1.status_code, status.HTTP_200_OK)
+        self.assertEqual(response2.data['name'], 'Test Group 2')
+        self.assertEqual(response2.status_code, status.HTTP_200_OK)
+
+    def test_get_groups(self):
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+        response = client.get('/api/groups/mine', format='json')
+        self.assertEqual(response.data, [{'id': 1, 'name': 'Test Group 1', 'admin': 1}, {'id': 2, 'name': 'Test Group 2', 'admin': 1}])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_group_do_not_exists(self):
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+        response = client.get('/api/groups/get/3',  format='json')  
+        self.assertEqual(response.data['message'], 'Grupo não encontrado')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class UpdateGroupViewsTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        user = baker.make('api.UserAccount')
+        user.ref = 'admin@safepoll.com'
+        user.save()
+        cls.user = user
+
+        group1 = baker.make('api.Group')
+        group1.admin = user
+        group1.pk = 1
+        group1.name = 'Test Group 1'
+        group1.save()
+
+    def test_update_group(self):
+        client = APIClient()
+        client.force_authenticate(self.user)
+        response = client.put('/api/groups/update/1', {'emails': ['a@safepoll.com', 'b@safepoll.com', 'c@safepoll.com']}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], 1)
+        self.assertEqual(response.data['message'], 'Grupo atualizado com sucesso')
+    
+    def test_update_group_do_not_exist(self):
+        client = APIClient()
+        client.force_authenticate(self.user)
+        response = client.put('/api/groups/update/2', {'emails': ['a@safepoll.com']}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['message'], 'Grupo não encontrado')
+
+    def test_update_group_empty_emails(self):
+        client = APIClient()
+        client.force_authenticate(self.user)
+        response = client.put('/api/groups/update/1', {'emails': []}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertEqual(response.data['message'], 'Formulário Inválido')
+        self.assertEqual(response.data['fields'], ['emails'])
+
+    def test_update_group_wrong_format_email(self):
+        client = APIClient()
+        client.force_authenticate(self.user)
+        response = client.put('/api/groups/update/1', {'emails': ['hello', 'tudo bem?']}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertEqual(response.data['message'], 'Formulário Inválido')
+        self.assertEqual(response.data['fields'], ['emails'])
