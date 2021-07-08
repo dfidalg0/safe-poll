@@ -7,12 +7,11 @@ import {
   FormLabel,
   FormControl,
   FormControlLabel,
-  FormHelperText,
   CircularProgress,
   Typography,
   Grid,
   Checkbox,
-  MenuItem,
+  ButtonGroup,
 } from '@material-ui/core';
 
 import LoadingScreen from '@/components/loading-screen';
@@ -81,7 +80,7 @@ function Vote({ location, intl }) {
     dispatch = useDispatch(),
     router = useHistory(),
     [selected, setSelected] = useState(new Set()),
-    [counters, setCounters] = useState(new Array());
+    [counters, setCounters] = useState([]);
 
 
   const handleChange = useCallback((event) => {
@@ -155,7 +154,7 @@ function Vote({ location, intl }) {
       dispatch(notify(intl.formatMessage(info), 'error'));
       setLoading(false);
     }
-  }, [poll, mark, selected, counters, token, dispatch, router, intl, perm]);
+  }, [poll, mark, selected, counters, candidates, token, dispatch, router, intl, perm]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -273,12 +272,32 @@ function Vote({ location, intl }) {
                     
                     <>
                     <div>
-
+                    
                       {candidate.name}
-                      <Button onClick={()=>setCount(index, counters[index] - 1)} >-</Button>
-                        {counters[index]}
-                      <Button onClick={()=>setCount(index, counters[index] + 1)} >+</Button>
-
+                      <ButtonGroup size="small" style = {{ marginLeft: '250px' }}  >
+                      <Button 
+                        color="primary"
+                        variant="contained"
+                        style = {{ height: '23px' }}
+                        onClick={()=>setCount(index, counters[index] - 1)} 
+                        disabled={loading || !counters[index] }
+                      >
+                      -
+                      </Button>
+                      <Button
+                      style = {{ height: '23px' }}
+                      >
+                        {counters[index]}</Button>
+                      <Button 
+                        color="primary"
+                        variant="contained"
+                        style = {{ height: '23px' }}
+                        onClick={()=>setCount(index, counters[index] + 1)} 
+                        disabled={loading || counters.reduce((a,b) => a + b , 0) === poll.votes_number}
+                      >
+                      +
+                      </Button>
+                      </ButtonGroup>
                     </div>
 
                     <Typography

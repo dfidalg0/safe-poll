@@ -119,6 +119,9 @@ const messages = defineMessages({
   pollDescriptionType5: {
     id: 'manage.poll.type.description.5',
   },
+  pollDescriptionType6: {
+    id: 'manage.poll.type.description.6',
+  },
 });
 
 /**

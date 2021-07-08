@@ -114,6 +114,7 @@
   "manage.poll.type.description.3": "O eleitor pode votar em até uma certa quantidade de candidatos e o vencedor será quem possui mais votos.",
   "manage.poll.type.description.4": "O eleitor pode votar em apenas um candidato e os vencedores serão os candidatos que possuirem mais votos.",
   "manage.poll.type.description.5": "O eleitor pode votar em até x candidatos e os vencedores serão os x candidatos que possuírem mais votos.",
+  "manage.poll.type.description.6": "O eleitor distribui seus x votos podendo votar várias vezes no mesmo candidato.",
   "manage.poll.bulk-add-email.description": "Você pode adicionar manualmente ou utilizar o botão abaixo para inserir a partir de um arquivo '.csv'",
   "manage.poll.bulk-add-email.button-label": "Adicionar Arquivo",
   "manage.poll.bulk-add-email.success": "Os emails foram adicionados com sucesso",
