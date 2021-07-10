@@ -171,11 +171,16 @@ def getEmailMessage(language, poll, token):
     subject = ""
     email_context = {}
 
+    # Usar nome do email em caso de 
+    recipient_name = token.user.name
+    if recipient_name is None:
+        recipient_name = token.user.ref.partition('@')[0]
+
     if language == "pt-BR":
         subject = f"Convite para participar da eleição: {poll.title}"
         email_context = {
             "html_title": "Nova mensagem",
-            "greeting": f"Olá {token.user.name}!",
+            "greeting": f"Olá {recipient_name}!",
             "invitation_text": "Você foi convidado(a) para participar da eleição:",
             "poll_title": f"{poll.title}",
             "createdby_text": "Criada por",
@@ -196,7 +201,7 @@ def getEmailMessage(language, poll, token):
         subject = f"Invitación a participar en la elección: {poll.title}"
         email_context = {
             "html_title": "Nuevo mensaje",
-            "greeting": f"¡Hola {token.user.name}!",
+            "greeting": f"¡Hola {recipient_name}!",
             "invitation_text": "Usted has sido invitado a participar en la elección:",
             "poll_title": f"{poll.title}",
             "createdby_text": "Creado por",
@@ -217,7 +222,7 @@ def getEmailMessage(language, poll, token):
         subject = f"Invitation to participate in the election: {poll.title}"
         email_context = {
             "html_title": "New message",
-            "greeting": f"Hello {token.user.name}!",
+            "greeting": f"Hello {recipient_name}!",
             "invitation_text": "You have been invited to participate in the election:",
             "poll_title": f"{poll.title}",
             "createdby_text": "Created by",
