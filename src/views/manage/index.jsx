@@ -1,64 +1,24 @@
-import { AppBar, Toolbar, Typography, Button, Grid } from '@material-ui/core';
-
-import { makeStyles } from '@material-ui/core/styles';
-
+import { Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
-
 import { fetchUserGroups } from '@/store/actions/items';
-import { logout } from '@/store/actions/auth';
-
-import { Route, Switch, Link } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
+import { useEffect } from 'react';
+import { getPath } from '@/utils/routes';
 
 import Dashboard from './dashboard';
 import EmailsGroup from './emailsGroup';
 import Poll from './poll';
 import Group from './group';
-import { LocaleSelector } from './../../components/language-wrapper';
 
-import { useEffect } from 'react';
-import { useRouteMatch, useLocation } from 'react-router-dom';
-import { defineMessages, injectIntl } from 'react-intl';
-
-import { getPath } from '@/utils/routes';
+import Bar from '@/components/Bar';
 
 const useStyles = makeStyles({
-  app: {
-    textAlign: 'center',
-  },
-  header: {
-    backgroundColor: '#282c34',
-    height: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 'calc(10px + 2vmin)',
-    color: 'white',
-  },
-  appBar: {
-    backgroundColor: '#0b1016',
-    width: '100vw',
-  },
-  logo: {
-    textDecoration: 'none',
-    color: 'white',
-    flexGrow: 1,
-  },
-  button: {
-    color: 'white',
-  },
   panel: {
     margin: '104px 0px 30pt 0px',
   },
 });
 
-const messages = defineMessages({
-  leave: {
-    id: 'manage.leave',
-  },
-});
-
-function Main({ intl }) {
+export default function Main() {
   const classes = useStyles();
 
   const dispatch = useDispatch();
@@ -71,26 +31,9 @@ function Main({ intl }) {
     }
   }, [groups, dispatch]);
 
-  const { url } = useRouteMatch();
-  const { pathname: path } = useLocation();
-
   return (
     <>
-      <AppBar className={classes.appBar} position='fixed'>
-        <Toolbar>
-          <Link
-            to={getPath('manage')}
-            className={classes.logo}
-            onClick={(e) => (path === url ? e.preventDefault() : null)}
-          >
-            <Typography variant='h6'>SafePoll</Typography>
-          </Link>
-          <LocaleSelector black={true} />
-          <Button className={classes.button} onClick={() => dispatch(logout())}>
-            {intl.formatMessage(messages.leave)}
-          </Button>
-        </Toolbar>
-      </AppBar>
+      <Bar />
       <Grid container justify='center' className={classes.panel}>
         <Switch>
           <Route exact path={getPath('manage')} component={Dashboard} />
@@ -102,5 +45,3 @@ function Main({ intl }) {
     </>
   );
 }
-
-export default injectIntl(Main);

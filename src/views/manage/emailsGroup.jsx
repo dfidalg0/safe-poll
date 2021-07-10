@@ -76,8 +76,8 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.primary.main,
     color: theme.palette.primary.contrastText,
     '&:hover': {
-      backgroundColor: theme.palette.secondary.main,
-      color: theme.palette.secondary.contrastText,
+      backgroundColor: theme.palette.action.main,
+      color: theme.palette.action.contrastText,
     },
   },
   deleteIcon: {

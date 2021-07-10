@@ -57,7 +57,7 @@ function selectDateLocale(locale) {
 }
 
 export function LocaleSelector({ black }) {
-  const color = black ? '#0b1016' : 'white';
+  const color = 'transparent';
   const classes = useStyles();
 
   const context = useContext(LocaleContext);

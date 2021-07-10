@@ -21,7 +21,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { LocaleContext } from './language-wrapper';
 
 import { useTheme, useMediaQuery } from '@material-ui/core';
-import { defineMessages, injectIntl } from 'react-intl';
+import { defineMessages, useIntl } from 'react-intl';
 import { format } from 'date-fns';
 
 import { getPath } from '@/utils/routes';
@@ -49,6 +49,11 @@ const useStyles = makeStyles((theme) => ({
     color: 'black',
     backgroundColor: 'lightslategray',
     borderRadius: 0,
+  },
+  pagination: {
+    textAlign: 'center',
+    background: 'lightslategray',
+    width: '100%',
   },
   link: {
     color: 'black',
@@ -80,7 +85,9 @@ const messages = defineMessages({
   },
 });
 
-function UserPolls({ intl }) {
+export default function UserPolls() {
+  const intl = useIntl();
+
   const classes = useStyles();
 
   const [page, setPage] = useState(0);
@@ -216,11 +223,7 @@ function UserPolls({ intl }) {
           </Grid>
 
           <TablePagination
-            style={{
-              textAlign: 'center',
-              background: 'lightslategray',
-              width: '100%',
-            }}
+            className={classes.pagination}
             component='div'
             labelRowsPerPage=''
             count={polls ? polls.length : 0}
@@ -234,5 +237,3 @@ function UserPolls({ intl }) {
     </>
   );
 }
-
-export default injectIntl(UserPolls);
