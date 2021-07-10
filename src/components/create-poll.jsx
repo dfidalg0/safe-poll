@@ -55,7 +55,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import reduce from 'lodash.reduce';
 
 import axios from 'axios';
-import { defineMessages, injectIntl } from 'react-intl';
+import { defineMessages, useIntl } from 'react-intl';
 import { LocaleContext } from './language-wrapper';
 
 const messages = defineMessages({
@@ -131,7 +131,8 @@ const messages = defineMessages({
  * }}
  */
 
-function CreatePoll({ open, onClose, intl }) {
+export default function CreatePoll({ open, onClose }) {
+  const intl = useIntl();
   // Styles
   const theme = useTheme();
   const classes = useStyles();
@@ -257,7 +258,7 @@ function CreatePoll({ open, onClose, intl }) {
     if (data.type_id === 3 || data.type_id === 6) data.votes_number = Number(data.votes_number);
     else if (data.type_id === 5)               data.votes_number = data.winners_number;
     else                                       data.votes_number = 1;
-    
+
 
     // Estado de carregamento do envio
     setLoading(true);
@@ -624,5 +625,3 @@ function CreatePoll({ open, onClose, intl }) {
     </Dialog>
   );
 }
-
-export default injectIntl(CreatePoll);

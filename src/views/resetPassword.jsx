@@ -82,7 +82,7 @@ function ResetPassword({ intl }) {
       <Grid item>
         <Container className={classes.app} maxWidth='xs'>
           <Breadcrumbs className={classes.breadcrumb}>
-            <StyledLink color='inherit' to={getPath('home')} component={Link}>
+            <StyledLink color='inherit' to={getPath('login')} component={Link}>
               {intl.formatMessage(messages.homepage)}
             </StyledLink>
             <Typography color='textPrimary'>

@@ -18,6 +18,7 @@ import {
   InputAdornment,
 } from '@material-ui/core';
 
+import Expansion from '@/components/Expansion'
 
 import { Fragment } from 'react';
 
@@ -27,6 +28,7 @@ import { POLL_TYPES } from '@/utils/constants';
 // Ícones
 import AddIcon from '@material-ui/icons/Add';
 import EmailIcon from '@material-ui/icons/Email';
+
 import {
   DeleteOutline as DeleteIcon,
   FileCopyOutlined as CopyIcon,
@@ -51,7 +53,7 @@ import { useConfirm } from '@/utils/confirm-dialog';
 
 import reduce from 'lodash.reduce';
 import { format } from 'date-fns';
-import { defineMessages, injectIntl } from 'react-intl';
+import { defineMessages, useIntl } from 'react-intl';
 import EmailItem from './../../components/poll-email-item';
 import AddInvidualEmails from './../../components/poll-add-invidual-email';
 import PollEmailInfo from './../../components/poll-email-info';
@@ -63,6 +65,9 @@ import { getPath } from '@/utils/routes';
 import copy from 'copy-to-clipboard';
 
 const messages = defineMessages({
+  expandInfo: {
+    id: 'manage.poll.expand-info'
+  },
   finish: {
     id: 'manage.poll.finish',
   },
@@ -167,7 +172,9 @@ const messages = defineMessages({
   },
 });
 
-function Poll({ intl }) {
+export default function Poll() {
+  const intl = useIntl();
+
   const [loading, setLoading] = useState(true);
   const [loadingSendEmails, setLoadingSendEmails] = useState(false);
   const [loadingAdd, setLoadingAdd] = useState(false);
@@ -401,9 +408,8 @@ function Poll({ intl }) {
   const voteUrl = useMemo(
     () =>
       poll?.permanent_token
-        ? `${join(window.origin, getPath('vote', { uid: poll.id }))}?token=${
-            poll.permanent_token
-          }&perm=true`
+        ? `${join(window.origin, getPath('vote', { uid: poll.id }))}?token=${poll.permanent_token
+        }&perm=true`
         : null,
     [poll]
   );
@@ -416,71 +422,67 @@ function Poll({ intl }) {
         <Typography noWrap variant="h5" component="h2">
           {poll.title}
         </Typography>
+
         <Typography noWrap className={classes.pos} color="textSecondary">
           {poll.description}
         </Typography>
-        <Divider style={{ marginBottom: 10, marginTop: 10 }} />
-        <Typography variant="overline" display="block" gutterBottom>
-          {intl.formatMessage(messages.deadline)} <br />{' '}
-          {format(
-            poll.deadline,
-            languageContext.locale === 'pt-BR' ||
-              languageContext.locale === 'es-ES'
-              ? 'dd/MM/yyyy'
-              : 'MM/dd/yyyy'
+
+        <Expansion title={intl.formatMessage(messages.expandInfo)}>
+          {/* <Divider style={{ marginBottom: 10, marginTop: 10 }} /> */}
+          <Typography variant="overline" display="block" gutterBottom>
+            {intl.formatMessage(messages.deadline)} <br />{' '}
+            {format(
+              poll.deadline,
+              languageContext.locale === 'pt-BR' ||
+                languageContext.locale === 'es-ES'
+                ? 'dd/MM/yyyy'
+                : 'MM/dd/yyyy'
+            )}
+          </Typography>
+
+          <Typography variant="overline" display="block" gutterBottom>
+            {intl.formatMessage(messages.secretVote)}
+            {': '}
+            {poll.secret_vote
+              ? intl.formatMessage(messages.yes)
+              : intl.formatMessage(messages.no)}
+          </Typography>
+          <Typography variant="overline" display="block" gutterBottom>
+            {intl.formatMessage(messages.type)}
+            {': '}
+            {POLL_TYPES[poll.type - 1]}
+          </Typography>
+
+          {(poll.type === 4 || poll.type === 5 || poll.type === 6) && (
+            <Typography variant="overline" display="block" gutterBottom>
+              {intl.formatMessage(messages.winners_number)}
+              {' : '}
+              {poll.winners_number}
+            </Typography>
           )}
-        </Typography>
+          {(poll.type === 3 || poll.type === 5 || poll.type === 6) && (
+            <Typography variant="overline" display="block" gutterBottom>
+              {intl.formatMessage(messages.votes_number)}
+              {' : '}
+              {poll.votes_number}
+            </Typography>
+          )}
 
-        {poll.deadline > new Date() ? (
-          <>
-            <Button onClick={finishPoll}>
-              {intl.formatMessage(messages.finish)}
-            </Button>
-          </>
-        ) : null}
-
-        <Typography variant="overline" display="block" gutterBottom>
-          {intl.formatMessage(messages.secretVote)}
-          {': '}
-          {poll.secret_vote
-            ? intl.formatMessage(messages.yes)
-            : intl.formatMessage(messages.no)}
-        </Typography>
-        <Typography variant="overline" display="block" gutterBottom>
-          {intl.formatMessage(messages.type)}
-          {': '}
-          {POLL_TYPES[poll.type - 1]}
-        </Typography>
-        
-        { (poll.type === 4 || poll.type === 5 || poll.type === 6) && (
           <Typography variant="overline" display="block" gutterBottom>
-            {intl.formatMessage(messages.winners_number)}
-            {' : '}
-            {poll.winners_number}
+            {intl.formatMessage(messages.candidates)}
           </Typography>
-        )}
-        { (poll.type === 3 || poll.type === 5 || poll.type === 6) && (
-          <Typography variant="overline" display="block" gutterBottom>
-            {intl.formatMessage(messages.votes_number)}
-            {' : '}
-            {poll.votes_number}
-          </Typography>
-        )}
 
-        <Typography variant="overline" display="block" gutterBottom>
-          {intl.formatMessage(messages.candidates)}
-        </Typography>
-
-        {poll.options.map((option, index) => (
-          <Typography
-            variant="overline"
-            display="block"
-            gutterBottom
-            key={index}
-          >
-            {option.name}
-          </Typography>
-        ))}
+          {poll.options.map((option, index) => (
+            <Typography
+              variant="overline"
+              display="block"
+              gutterBottom
+              key={index}
+            >
+              {option.name}
+            </Typography>
+          ))}
+        </Expansion>
 
         <Divider style={{ marginBottom: 10, marginTop: 10 }} />
 
@@ -537,6 +539,7 @@ function Poll({ intl }) {
               {poll.secret_vote ? (
                 <Grid item xs={12}>
                   <Button
+                    variant="outlined"
                     onClick={async () => {
                       try {
                         const { data } = await axios.put(
@@ -580,10 +583,10 @@ function Poll({ intl }) {
                   {!groups
                     ? null
                     : groups.map((group, index) => (
-                        <MenuItem value={index + 1} key={index}>
-                          {group.name}
-                        </MenuItem>
-                      ))}
+                      <MenuItem value={index + 1} key={index}>
+                        {group.name}
+                      </MenuItem>
+                    ))}
                 </Select>
               </Grid>
               <Grid item style={{ marginTop: 20 }}>
@@ -678,7 +681,7 @@ function Poll({ intl }) {
                 </div>
               </form>
 
-              {searchedEmail.slice(5*(page - 1), 5*page).map((email, index) => (
+              {searchedEmail.slice(5 * (page - 1), 5 * page).map((email, index) => (
                 <EmailItem
                   email={email}
                   token={token}
@@ -689,10 +692,10 @@ function Poll({ intl }) {
                 />
               ))}
               <Pagination
-                  count={searchedEmail.length%5===0
-                      ? searchedEmail.length/5
-                      : ~~(searchedEmail.length/5) + 1}
-                  onChange={pageChange}
+                count={searchedEmail.length % 5 === 0
+                  ? searchedEmail.length / 5
+                  : ~~(searchedEmail.length / 5) + 1}
+                onChange={pageChange}
               />
             </>
           )
@@ -724,27 +727,27 @@ function Poll({ intl }) {
                   </Grid>
                   <Grid item xs={3}>
                     <Typography variant="caption">
-                    {result.winners.includes(o.id) ? (
-                       <strong>
-                         {result.counting_votes[o.id] || 0}{' '}
+                      {result.winners.includes(o.id) ? (
+                        <strong>
+                          {result.counting_votes[o.id] || 0}{' '}
                           {intl.formatMessage(messages.votes)} (
                           {(
                             (100 * (result.counting_votes[o.id] || 0)) /
                             (result.total || 1)
                           ).toFixed(2)}
                           %)
-                       </strong>
-                    ) : (
-                      <>
-                         {result.counting_votes[o.id] || 0}{' '}
+                        </strong>
+                      ) : (
+                        <>
+                          {result.counting_votes[o.id] || 0}{' '}
                           {intl.formatMessage(messages.votes)} (
                           {(
                             (100 * (result.counting_votes[o.id] || 0)) /
                             (result.total || 1)
                           ).toFixed(2)}
                           %)
-                       </>
-                    )}
+                        </>
+                      )}
                     </Typography>
                   </Grid>
                 </Fragment>
@@ -760,6 +763,11 @@ function Poll({ intl }) {
             )}
           </>
         )}
+        {poll.deadline > new Date() &&
+          <Button variant="outlined" onClick={finishPoll} style={{ marginTop: '10pt' }}>
+            {intl.formatMessage(messages.finish)}
+          </Button>
+        }
       </CardContent>
       <CardActions style={{ marginTop: '-17px' }}>
         <Button size="small">
@@ -780,5 +788,3 @@ function Poll({ intl }) {
     </Card>
   );
 }
-
-export default injectIntl(Poll);

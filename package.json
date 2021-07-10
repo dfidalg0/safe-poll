@@ -41,11 +41,14 @@
     "yup": "^0.32.9"
   },
   "scripts": {
+    "start:production": "NODE_ENV=production && cd server && gunicorn -b 0.0.0.0:$PORT safepoll.wsgi",
     "start": "craco start",
-    "api:dev": "cd server && pipenv run python manage.py runserver",
     "build": "craco build",
     "test": "craco test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "django:runserver": "python server/manage.py runserver",
+    "django:migrate": "python server/manage.py migrate",
+    "django:makemigrations": "python server/manage.py makemigrations"
   },
   "eslintConfig": {
     "extends": [
@@ -64,5 +67,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "chokidar": "^3.5.2"
   }
 }
