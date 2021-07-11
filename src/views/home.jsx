@@ -98,7 +98,8 @@ export default function Home() {
 
           <Grid item>
             <Typography variant={isMobile ? 'h2' : 'h1'} style={{
-              color: 'white', opacity: 0.3 + 0.45 * x
+              color: 'white', opacity: 0.3 + 0.45 * x,
+              fontWeight: 'bold'
             }}>
               SafePoll
             </Typography>

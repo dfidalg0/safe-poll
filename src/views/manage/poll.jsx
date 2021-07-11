@@ -16,158 +16,165 @@ import {
   LinearProgress,
   TextField,
   InputAdornment,
-} from '@material-ui/core';
+} from "@material-ui/core";
 
+import Expansion from "@/components/Expansion";
 
-import { Fragment } from 'react';
+import { Fragment } from "react";
 
 // Constantes
-import { POLL_TYPES } from '@/utils/constants';
+import { POLL_TYPES } from "@/utils/constants";
 
 // Ícones
-import AddIcon from '@material-ui/icons/Add';
-import EmailIcon from '@material-ui/icons/Email';
+import AddIcon from "@material-ui/icons/Add";
+import EmailIcon from "@material-ui/icons/Email";
+
 import {
   DeleteOutline as DeleteIcon,
   FileCopyOutlined as CopyIcon,
-} from '@material-ui/icons';
+} from "@material-ui/icons";
 
-import { Link } from 'react-router-dom';
-import { fetchUserGroups, deletePoll } from '@/store/actions/items';
-import { notify } from '@/store/actions/ui';
+import { Link } from "react-router-dom";
+import { fetchUserGroups, deletePoll } from "@/store/actions/items";
+import { notify } from "@/store/actions/ui";
 
-import Pagination from '@material-ui/lab/Pagination';
+import Pagination from "@material-ui/lab/Pagination";
 
-import LoadingScreen from '@/components/loading-screen';
-import VotesTable from '@/components/votes-table';
+import LoadingScreen from "@/components/loading-screen";
+import VotesTable from "@/components/votes-table";
 
-import axios from 'axios';
+import axios from "axios";
 
-import { useRouteMatch, useHistory } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { useEffect, useState, useCallback, useContext, useMemo } from 'react';
-import { useStyles } from '@/styles/poll-view';
-import { useConfirm } from '@/utils/confirm-dialog';
+import { useRouteMatch, useHistory } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { useEffect, useState, useCallback, useContext, useMemo } from "react";
+import { useStyles } from "@/styles/poll-view";
+import { useConfirm } from "@/utils/confirm-dialog";
 
-import reduce from 'lodash.reduce';
-import { format } from 'date-fns';
-import { defineMessages, injectIntl } from 'react-intl';
-import EmailItem from './../../components/poll-email-item';
-import AddInvidualEmails from './../../components/poll-add-invidual-email';
-import PollEmailInfo from './../../components/poll-email-info';
-import { LocaleContext } from './../../components/language-wrapper';
+import reduce from "lodash.reduce";
+import { format } from "date-fns";
+import { defineMessages, useIntl } from "react-intl";
+import EmailItem from "./../../components/poll-email-item";
+import AddInvidualEmails from "./../../components/poll-add-invidual-email";
+import PollEmailInfo from "./../../components/poll-email-info";
+import { LocaleContext } from "./../../components/language-wrapper";
 
-import { join } from 'path';
-import { getPath } from '@/utils/routes';
+import { join } from "path";
+import { getPath } from "@/utils/routes";
 
-import copy from 'copy-to-clipboard';
+import copy from "copy-to-clipboard";
 
 const messages = defineMessages({
+  expandInfo: {
+    id: "manage.poll.expand-info",
+  },
   finish: {
-    id: 'manage.poll.finish',
+    id: "manage.poll.finish",
   },
   addEmails: {
-    id: 'manage.poll.add-emails',
+    id: "manage.poll.add-emails",
   },
   add: {
-    id: 'manage.add',
+    id: "manage.add",
   },
   emailsAlreadyAdded: {
-    id: 'manage.poll.group-emails-already-added',
+    id: "manage.poll.group-emails-already-added",
   },
   addGroupSuccess: {
-    id: 'manage.poll.added-group-success',
+    id: "manage.poll.added-group-success",
   },
   deletePoll: {
-    id: 'manage.poll.delete-election',
+    id: "manage.poll.delete-election",
   },
   everyoneHasVoted: {
-    id: 'manage.poll.everyone-has-voted',
+    id: "manage.poll.everyone-has-voted",
   },
   failEmails: {
-    id: 'manage.poll.some-emails-couldnot-be-sent',
+    id: "manage.poll.some-emails-couldnot-be-sent",
   },
   deadline: {
-    id: 'manage.create-poll.deadline',
+    id: "manage.create-poll.deadline",
   },
   secretVote: {
-    id: 'manage.create-poll.secretVote',
+    id: "manage.create-poll.secretVote",
   },
   type: {
-    id: 'manage.create-poll.type',
+    id: "manage.create-poll.type",
   },
   votes_number: {
-    id: 'manage.create-poll.votes_number',
+    id: "manage.create-poll.votes_number",
   },
   winners_number: {
-    id: 'manage.create-poll.winners_number',
+    id: "manage.create-poll.winners_number",
   },
   candidates: {
-    id: 'manage.create-poll.candidates',
+    id: "manage.create-poll.candidates",
   },
   delete: {
-    id: 'manage.delete',
+    id: "manage.delete",
   },
   back: {
-    id: 'manage.back',
+    id: "manage.back",
   },
   emailsSuccessfullySent: {
-    id: 'manage.poll.emails-successfully-sent',
+    id: "manage.poll.emails-successfully-sent",
   },
   result: {
-    id: 'manage.poll.result',
+    id: "manage.poll.result",
   },
   votes: {
-    id: 'manage.poll.votes',
+    id: "manage.poll.votes",
   },
   sendLinks: {
-    id: 'manage.poll.send-links',
+    id: "manage.poll.send-links",
   },
   group: {
-    id: 'manage.poll.group',
+    id: "manage.poll.group",
   },
   sendEmails: {
-    id: 'manage.poll.send-emails',
+    id: "manage.poll.send-emails",
   },
   yes: {
-    id: 'manage.yes',
+    id: "manage.yes",
   },
   no: {
-    id: 'manage.no',
+    id: "manage.no",
   },
   electionNotFinishedError: {
-    id: 'error.election-not-finished',
+    id: "error.election-not-finished",
   },
   internalServerError: {
-    id: 'error.internal-server',
+    id: "error.internal-server",
   },
   genericError: {
-    id: 'error.generic',
+    id: "error.generic",
   },
   invalidFormError: {
-    id: 'error.invalid-form',
+    id: "error.invalid-form",
   },
   successDeletePoll: {
-    id: 'success-message.delete-election',
+    id: "success-message.delete-election",
   },
   emailInfoPersonalize: {
-    id: 'manage.poll.email.info.personalize',
+    id: "manage.poll.email.info.personalize",
   },
   linkInvite: {
-    id: 'manage.poll.link.invite',
+    id: "manage.poll.link.invite",
   },
   linkChange: {
-    id: 'manage.poll.link.change',
+    id: "manage.poll.link.change",
   },
   linkDestroy: {
-    id: 'manage.poll.link.destroy',
+    id: "manage.poll.link.destroy",
   },
   searchMessage: {
-    id: 'manage.poll.search-message'
+    id: "manage.poll.search-message",
   },
 });
 
-function Poll({ intl }) {
+export default function Poll() {
+  const intl = useIntl();
+
   const [loading, setLoading] = useState(true);
   const [loadingSendEmails, setLoadingSendEmails] = useState(false);
   const [loadingAdd, setLoadingAdd] = useState(false);
@@ -179,11 +186,13 @@ function Poll({ intl }) {
   const pageChange = (event, value) => {
     setPage(value);
   };
-  const [searched, setSearched] = useState('');
+  const [searched, setSearched] = useState("");
   const search = (event) => {
     setSearched(event.target.value);
   };
-  const searchedEmail = (emails || []).filter(email => email.includes(searched));
+  const searchedEmail = (emails || []).filter((email) =>
+    email.includes(searched)
+  );
 
   const dispatch = useDispatch();
 
@@ -207,7 +216,7 @@ function Poll({ intl }) {
 
       poll.deadline = new Date(Number(new Date(poll.deadline)) + 10800000);
 
-      if (user.id !== poll.admin) router.replace(getPath('manage'));
+      if (user.id !== poll.admin) router.replace(getPath("manage"));
       else {
         poll.deadline = new Date(poll.deadline);
         setPoll(poll);
@@ -241,8 +250,8 @@ function Poll({ intl }) {
       if (status === 404) info = messages.electionNotFinishedError;
       else if (status === 500) info = messages.internalServerError;
       else info = messages.genericError;
-      dispatch(notify(intl.formatMessage(info), 'error'));
-      router.replace(getPath('manage'));
+      dispatch(notify(intl.formatMessage(info), "error"));
+      router.replace(getPath("manage"));
     } finally {
       setLoading(false);
     }
@@ -253,7 +262,7 @@ function Poll({ intl }) {
       await axios.put(
         `/api/polls/update/${poll.id}`,
         {
-          deadline: new Date().toJSON().slice(0, 10),
+          deadline: new Date(Date.now() - 86400000).toJSON().slice(0, 10),
         },
         {
           headers: {
@@ -268,7 +277,7 @@ function Poll({ intl }) {
       if (status === 422) info = messages.invalidFormError;
       else if (status === 500) info = messages.internalServerError;
       else info = messages.genericError;
-      notify(intl.formatMessage(info), 'error');
+      notify(intl.formatMessage(info), "error");
     }
   }, [poll, token, intl]);
 
@@ -276,7 +285,7 @@ function Poll({ intl }) {
     fetchData();
   }, [fetchData]);
 
-  const [group, setGroup] = useState('');
+  const [group, setGroup] = useState("");
 
   const classes = useStyles();
 
@@ -288,7 +297,7 @@ function Poll({ intl }) {
 
     try {
       const { data } = await axios.post(
-        '/api/tokens/create-from-group',
+        "/api/tokens/create-from-group",
         {
           poll_id: poll.id,
           group_id,
@@ -306,18 +315,18 @@ function Poll({ intl }) {
 
       if (new_emails.length === 0) {
         dispatch(
-          notify(intl.formatMessage(messages.emailsAlreadyAdded), 'warning')
+          notify(intl.formatMessage(messages.emailsAlreadyAdded), "warning")
         );
       } else {
         setEmails(emails.concat(new_emails));
         dispatch(
-          notify(intl.formatMessage(messages.addGroupSuccess), 'success')
+          notify(intl.formatMessage(messages.addGroupSuccess), "success")
         );
       }
 
       setLoadingAdd(false);
     } catch {
-      dispatch(notify(intl.formatMessage(messages.genericError), 'error'));
+      dispatch(notify(intl.formatMessage(messages.genericError), "error"));
     }
   }, [poll, groups, token, group, dispatch, emails, intl]);
 
@@ -337,12 +346,12 @@ function Poll({ intl }) {
         },
       });
       dispatch(
-        notify(intl.formatMessage(messages.successDeletePoll), 'success')
+        notify(intl.formatMessage(messages.successDeletePoll), "success")
       );
       dispatch(deletePoll(poll.id));
-      router.replace(getPath('manage'));
+      router.replace(getPath("manage"));
     } catch {
-      dispatch(notify(intl.formatMessage(messages.genericError), 'error'));
+      dispatch(notify(intl.formatMessage(messages.genericError), "error"));
     }
   }, [poll, token, dispatch, confirm, router, intl]);
 
@@ -350,7 +359,7 @@ function Poll({ intl }) {
     setLoadingSendEmails(true);
     try {
       const res = await axios.post(
-        '/api/emails/send',
+        "/api/emails/send",
         {
           poll_id: poll.id,
           language: languageContext.locale,
@@ -368,10 +377,10 @@ function Poll({ intl }) {
         res.status === 202 &&
         res.data.failed_emails.failed_to_send.length > 0
       ) {
-        dispatch(notify(intl.formatMessage(messages.failEmails), 'warning'));
+        dispatch(notify(intl.formatMessage(messages.failEmails), "warning"));
       } else {
         dispatch(
-          notify(intl.formatMessage(messages.emailsSuccessfullySent), 'success')
+          notify(intl.formatMessage(messages.emailsSuccessfullySent), "success")
         );
       }
     } catch ({ response: { status } }) {
@@ -381,7 +390,7 @@ function Poll({ intl }) {
       else if (status === 422) info = messages.invalidFormError;
       else if (status === 400) info = messages.pollDeadlineError;
       else info = messages.errorGeneric;
-      dispatch(notify(intl.formatMessage(info), 'warning'));
+      dispatch(notify(intl.formatMessage(info), "warning"));
     }
   }, [
     poll,
@@ -401,7 +410,7 @@ function Poll({ intl }) {
   const voteUrl = useMemo(
     () =>
       poll?.permanent_token
-        ? `${join(window.origin, getPath('vote', { uid: poll.id }))}?token=${
+        ? `${join(window.origin, getPath("vote", { uid: poll.id }))}?token=${
             poll.permanent_token
           }&perm=true`
         : null,
@@ -416,78 +425,74 @@ function Poll({ intl }) {
         <Typography noWrap variant="h5" component="h2">
           {poll.title}
         </Typography>
+
         <Typography noWrap className={classes.pos} color="textSecondary">
           {poll.description}
         </Typography>
-        <Divider style={{ marginBottom: 10, marginTop: 10 }} />
-        <Typography variant="overline" display="block" gutterBottom>
-          {intl.formatMessage(messages.deadline)} <br />{' '}
-          {format(
-            poll.deadline,
-            languageContext.locale === 'pt-BR' ||
-              languageContext.locale === 'es-ES'
-              ? 'dd/MM/yyyy'
-              : 'MM/dd/yyyy'
+
+        <Expansion title={intl.formatMessage(messages.expandInfo)}>
+          {/* <Divider style={{ marginBottom: 10, marginTop: 10 }} /> */}
+          <Typography variant="overline" display="block" gutterBottom>
+            {intl.formatMessage(messages.deadline)} <br />{" "}
+            {format(
+              poll.deadline,
+              languageContext.locale === "pt-BR" ||
+                languageContext.locale === "es-ES"
+                ? "dd/MM/yyyy"
+                : "MM/dd/yyyy"
+            )}
+          </Typography>
+
+          <Typography variant="overline" display="block" gutterBottom>
+            {intl.formatMessage(messages.secretVote)}
+            {": "}
+            {poll.secret_vote
+              ? intl.formatMessage(messages.yes)
+              : intl.formatMessage(messages.no)}
+          </Typography>
+          <Typography variant="overline" display="block" gutterBottom>
+            {intl.formatMessage(messages.type)}
+            {": "}
+            {POLL_TYPES[poll.type - 1]}
+          </Typography>
+
+          {(poll.type === 4 || poll.type === 5 || poll.type === 6) && (
+            <Typography variant="overline" display="block" gutterBottom>
+              {intl.formatMessage(messages.winners_number)}
+              {" : "}
+              {poll.winners_number}
+            </Typography>
           )}
-        </Typography>
+          {(poll.type === 3 || poll.type === 5 || poll.type === 6) && (
+            <Typography variant="overline" display="block" gutterBottom>
+              {intl.formatMessage(messages.votes_number)}
+              {" : "}
+              {poll.votes_number}
+            </Typography>
+          )}
 
-        {poll.deadline > new Date() ? (
-          <>
-            <Button onClick={finishPoll}>
-              {intl.formatMessage(messages.finish)}
-            </Button>
-          </>
-        ) : null}
-
-        <Typography variant="overline" display="block" gutterBottom>
-          {intl.formatMessage(messages.secretVote)}
-          {': '}
-          {poll.secret_vote
-            ? intl.formatMessage(messages.yes)
-            : intl.formatMessage(messages.no)}
-        </Typography>
-        <Typography variant="overline" display="block" gutterBottom>
-          {intl.formatMessage(messages.type)}
-          {': '}
-          {POLL_TYPES[poll.type - 1]}
-        </Typography>
-        
-        { (poll.type === 4 || poll.type === 5 || poll.type === 6) && (
           <Typography variant="overline" display="block" gutterBottom>
-            {intl.formatMessage(messages.winners_number)}
-            {' : '}
-            {poll.winners_number}
+            {intl.formatMessage(messages.candidates)}
           </Typography>
-        )}
-        { (poll.type === 3 || poll.type === 5 || poll.type === 6) && (
-          <Typography variant="overline" display="block" gutterBottom>
-            {intl.formatMessage(messages.votes_number)}
-            {' : '}
-            {poll.votes_number}
-          </Typography>
-        )}
 
-        <Typography variant="overline" display="block" gutterBottom>
-          {intl.formatMessage(messages.candidates)}
-        </Typography>
-
-        {poll.options.map((option, index) => (
-          <Typography
-            variant="overline"
-            display="block"
-            gutterBottom
-            key={index}
-          >
-            {option.name}
-          </Typography>
-        ))}
+          {poll.options.map((option, index) => (
+            <Typography
+              variant="overline"
+              display="block"
+              gutterBottom
+              key={index}
+            >
+              {option.name}
+            </Typography>
+          ))}
+        </Expansion>
 
         <Divider style={{ marginBottom: 10, marginTop: 10 }} />
 
         {poll.deadline > new Date() ? (
           poll.permanent_token ? (
             <>
-              <Grid item xs={12} style={{ marginBottom: '10px' }}>
+              <Grid item xs={12} style={{ marginBottom: "10px" }}>
                 {intl.formatMessage(messages.linkInvite)}
               </Grid>
               <Grid item xs={12}>
@@ -498,7 +503,7 @@ function Poll({ intl }) {
                       <InputAdornment position="end">
                         <CopyIcon
                           onClick={() => copy(voteUrl)}
-                          style={{ cursor: 'pointer' }}
+                          style={{ cursor: "pointer" }}
                         />
                       </InputAdornment>
                     ),
@@ -506,7 +511,7 @@ function Poll({ intl }) {
                   defaultValue={voteUrl}
                 />
               </Grid>
-              <Grid item xs={12} style={{ marginBottom: '10px' }}>
+              <Grid item xs={12} style={{ marginBottom: "10px" }}>
                 <Button
                   onClick={async () => {
                     try {
@@ -524,7 +529,7 @@ function Poll({ intl }) {
                         permanent_token: null,
                       });
                     } catch (err) {
-                      dispatch(notify(err.response.data.message, 'error'));
+                      dispatch(notify(err.response.data.message, "error"));
                     }
                   }}
                 >
@@ -537,6 +542,7 @@ function Poll({ intl }) {
               {poll.secret_vote ? (
                 <Grid item xs={12}>
                   <Button
+                    variant="outlined"
                     onClick={async () => {
                       try {
                         const { data } = await axios.put(
@@ -555,7 +561,7 @@ function Poll({ intl }) {
                         });
                       } catch (err) {
                         console.log(err.response);
-                        dispatch(notify(err.response.data.message, 'error'));
+                        dispatch(notify(err.response.data.message, "error"));
                       }
                     }}
                   >
@@ -591,7 +597,7 @@ function Poll({ intl }) {
                   variant="contained"
                   className={classes.button}
                   onClick={submit}
-                  disabled={group === ''}
+                  disabled={group === ""}
                   size="large"
                 >
                   {loadingAdd ? (
@@ -614,7 +620,7 @@ function Poll({ intl }) {
                       endIcon={<EmailIcon />}
                       disabled={emails.length === 0}
                       size="large"
-                      style={{ width: '50%' }}
+                      style={{ width: "50%" }}
                     >
                       {intl.formatMessage(messages.sendEmails)}
                     </Button>
@@ -656,7 +662,7 @@ function Poll({ intl }) {
                 onClick={() => setEmailInfoOpen(true)}
                 endIcon={<EmailIcon />}
                 size="large"
-                style={{ width: '80%', marginBottom: '30px' }}
+                style={{ width: "80%", marginBottom: "30px" }}
               >
                 {intl.formatMessage(messages.emailInfoPersonalize)}
               </Button>
@@ -674,25 +680,34 @@ function Poll({ intl }) {
 
               <form className={classes.root} noValidate autoComplete="off">
                 <div>
-                  <TextField id="search-input" label={intl.formatMessage(messages.searchMessage)} value={searched} onChange={search} />
+                  <TextField
+                    id="search-input"
+                    label={intl.formatMessage(messages.searchMessage)}
+                    value={searched}
+                    onChange={search}
+                  />
                 </div>
               </form>
 
-              {searchedEmail.slice(5*(page - 1), 5*page).map((email, index) => (
-                <EmailItem
-                  email={email}
-                  token={token}
-                  emails={emails}
-                  poll={poll}
-                  setEmails={setEmails}
-                  key={index}
-                />
-              ))}
+              {searchedEmail
+                .slice(5 * (page - 1), 5 * page)
+                .map((email, index) => (
+                  <EmailItem
+                    email={email}
+                    token={token}
+                    emails={emails}
+                    poll={poll}
+                    setEmails={setEmails}
+                    key={index}
+                  />
+                ))}
               <Pagination
-                  count={searchedEmail.length%5===0
-                      ? searchedEmail.length/5
-                      : ~~(searchedEmail.length/5) + 1}
-                  onChange={pageChange}
+                count={
+                  searchedEmail.length % 5 === 0
+                    ? searchedEmail.length / 5
+                    : ~~(searchedEmail.length / 5) + 1
+                }
+                onChange={pageChange}
               />
             </>
           )
@@ -724,27 +739,27 @@ function Poll({ intl }) {
                   </Grid>
                   <Grid item xs={3}>
                     <Typography variant="caption">
-                    {result.winners.includes(o.id) ? (
-                       <strong>
-                         {result.counting_votes[o.id] || 0}{' '}
+                      {result.winners.includes(o.id) ? (
+                        <strong>
+                          {result.counting_votes[o.id] || 0}{" "}
                           {intl.formatMessage(messages.votes)} (
                           {(
                             (100 * (result.counting_votes[o.id] || 0)) /
                             (result.total || 1)
                           ).toFixed(2)}
                           %)
-                       </strong>
-                    ) : (
-                      <>
-                         {result.counting_votes[o.id] || 0}{' '}
+                        </strong>
+                      ) : (
+                        <>
+                          {result.counting_votes[o.id] || 0}{" "}
                           {intl.formatMessage(messages.votes)} (
                           {(
                             (100 * (result.counting_votes[o.id] || 0)) /
                             (result.total || 1)
                           ).toFixed(2)}
                           %)
-                       </>
-                    )}
+                        </>
+                      )}
                     </Typography>
                   </Grid>
                 </Fragment>
@@ -752,18 +767,27 @@ function Poll({ intl }) {
             </Grid>
             {!poll.secret_vote && (
               <>
-                <div style={{ marginTop: '20px' }}>
+                <div style={{ marginTop: "20px" }}>
                   <VotesTable poll={poll} />
                 </div>
-                <Divider style={{ marginTop: '43px' }} />
+                <Divider style={{ marginTop: "43px" }} />
               </>
             )}
           </>
         )}
+        {poll.deadline > new Date() && (
+          <Button
+            variant="outlined"
+            onClick={finishPoll}
+            style={{ marginTop: "10pt" }}
+          >
+            {intl.formatMessage(messages.finish)}
+          </Button>
+        )}
       </CardContent>
-      <CardActions style={{ marginTop: '-17px' }}>
+      <CardActions style={{ marginTop: "-17px" }}>
         <Button size="small">
-          <Link to={getPath('manage')} className={classes.link}>
+          <Link to={getPath("manage")} className={classes.link}>
             {intl.formatMessage(messages.back)}
           </Link>
         </Button>
@@ -780,5 +804,3 @@ function Poll({ intl }) {
     </Card>
   );
 }
-
-export default injectIntl(Poll);

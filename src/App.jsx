@@ -1,4 +1,4 @@
-import { Grow as GrowTransition } from '@material-ui/core';
+import { Grow as GrowTransition, createMuiTheme, ThemeProvider } from '@material-ui/core';
 
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
@@ -19,9 +19,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { checkAuthenticated } from '@/store/actions/auth';
 import { fetchUserGroups, fetchUserPolls } from '@/store/actions/items';
 import { clearNotify } from '@/store/actions/ui';
-import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import { ptBR, esES, enUS } from '@material-ui/core/locale';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState, useMemo } from 'react';
 import { LocaleContext } from './components/language-wrapper';
 
 import { getPath } from '@/utils/routes';
@@ -78,65 +77,76 @@ export default function App() {
     }
   }, [localeContext]);
 
-  const theme = createMuiTheme(
-    {
-      palette: {
-        primary: { main: '#1976d2' },
+  const theme = useMemo(() => createMuiTheme({
+    palette: {
+      primary: {
+        main: '#044767',
+        contrastText: '#ffffff'
       },
+      secondary: {
+        main: '#007981',
+        contrastText: '#ffffff'
+      },
+      action: {
+        main: '#4623A7',
+        contrastText: '#ffffff'
+      }
     },
-    locale
-  );
+    typography: {
+      fontFamily: `'open sans','helvetica neue',helvetica,arial,sans-serif`
+    }
+  }, locale), [locale]);
 
-  return (
-    <ThemeProvider theme={theme}>
-      {loading ? (
-        <LoadingScreen />
-      ) : (
-        <Router>
-          <Switch>
-            <ConditionRoute
-              exact
-              path={getPath('home')}
-              component={Home}
-              condition={!isAuthenticated}
-              redirect={getPath('manage')}
-            />
-            <ConditionRoute
-              path={getPath('manage')}
-              component={Dashboard}
-              condition={isAuthenticated}
-              redirect={getPath('login')}
-              /*
-               * Nesse caso, não usamos o exact, pois essa rota servirá
-               * para dar match em /manage/polls/*, /manage/groups/*, etc..
-               * Como especificado em views/manage/index.jsx
-               */
-            />
-            <ConditionRoute
-              exact
-              path={getPath('login')}
-              component={Login}
-              condition={!isAuthenticated}
-              redirect={getPath('manage')}
-            />
-            <ConditionRoute
-              exact
-              path={getPath('resetPassword')}
-              component={ResetPassword}
-              condition={!isAuthenticated}
-              redirect={getPath('manage')}
-            />
-            <ConditionRoute
-              exact
-              path={getPath('confirmResetPassword')}
-              component={ResetPasswordConfirm}
-              condition={!isAuthenticated}
-              redirect={getPath('manage')}
-            />
-            <Route exact path={getPath('vote')} component={Vote} />
-          </Switch>
-        </Router>
-      )}
-    </ThemeProvider>
-  );
+  if (loading) {
+    return <ThemeProvider theme={theme}>
+      <LoadingScreen />
+    </ThemeProvider>;
+  }
+
+  return <ThemeProvider theme={theme}>
+    <Router>
+      <Switch>
+        <ConditionRoute
+          exact
+          path={getPath('home')}
+          component={Home}
+          condition={!isAuthenticated}
+          redirect={getPath('manage')}
+        />
+        <ConditionRoute
+          path={getPath('manage')}
+          component={Dashboard}
+          condition={isAuthenticated}
+          redirect={getPath('login')}
+        /*
+          * Nesse caso, não usamos o exact, pois essa rota servirá
+          * para dar match em /manage/polls/*, /manage/groups/*, etc..
+          * Como especificado em views/manage/index.jsx
+          */
+        />
+        <ConditionRoute
+          exact
+          path={getPath('login')}
+          component={Login}
+          condition={!isAuthenticated}
+          redirect={getPath('manage')}
+        />
+        <ConditionRoute
+          exact
+          path={getPath('resetPassword')}
+          component={ResetPassword}
+          condition={!isAuthenticated}
+          redirect={getPath('manage')}
+        />
+        <ConditionRoute
+          exact
+          path={getPath('confirmResetPassword')}
+          component={ResetPasswordConfirm}
+          condition={!isAuthenticated}
+          redirect={getPath('manage')}
+        />
+        <Route exact path={getPath('vote')} component={Vote} />
+      </Switch>
+    </Router>
+  </ThemeProvider>;
 }

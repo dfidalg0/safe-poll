@@ -1,5 +1,5 @@
 from django.test import (TestCase, TransactionTestCase, tag)
-from .models import (UserAccount, Poll, Token, TokenManager) 
+from ..models import (UserAccount, Poll, Token, TokenManager) 
 import traceback
 
 #Third-party app imports

@@ -3,9 +3,10 @@ from django.core import mail
 from rest_framework.test import APIClient
 from rest_framework.test import APIRequestFactory
 from rest_framework import status
-from .models import *
+from ..models import *
 from rest_framework.test import force_authenticate
 from model_bakery import baker
+import json
 # Create your tests here.
 
 
@@ -195,11 +196,11 @@ class VotesDetailsResultSecretPollTest(TestCase):
         client = APIClient()
         # half votes in option 'A'
         for n in range(0, 3):
-            client.post('/api/votes/compute', {'token': tokens[n], 'option_id': option1.pk, 'poll_id': 1}, format='json')
+            client.post('/api/votes/compute', {'token': tokens[n], 'option_id': [option1.pk], 'poll_id': 1}, format='json')
         
         # half votes in option 'B'
         for n in range(3, 5):
-            client.post('/api/votes/compute', {'token': tokens[n], 'option_id': 2, 'poll_id': 1}, format='json')
+            client.post('/api/votes/compute', {'token': tokens[n], 'option_id': [2], 'poll_id': 1}, format='json')
         
 
     #'votes results' test
@@ -358,11 +359,16 @@ class UpdateGroupViewsTest(TestCase):
     def test_update_group(self):
         client = APIClient()
         client.force_authenticate(self.user)
-        response = client.put('/api/groups/update/1', {'emails': ['a@safepoll.com', 'b@safepoll.com', 'c@safepoll.com']}, format='json')
+        update_emails = ['a@safepoll.com', 'b@safepoll.com', 'c@safepoll.com']
+        response = client.put('/api/groups/update/1', {'emails': update_emails}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['id'], 1)
         self.assertEqual(response.data['message'], 'Grupo atualizado com sucesso')
-    
+
+        response2 = client.get('/api/groups/get/1')
+        emails = json.loads(response2.content)['emails']
+        self.assertCountEqual(emails, update_emails)
+
     def test_update_group_do_not_exist(self):
         client = APIClient()
         client.force_authenticate(self.user)

@@ -97,12 +97,12 @@ function Vote({ location, intl }) {
     }
     setSelected(new Set([...newSet]));
   };
-  
+
   const setCount = (index, newCounter) => {
 
       const newCounters = Object.assign([], counters);
       newCounters[index] = newCounter;
-      
+
     if(newCounters.reduce((a,b) => a + b , 0) <= poll.votes_number && newCounter >= 0)
       setCounters(newCounters);
 
@@ -123,13 +123,13 @@ function Vote({ location, intl }) {
     };
     if(poll.type === 1 || poll.type === 4)
       data.option_id = [Number(mark.slice(3))];
-    
+
 
     if(poll.type === 6)
-    { 
+    {
       var i,j;
       data.option_id = [];
-      for (i = 0 ; i < counters.length ; i++) 
+      for (i = 0 ; i < counters.length ; i++)
         for(j = 0 ; j < counters[i] ; j++ )
           data.option_id.push(candidates[i].id)
 
@@ -171,7 +171,7 @@ function Vote({ location, intl }) {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, [dispatch, router, uid]);
 
@@ -180,7 +180,7 @@ function Vote({ location, intl }) {
   return (
     <Grid container direction='column'>
       <Grid item>
-        <LocaleSelector />
+        <LocaleSelector black/>
       </Grid>
       {poll.secret_vote
           ? <Alert severity="info">{intl.formatMessage(messages.secretVoteReminder)}</Alert>
@@ -203,11 +203,11 @@ function Vote({ location, intl }) {
                 disabled={loading}
               >
                 { (poll.type === 1 || poll.type === 4) && (
-                  <div>   
+                  <div>
                     <FormLabel component='legend'>
                       {intl.formatMessage(messages.chooseCandidate)}
                     </FormLabel>
-                    
+
                     <RadioGroup
                     color='primary'
                     value={mark}
@@ -221,7 +221,7 @@ function Vote({ location, intl }) {
                           control={<Radio />}
                           label={candidate.name}
                         />
-  
+
                       <Typography
                           variant='caption'
                           className={classes.description}
@@ -234,8 +234,8 @@ function Vote({ location, intl }) {
                  </div>
                 )}
                 { (poll.type === 3 || poll.type === 5) && (
-                  <FormLabel component='legend'> 
-                    {intl.formatMessage(messages.chooseCandidate3, { nOptions: poll.votes_number })} 
+                  <FormLabel component='legend'>
+                    {intl.formatMessage(messages.chooseCandidate3, { nOptions: poll.votes_number })}
                   </FormLabel>
                 )}
                 { (poll.type === 2 || poll.type === 3 || poll.type === 5 ) && (
@@ -259,27 +259,27 @@ function Vote({ location, intl }) {
                     >
                       {candidate.description}
                     </Typography>
-                    </>     
+                    </>
                   ))}
                 </>
                 )}
                 { (poll.type === 6) && (
                   <div>
-                    <FormLabel component='legend'> 
-                      {intl.formatMessage(messages.chooseCandidate6, { nOptions: poll.votes_number })} 
+                    <FormLabel component='legend'>
+                      {intl.formatMessage(messages.chooseCandidate6, { nOptions: poll.votes_number })}
                     </FormLabel>
                   {candidates.map((candidate, index) => (
-                    
+
                     <>
                     <div>
-                    
+
                       {candidate.name}
                       <ButtonGroup size="small" style = {{ marginLeft: '250px' }}  >
-                      <Button 
+                      <Button
                         color="primary"
                         variant="contained"
                         style = {{ height: '23px' }}
-                        onClick={()=>setCount(index, counters[index] - 1)} 
+                        onClick={()=>setCount(index, counters[index] - 1)}
                         disabled={loading || !counters[index] }
                       >
                       -
@@ -288,11 +288,11 @@ function Vote({ location, intl }) {
                       style = {{ height: '23px' }}
                       >
                         {counters[index]}</Button>
-                      <Button 
+                      <Button
                         color="primary"
                         variant="contained"
                         style = {{ height: '23px' }}
-                        onClick={()=>setCount(index, counters[index] + 1)} 
+                        onClick={()=>setCount(index, counters[index] + 1)}
                         disabled={loading || counters.reduce((a,b) => a + b , 0) === poll.votes_number}
                       >
                       +
@@ -308,7 +308,7 @@ function Vote({ location, intl }) {
                     </Typography>
 
                     </>
-                  )) }          
+                  )) }
 
 
                  </div>
