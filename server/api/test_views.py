@@ -385,3 +385,22 @@ class UpdateGroupViewsTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
         self.assertEqual(response.data['message'], 'Formulário Inválido')
         self.assertEqual(response.data['fields'], ['emails'])
+
+class PollViewsTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        poll = baker.make('api.Poll')
+        poll.id = cls.poll_id = 1
+        poll.title = 'Eleicao Teste'
+        poll.save()
+
+    def test_get_poll(self):
+        client = APIClient()
+        response = client.get('/api/polls/get/1', format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_poll_nonexistant(self):
+        client = APIClient()
+        response = client.get('/api/polls/get/2', format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
